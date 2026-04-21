@@ -38,8 +38,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, '../frontend')));
-
 // ==============================================================================
 // POSTGRESQL CONNECTION
 // ==============================================================================
@@ -5003,6 +5001,12 @@ app.get('/health', async (req, res) => {
     } catch (error) {
         res.status(500).json({ status: 'unhealthy', database: 'disconnected' });
     }
+});
+
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 app.use((req, res) => {
