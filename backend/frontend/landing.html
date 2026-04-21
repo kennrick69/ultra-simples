@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Simples - Software Odontológico Sem Complicação</title>
+    <meta name="description" content="Software odontológico que não complica sua rotina. Agenda, prontuário, WhatsApp e financeiro em um só lugar. Teste grátis por 14 dias, sem cartão de crédito.">
+    <meta name="keywords" content="software odontológico, sistema para dentista, agenda odontológica, prontuário eletrônico, clínica odontológica">
+    <meta name="author" content="Ultra Simples">
+    <meta property="og:title" content="Ultra Simples - Software Odontológico Sem Complicação">
+    <meta property="og:description" content="Agenda, prontuário, WhatsApp e financeiro em um só lugar. Pensado para quem quer atender, não administrar planilhas.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Ultra Simples - Software Odontológico Sem Complicação">
+    <meta name="twitter:description" content="Agenda, prontuário, WhatsApp e financeiro em um só lugar.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: #111827; }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mockup-gradient {
+            background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
+        }
+    </style>
+</head>
+<body class="bg-white text-[#111827]">
+
+    <!-- HEADER -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="#" class="flex items-center gap-2 text-teal-600 font-bold text-xl">
+                    <i data-lucide="tooth" class="w-6 h-6"></i>
+                    <span class="text-[#111827]">Ultra Simples</span>
+                </a>
+
+                <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-[#6B7280]">
+                    <a href="#funcionalidades" class="hover:text-teal-600 transition-colors">Funcionalidades</a>
+                    <a href="#preco" class="hover:text-teal-600 transition-colors">Preço</a>
+                    <a href="#contato" class="hover:text-teal-600 transition-colors">Contato</a>
+                </nav>
+
+                <div class="flex items-center gap-3">
+                    <a href="/login" class="hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors">
+                        Entrar
+                    </a>
+                    <a href="/cadastro" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors">
+                        Começar grátis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div class="fade-in">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
+                    Software odontológico<br>
+                    <span class="text-teal-600">que não complica sua rotina.</span>
+                </h1>
+                <p class="mt-6 text-lg text-[#6B7280] leading-relaxed">
+                    Agenda, prontuário, WhatsApp e financeiro em um só lugar. Pensado para quem quer atender, não administrar planilhas.
+                </p>
+                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                    <a href="/cadastro" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors shadow-sm">
+                        Começar grátis por 14 dias
+                    </a>
+                    <a href="#funcionalidades" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors">
+                        <i data-lucide="play-circle" class="w-5 h-5 mr-2"></i>
+                        Ver demonstração
+                    </a>
+                </div>
+                <p class="mt-4 text-sm text-[#6B7280]">
+                    Sem cartão de crédito. Cancele quando quiser.
+                </p>
+            </div>
+
+            <div class="fade-in">
+                <div class="mockup-gradient rounded-2xl p-6 shadow-2xl">
+                    <div class="bg-white rounded-lg p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                            </div>
+                            <span class="text-xs text-[#6B7280]">Agenda - Hoje</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-3 bg-teal-50 border-l-4 border-teal-600 rounded">
+                                <div class="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-semibold text-sm">MS</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Maria Silva</div>
+                                    <div class="text-xs text-[#6B7280]">Limpeza + Avaliação</div>
+                                </div>
+                                <span class="text-xs font-semibold text-teal-600">09:00</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-amber-50 border-l-4 border-amber-500 rounded">
+                                <div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center font-semibold text-sm">JC</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">João Carvalho</div>
+                                    <div class="text-xs text-[#6B7280]">Restauração #26</div>
+                                </div>
+                                <span class="text-xs font-semibold text-amber-600">10:30</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 border-l-4 border-gray-300 rounded">
+                                <div class="w-10 h-10 rounded-full bg-gray-400 text-white flex items-center justify-center font-semibold text-sm">AR</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Ana Ribeiro</div>
+                                    <div class="text-xs text-[#6B7280]">Retorno</div>
+                                </div>
+                                <span class="text-xs font-semibold text-[#6B7280]">14:00</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-3 text-center">
+                            <div>
+                                <div class="text-xl font-bold text-teal-600">12</div>
+                                <div class="text-xs text-[#6B7280]">Consultas</div>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold text-teal-600">R$ 3.8k</div>
+                                <div class="text-xs text-[#6B7280]">Faturamento</div>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold text-teal-600">94%</div>
+                                <div class="text-xs text-[#6B7280]">Presença</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRÊS PROMESSAS -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-[#F9FAFB]">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="fade-in bg-white rounded-xl p-8 border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center mb-4">
+                        <i data-lucide="zap" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Configure em 10 minutos</h3>
+                    <p class="text-[#6B7280] leading-relaxed">Cadastre sua clínica, importe pacientes e comece a agendar no mesmo dia.</p>
+                </div>
+
+                <div class="fade-in bg-white rounded-xl p-8 border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center mb-4">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Sua equipe aprende sozinha</h3>
+                    <p class="text-[#6B7280] leading-relaxed">Interface tão direta que dispensa treinamento. Secretária usa no primeiro dia.</p>
+                </div>
+
+                <div class="fade-in bg-white rounded-xl p-8 border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center mb-4">
+                        <i data-lucide="message-circle" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Suporte que responde de verdade</h3>
+                    <p class="text-[#6B7280] leading-relaxed">Time brasileiro por WhatsApp. Resposta em até 15 minutos no horário comercial.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FUNCIONALIDADES -->
+    <section id="funcionalidades" class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-14 fade-in">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+                    Tudo que você precisa,<br>nada que você não vai usar.
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="fade-in p-6 rounded-xl border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all bg-white">
+                    <div class="w-11 h-11 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-4">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Agenda inteligente</h3>
+                    <p class="text-[#6B7280] text-sm leading-relaxed">Arraste e solte consultas. Confirmação automática por WhatsApp 24h antes.</p>
+                </div>
+
+                <div class="fade-in p-6 rounded-xl border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all bg-white">
+                    <div class="w-11 h-11 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-4">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Prontuário eletrônico</h3>
+                    <p class="text-[#6B7280] text-sm leading-relaxed">Odontograma SVG, anamnese e evoluções em uma tela só.</p>
+                </div>
+
+                <div class="fade-in p-6 rounded-xl border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all bg-white">
+                    <div class="w-11 h-11 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-4">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Financeiro descomplicado</h3>
+                    <p class="text-[#6B7280] text-sm leading-relaxed">Receitas, despesas, fluxo de caixa e cobrança PIX integrada.</p>
+                </div>
+
+                <div class="fade-in p-6 rounded-xl border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all bg-white">
+                    <div class="w-11 h-11 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-4">
+                        <i data-lucide="message-square" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">WhatsApp integrado</h3>
+                    <p class="text-[#6B7280] text-sm leading-relaxed">Confirme consultas, cobre inadimplentes e envie orçamentos sem sair do sistema.</p>
+                </div>
+
+                <div class="fade-in p-6 rounded-xl border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all bg-white">
+                    <div class="w-11 h-11 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-4">
+                        <i data-lucide="file-signature" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Termos e orçamentos</h3>
+                    <p class="text-[#6B7280] text-sm leading-relaxed">Modelos prontos de consentimento informado com envio digital.</p>
+                </div>
+
+                <div class="fade-in p-6 rounded-xl border border-gray-100 hover:border-teal-600 hover:shadow-lg transition-all bg-white">
+                    <div class="w-11 h-11 rounded-lg bg-teal-600 text-white flex items-center justify-center mb-4">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Multi-profissional</h3>
+                    <p class="text-[#6B7280] text-sm leading-relaxed">Agenda e comissões separadas por dentista, com relatórios individuais.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-[#F9FAFB]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-14 fade-in">
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Como funciona</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 relative">
+                <div class="fade-in text-center">
+                    <div class="text-5xl font-extrabold text-teal-600 mb-4">01</div>
+                    <h3 class="text-xl font-bold mb-2">Crie sua conta</h3>
+                    <p class="text-[#6B7280] leading-relaxed">2 minutos, sem cartão de crédito.</p>
+                </div>
+
+                <div class="fade-in text-center">
+                    <div class="text-5xl font-extrabold text-teal-600 mb-4">02</div>
+                    <h3 class="text-xl font-bold mb-2">Configure sua clínica</h3>
+                    <p class="text-[#6B7280] leading-relaxed">Importe pacientes de planilha ou cadastre do zero.</p>
+                </div>
+
+                <div class="fade-in text-center">
+                    <div class="text-5xl font-extrabold text-teal-600 mb-4">03</div>
+                    <h3 class="text-xl font-bold mb-2">Comece a atender</h3>
+                    <p class="text-[#6B7280] leading-relaxed">Agenda, prontuário e cobrança funcionando no primeiro dia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRA QUEM É -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12 fade-in">
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                    Feito para a clínica que quer crescer<br>sem virar refém de sistema.
+                </h2>
+            </div>
+
+            <ul class="space-y-4 max-w-2xl mx-auto">
+                <li class="fade-in flex items-start gap-4 p-4 rounded-lg hover:bg-[#F9FAFB] transition-colors">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mt-0.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-lg text-[#111827]">Dentista recém-formado abrindo o primeiro consultório.</span>
+                </li>
+                <li class="fade-in flex items-start gap-4 p-4 rounded-lg hover:bg-[#F9FAFB] transition-colors">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mt-0.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-lg text-[#111827]">Clínica pequena que ainda usa papel ou planilha.</span>
+                </li>
+                <li class="fade-in flex items-start gap-4 p-4 rounded-lg hover:bg-[#F9FAFB] transition-colors">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mt-0.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-lg text-[#111827]">Consultório cansado de sistemas caros e travados.</span>
+                </li>
+                <li class="fade-in flex items-start gap-4 p-4 rounded-lg hover:bg-[#F9FAFB] transition-colors">
+                    <div class="flex-shrink-0 w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mt-0.5">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-lg text-[#111827]">Equipe de até 5 profissionais que precisa de organização real.</span>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section id="preco" class="py-20 px-4 sm:px-6 lg:px-8 bg-teal-700">
+        <div class="max-w-3xl mx-auto text-center fade-in">
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+                Pronto pra simplificar sua rotina?
+            </h2>
+            <p class="mt-4 text-lg text-teal-50">
+                Teste grátis por 14 dias. Sem fidelidade, sem enrolação.
+            </p>
+            <div class="mt-8">
+                <a href="/cadastro" class="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-teal-700 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-lg">
+                    Criar minha conta grátis
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contato" class="bg-[#111827] text-gray-300 px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <a href="#" class="flex items-center gap-2 text-white font-bold text-xl mb-4">
+                        <i data-lucide="tooth" class="w-6 h-6 text-teal-500"></i>
+                        <span>Ultra Simples</span>
+                    </a>
+                    <p class="text-sm text-gray-400">Software odontológico sem complicação.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Produto</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#funcionalidades" class="hover:text-teal-400 transition-colors">Funcionalidades</a></li>
+                        <li><a href="#preco" class="hover:text-teal-400 transition-colors">Preço</a></li>
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">Novidades</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Empresa</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">Sobre</a></li>
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">Carreiras</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Suporte</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">Central de ajuda</a></li>
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">Contato</a></li>
+                        <li><a href="#" class="hover:text-teal-400 transition-colors">WhatsApp</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
+                © 2026 Ultra Simples. Todos os direitos reservados.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+    </script>
+</body>
+</html>
