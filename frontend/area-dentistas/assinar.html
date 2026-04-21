@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Assinar Orçamento - Dental Ultra</title>
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f4f8; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 100%); padding: 16px 20px; color: white; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .header img { height: 32px; margin-bottom: 4px; }
+        .header h1 { font-size: 18px; font-weight: 700; }
+        .header p { font-size: 12px; opacity: 0.85; }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+        .card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 16px; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .info-item { padding: 10px 12px; background: #f8fafc; border-radius: 10px; }
+        .info-item .label { font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .info-item .value { font-size: 14px; font-weight: 600; color: #1f2937; margin-top: 2px; }
+
+        .itens-table { width: 100%; border-collapse: collapse; }
+        .itens-table th { background: #f1f5f9; padding: 10px; text-align: left; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+        .itens-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #374151; }
+        .itens-table .valor { text-align: right; font-weight: 700; color: #1e5080; }
+        .total-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: linear-gradient(135deg, #eff6ff, #f0f9ff); border-radius: 12px; margin-top: 12px; border: 1px solid #bfdbfe; }
+        .total-bar .total-label { font-size: 14px; color: #374151; font-weight: 600; }
+        .total-bar .total-valor { font-size: 22px; font-weight: 800; color: #1e5080; }
+
+        .obs { padding: 12px; background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; font-size: 12px; color: #854d0e; margin-top: 12px; }
+
+        /* Signature area */
+        .sign-section { text-align: center; }
+        .sign-section h3 { font-size: 15px; color: #374151; margin-bottom: 8px; }
+        .sign-section p { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+
+        .termo-section { }
+        .termo-header { display:flex;align-items:center;gap:8px;margin-bottom:10px; }
+        .termo-header h3 { font-size:14px;color:#7c3aed;margin:0; }
+        .termo-conteudo { font-size:12px;line-height:1.7;color:#374151;max-height:300px;overflow-y:auto;padding:14px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;white-space:pre-wrap;margin-bottom:12px; }
+        .termo-check { display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px; }
+        .termo-check input { width:20px;height:20px;margin-top:2px;accent-color:#7c3aed;flex-shrink:0; }
+        .termo-check label { font-size:12px;color:#374151;line-height:1.4;cursor:pointer; }
+
+        .nome-input { width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; font-family: 'Inter', sans-serif; margin-bottom: 12px; text-align: center; transition: border-color 0.2s; }
+        .nome-input:focus { outline: none; border-color: #1FA2FF; }
+
+        .canvas-wrapper { position: relative; border: 2px dashed #d1d5db; border-radius: 14px; overflow: hidden; background: white; touch-action: none; margin-bottom: 8px; }
+        .canvas-wrapper.active { border-color: #1FA2FF; border-style: solid; }
+        #signCanvas { display: block; width: 100%; cursor: crosshair; touch-action: none; }
+        .canvas-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #d1d5db; font-size: 16px; font-weight: 600; pointer-events: none; transition: opacity 0.3s; }
+        .canvas-wrapper.active .canvas-hint { opacity: 0; }
+
+        .sign-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+        .btn-limpar { flex: 1; padding: 10px; border: 1px solid #e5e7eb; background: white; border-radius: 10px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; color: #6b7280; }
+        .btn-limpar:hover { background: #f9fafb; }
+
+        .btn-assinar { width: 100%; padding: 16px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+        .btn-assinar:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,0.4); }
+        .btn-assinar:disabled { background: #d1d5db; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        /* Success state */
+        .success-state { text-align: center; padding: 40px 20px; }
+        .success-state .icon { font-size: 64px; margin-bottom: 16px; }
+        .success-state h2 { color: #16a34a; font-size: 22px; margin-bottom: 8px; }
+        .success-state p { color: #6b7280; font-size: 14px; }
+
+        /* Already signed state */
+        .signed-state { text-align: center; padding: 30px 20px; }
+        .signed-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .signed-state h3 { color: #1e5080; margin-bottom: 6px; }
+        .signed-state p { color: #6b7280; font-size: 13px; }
+
+        /* Error state */
+        .error-state { text-align: center; padding: 60px 20px; }
+        .error-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .error-state h2 { color: #dc2626; font-size: 18px; margin-bottom: 8px; }
+        .error-state p { color: #6b7280; }
+
+        .loading { text-align: center; padding: 60px; color: #9ca3af; font-size: 14px; }
+
+        .footer { text-align: center; padding: 20px; font-size: 11px; color: #9ca3af; }
+    </style>
+    <script src="js/config.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Orçamento Odontológico</h1>
+        <p>Dental Ultra</p>
+    </div>
+
+    <div class="container" id="content">
+        <div class="loading">Carregando orçamento...</div>
+    </div>
+
+    <div class="footer">
+        Dental Ultra · Sistema de Gestão Odontológica<br>
+        Documento digital com validade jurídica
+    </div>
+
+    <script>
+        const API_URL = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://dentist-backend-v2-production.up.railway.app';
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        let canvasDrawn = false;
+        let ctx, canvas;
+        let _hasTermo = false;
+
+        function formatReal(v) { return 'R$ ' + parseFloat(v).toFixed(2).replace('.', ','); }
+
+        function verificarAceites() {
+            updateSignButton();
+        }
+
+        function updateSignButton() {
+            var btn = document.getElementById('btn-assinar');
+            if (!btn) return;
+            var ok = canvasDrawn;
+            if (_hasTermo) {
+                var cb = document.getElementById('aceite-termo');
+                if (cb && !cb.checked) ok = false;
+            }
+            btn.disabled = !ok;
+        }
+
+        async function init() {
+            const content = document.getElementById('content');
+            if (!token) {
+                content.innerHTML = '<div class="error-state"><div class="icon">❌</div><h2>Link inválido</h2><p>Este link não contém um token válido.</p></div>';
+                return;
+            }
+            try {
+                const res = await fetch(API_URL + '/api/orcamentos/assinar/' + token);
+                const data = await res.json();
+                if (!data.success) {
+                    const msg = res.status === 410 ? 'Este orçamento está vencido.' : (data.erro || 'Link inválido');
+                    content.innerHTML = '<div class="error-state"><div class="icon">' + (res.status === 410 ? '⏰' : '❌') + '</div><h2>' + (res.status === 410 ? 'Orçamento Vencido' : 'Erro') + '</h2><p>' + msg + '</p></div>';
+                    return;
+                }
+                renderOrcamento(data);
+            } catch(e) {
+                content.innerHTML = '<div class="error-state"><div class="icon">📡</div><h2>Erro de conexão</h2><p>Não foi possível carregar o orçamento. Tente novamente.</p></div>';
+            }
+        }
+
+        function renderOrcamento(data) {
+            const o = data.orcamento;
+            const itens = data.itens;
+            const total = itens.reduce((s, i) => s + i.valor, 0);
+            const content = document.getElementById('content');
+
+            let html = '<div class="card">';
+            // Clinic info
+            if (o.clinicaNome) {
+                html += '<div style="text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">';
+                html += '<div style="font-size:16px;font-weight:700;color:#1e5080;">' + o.clinicaNome + '</div>';
+                if (o.clinicaTelefone) html += '<div style="font-size:12px;color:#6b7280;">' + o.clinicaTelefone + '</div>';
+                if (o.clinicaEndereco) html += '<div style="font-size:11px;color:#9ca3af;">' + o.clinicaEndereco + '</div>';
+                html += '</div>';
+            }
+
+            html += '<div class="info-grid">';
+            html += '<div class="info-item"><div class="label">Paciente</div><div class="value">' + (o.pacienteNome || '-') + '</div></div>';
+            html += '<div class="info-item"><div class="label">Dentista</div><div class="value">' + (o.dentistaNome || '-') + (o.dentistaCro ? '<br>CRO ' + o.dentistaCro : '') + '</div></div>';
+            html += '<div class="info-item"><div class="label">Data</div><div class="value">' + new Date(o.criadoEm).toLocaleDateString('pt-BR') + '</div></div>';
+            html += '<div class="info-item"><div class="label">Validade</div><div class="value">' + (o.validadeDias || 30) + ' dias</div></div>';
+            html += '</div>';
+
+            html += '<table class="itens-table"><thead><tr><th>Dente</th><th>Procedimento</th><th style="text-align:right;">Valor</th></tr></thead><tbody>';
+            itens.forEach(i => {
+                html += '<tr><td>' + (i.dente || '-') + '</td><td>' + i.procedimento + '</td><td class="valor">' + formatReal(i.valor) + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            html += '<div class="total-bar"><span class="total-label">Total</span><span class="total-valor">' + formatReal(total) + '</span></div>';
+
+            if (o.formaPagamento) html += '<div class="obs">💳 <strong>Pagamento:</strong> ' + o.formaPagamento + '</div>';
+            if (o.observacoes) html += '<div class="obs" style="background:#f0f9ff;border-color:#93c5fd;color:#1e40af;">📝 ' + o.observacoes + '</div>';
+            html += '</div>';
+
+            // Already signed?
+            if (o.jaAssinado) {
+                html += '<div class="card signed-state"><div class="icon">✅</div><h3>Orçamento já assinado</h3><p>Assinado em ' + new Date(o.assinaturaData).toLocaleString('pt-BR') + '</p></div>';
+            } else {
+                // Termo de consentimento (se houver)
+                if (o.termoConsentimento) {
+                    html += '<div class="card termo-section">';
+                    html += '<div class="termo-header"><span style="font-size:20px;">📜</span><h3>Termo de Consentimento</h3></div>';
+                    html += '<div class="termo-conteudo">' + o.termoConsentimento.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+                    html += '<div class="termo-check"><input type="checkbox" id="aceite-termo" onchange="verificarAceites()"><label for="aceite-termo"><strong>Li e estou de acordo</strong> com o termo de consentimento acima. Declaro que fui informado(a) sobre os procedimentos, riscos e benefícios.</label></div>';
+                    html += '</div>';
+                }
+
+                // Signature section
+                html += '<div class="card sign-section">';
+                html += '<h3>✍️ Assine abaixo para aprovar</h3>';
+                html += '<p>Digite seu nome completo e assine com o dedo ou mouse' + (o.termoConsentimento ? '<br><strong style="color:#7c3aed;">A assinatura vale para o orçamento e o termo de consentimento</strong>' : '') + '</p>';
+                html += '<input type="text" class="nome-input" id="nome-assinante" placeholder="Seu nome completo">';
+                html += '<div class="canvas-wrapper" id="canvas-wrapper"><canvas id="signCanvas" width="560" height="200"></canvas><div class="canvas-hint">Assine aqui ✍️</div></div>';
+                html += '<div class="sign-actions"><button class="btn-limpar" onclick="limparCanvas()">🗑️ Limpar assinatura</button></div>';
+                html += '<button class="btn-assinar" id="btn-assinar" onclick="enviarAssinatura()" disabled>✅ Confirmar e Assinar</button>';
+                html += '<p style="font-size:10px;color:#9ca3af;margin-top:10px;">Ao assinar, você declara estar ciente e de acordo com os procedimentos e valores descritos neste orçamento.</p>';
+                html += '</div>';
+            }
+
+            content.innerHTML = html;
+
+            if (!o.jaAssinado) initCanvas();
+            _hasTermo = !!o.termoConsentimento;
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('signCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+
+            // Resize canvas to actual display size
+            const wrapper = document.getElementById('canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            canvas.width = rect.width - 4;
+            canvas.height = 200;
+
+            ctx.strokeStyle = '#1f2937';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            let drawing = false;
+            let lastX = 0, lastY = 0;
+
+            function getPos(e) {
+                const r = canvas.getBoundingClientRect();
+                const touch = e.touches ? e.touches[0] : e;
+                return { x: touch.clientX - r.left, y: touch.clientY - r.top };
+            }
+
+            function startDraw(e) {
+                e.preventDefault();
+                drawing = true;
+                const pos = getPos(e);
+                lastX = pos.x; lastY = pos.y;
+                wrapper.classList.add('active');
+            }
+
+            function draw(e) {
+                if (!drawing) return;
+                e.preventDefault();
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                lastX = pos.x; lastY = pos.y;
+                canvasDrawn = true;
+                updateSignButton();
+            }
+
+            function stopDraw(e) {
+                if (e) e.preventDefault();
+                drawing = false;
+            }
+
+            // Mouse
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+            // Touch
+            canvas.addEventListener('touchstart', startDraw, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchend', stopDraw, { passive: false });
+        }
+
+        function limparCanvas() {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasDrawn = false;
+            updateSignButton();
+            document.getElementById('canvas-wrapper').classList.remove('active');
+        }
+
+        async function enviarAssinatura() {
+            if (!canvasDrawn) return;
+            if (_hasTermo) {
+                var cb = document.getElementById('aceite-termo');
+                if (cb && !cb.checked) { alert('Você precisa aceitar o termo de consentimento.'); return; }
+            }
+            const nome = document.getElementById('nome-assinante').value.trim();
+            if (!nome) { alert('Por favor, digite seu nome completo.'); document.getElementById('nome-assinante').focus(); return; }
+            const btn = document.getElementById('btn-assinar');
+            btn.disabled = true;
+            btn.textContent = '⏳ Enviando...';
+            try {
+                const imagem = canvas.toDataURL('image/png');
+                const res = await fetch(API_URL + '/api/orcamentos/assinar/' + token, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imagem, nome })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('content').innerHTML += '<div class="card success-state"><div class="icon">🎉</div><h2>Assinatura confirmada!</h2><p>Seu orçamento foi assinado com sucesso.<br>O dentista receberá a confirmação automaticamente.</p><p style="margin-top:12px;font-size:12px;color:#9ca3af;">Você pode fechar esta página.</p></div>';
+                    // Remove sign section
+                    document.querySelector('.sign-section')?.remove();
+                } else {
+                    alert(data.erro || 'Erro ao assinar');
+                    btn.disabled = false;
+                    btn.textContent = '✅ Confirmar e Assinar';
+                }
+            } catch(e) {
+                alert('Erro de conexão. Tente novamente.');
+                btn.disabled = false;
+                btn.textContent = '✅ Confirmar e Assinar';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

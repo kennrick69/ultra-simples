@@ -1,195 +1,219 @@
-# 🚀 Backend NFSe - Integração Pomerode/SC
+# 🦷 ÁREA DO DENTISTA - Sistema Profissional de Gestão
 
-Backend Node.js para integração direta com o sistema de NFSe da Prefeitura de Pomerode-SC (provedor IPM/AtendeNet).
+## 📋 VISÃO GERAL
 
-## 📋 Funcionalidades
+Sistema completo de gestão odontológica com foco em **Equiparação Hospitalar**.
 
-- ✅ **Emitir Nota Fiscal** - Emissão automática de NFSe
-- ✅ **Consultar Nota** - Consulta de notas emitidas
-- ✅ **Cancelar Nota** - Cancelamento de notas
-- ✅ **Validar Credenciais** - Teste de conexão com prefeitura
-- ✅ **100% Gratuito** - Sem custos por nota
+Permite aos dentistas:
+- ✅ Criar planos de tratamento profissionais
+- ✅ Gerar notas fiscais com descrição CORRETA
+- ✅ Gerenciar pacientes
+- ✅ Controlar financeiro
+- ✅ Gerar relatórios contábeis
+- ✅ Manter prontuários digitais
 
-## 🛠️ Tecnologias
+## 🚀 FUNCIONALIDADES COMPLETAS
 
-- **Node.js** 18+
-- **Express** - Framework web
-- **Axios** - Requisições HTTP
-- **xml2js** - Parser XML
-- **CORS** - Comunicação com frontend
+### 1. Sistema de Login/Registro
+- Cadastro de dentistas
+- Autenticação segura
+- Gerenciamento de sessão
+- Dados por dentista
 
-## 📦 Instalação
+### 2. Dashboard
+- Estatísticas em tempo real
+- Pacientes ativos
+- Tratamentos em andamento
+- Faturamento mensal
+- Notas emitidas
+- Atividades recentes
 
-```bash
-# 1. Instalar dependências
-npm install
+### 3. Gerador de Plano de Tratamento ⭐
+- Cadastro de pacientes
+- Múltiplas etapas de tratamento
+- Cálculo automático de valores
+- Pagamento à vista ou parcelado
+- Preview profissional
+- Download em PDF
+- Templates prontos
 
-# 2. Configurar variáveis de ambiente
-cp .env.example .env
+### 4. Gerador de Notas Fiscais ⭐
+- Descrições corretas para Equiparação
+- Identificação de procedimentos elegíveis
+- Elementos dentários
+- Histórico de notas emitidas
+- Integração futura com prefeituras
 
-# 3. Iniciar servidor
-npm start
+### 5. Gestão de Pacientes
+- Cadastro completo
+- CPF, telefone, email
+- Histórico de tratamentos
+- Busca e filtros
+
+### 6. Prontuário Digital (Em desenvolvimento)
+- Documentação completa
+- Fotos clínicas
+- Radiografias
+- Evolução do tratamento
+
+### 7. Controle Financeiro (Em desenvolvimento)
+- Receitas e despesas
+- Impostos pagos
+- Fluxo de caixa
+- Previsões
+
+### 8. Relatórios Contábeis (Em desenvolvimento)
+- Dados prontos para contador
+- Separação elegível vs não elegível
+- Exportação de dados
+- Gráficos
+
+## 📁 ESTRUTURA DE ARQUIVOS
+
+```
+area-dentistas/
+├── login.html              # Página de login/registro
+├── dashboard.html          # Dashboard principal
+├── plano-tratamento.html   # ⭐ Gerador de planos
+├── nota-fiscal.html        # ⭐ Gerador de notas
+├── pacientes.html          # Gestão de pacientes
+├── prontuario.html         # Prontuário (placeholder)
+├── financeiro.html         # Financeiro (placeholder)
+├── relatorios.html         # Relatórios (placeholder)
+├── css/
+│   ├── login.css           # Estilos do login
+│   ├── dashboard.css       # Estilos do dashboard
+│   └── forms.css           # Estilos de formulários
+└── js/
+    ├── auth.js             # Autenticação
+    ├── auth-check.js       # Verificação de sessão
+    ├── dashboard.js        # Lógica do dashboard
+    └── plano-tratamento.js # Lógica dos planos
 ```
 
-## 🌐 Endpoints da API
+## 🎯 DIFERENCIAIS DO SISTEMA
 
-### 1. Status do Servidor
-```
-GET /
-GET /health
-```
+### ✅ Foco em Equiparação Hospitalar
+- Identificação automática de procedimentos elegíveis
+- Notas fiscais com descrição correta
+- Separação de receitas
+- Alertas e avisos específicos
 
-### 2. Emitir Nota Fiscal
-```
-POST /api/nfse/emitir
-```
+### ✅ 100% Offline (LocalStorage)
+- Funciona sem internet
+- Dados salvos localmente
+- Privacidade total
+- Rápido e eficiente
 
-**Body:**
-```json
-{
-  "usuario_prefeitura": "12345678000190",
-  "senha_prefeitura": "senha123",
-  "cnpj": "12345678000190",
-  "inscricao_municipal": "12345",
-  "razao_social": "Clínica Odontológica LTDA",
-  "descricao": "Implante dentário unitário no elemento 16...",
-  "valor_servicos": 5000.00,
-  "codigo_servico": "04.02",
-  "aliquota_iss": 3.5,
-  "tomador": {
-    "cpf_cnpj": "12345678909",
-    "razao_social": "João da Silva",
-    "nome": "João da Silva"
-  }
-}
-```
+### ✅ Profissional e Completo
+- Templates prontos
+- Preview antes de salvar
+- Export para PDF
+- Interface moderna
 
-**Resposta:**
-```json
-{
-  "success": true,
-  "mensagem": "Nota emitida com sucesso!",
-  "numero_nota": "123456",
-  "codigo_verificacao": "ABC123",
-  "data_emissao": "2026-01-25T10:00:00Z",
-  "numero_rps": "12345678",
-  "serie_rps": "1"
-}
-```
+### ✅ Específico para Dentistas
+- Especialidades odontológicas
+- Elementos dentários
+- Procedimentos comuns
+- Terminologia correta
 
-### 3. Consultar Nota
-```
-GET /api/nfse/consultar/:numero
-```
+## 💾 ARMAZENAMENTO DE DADOS
 
-**Query Params:**
-- `usuario_prefeitura`
-- `senha_prefeitura`
-- `inscricao_municipal`
+Os dados são armazenados no **LocalStorage** do navegador:
 
-### 4. Cancelar Nota
-```
-POST /api/nfse/cancelar
-```
+- `dentistas_users` - Usuários cadastrados
+- `dentista_current_user` - Usuário atual
+- `pacientes_{userId}` - Pacientes do dentista
+- `tratamentos_{userId}` - Planos de tratamento
+- `notas_{userId}` - Notas fiscais emitidas
 
-**Body:**
-```json
-{
-  "numero_nota": "123456",
-  "motivo_cancelamento": "Erro na emissão",
-  "usuario_prefeitura": "12345678000190",
-  "senha_prefeitura": "senha123",
-  "inscricao_municipal": "12345"
-}
-```
+**Importante:** Dados ficam apenas no computador do dentista.
 
-### 5. Validar Credenciais
-```
-POST /api/nfse/validar-credenciais
-```
+## 🔐 SEGURANÇA
 
-**Body:**
-```json
-{
-  "usuario_prefeitura": "12345678000190",
-  "senha_prefeitura": "senha123"
-}
-```
+- Autenticação por sessão
+- Dados isolados por usuário
+- Senha obrigatória
+- Verificação em todas as páginas
+- Logout seguro
 
-## 🔐 Segurança
+## 🎨 DESIGN
 
-- Credenciais enviadas via Basic Auth
-- HTTPS obrigatório em produção
-- Validação de dados antes de enviar
-- Logs de todas as requisições
-- Timeout de 30 segundos por requisição
+- Interface moderna e limpa
+- Cores profissionais (verde odonto)
+- Responsivo (mobile/desktop)
+- Ícones intuitivos
+- Formulários organizados
 
-## 🚀 Deploy no Railway
+## 📱 COMPATIBILIDADE
 
-1. Criar conta em [railway.app](https://railway.app)
-2. Conectar repositório GitHub
-3. Deploy automático!
+- ✅ Chrome, Edge, Firefox, Safari
+- ✅ Desktop e Mobile
+- ✅ Tablets
+- ✅ Funciona offline
 
-**Variáveis de ambiente no Railway:**
-```
-PORT=3001
-NODE_ENV=production
-```
+## 🚀 COMO USAR
 
-## 📝 Códigos de Serviço Comuns
+1. **Instalação:**
+   - Extraia o ZIP
+   - Abra `login.html` no navegador
+   - Ou coloque em um servidor web
 
-| Código | Descrição |
-|--------|-----------|
-| 04.02 | Próteses e implantes |
-| 04.03 | Radiologia e exames |
-| 04.06 | Aplicação de anestesia |
-| 04.14 | Tratamento de fraturas |
+2. **Primeiro Acesso:**
+   - Crie sua conta (Cadastre-se)
+   - Preencha seus dados
+   - Faça login
 
-## ⚠️ Observações Importantes
+3. **Uso Diário:**
+   - Cadastre pacientes
+   - Crie planos de tratamento
+   - Emita notas fiscais corretamente
+   - Acompanhe dashboard
 
-### Liberação na Prefeitura
+## 💰 MONETIZAÇÃO
 
-Antes de usar, o dentista deve liberar acesso ao WebService:
+Este sistema pode ser vendido como:
 
-1. Acessar: https://nfse-pomerode.atende.net
-2. Login com usuário/senha
-3. Menu → "Emissão de NFS-e por WebService"
-4. Clicar "Liberar Acesso ao Usuário"
-5. Confirmar
+- **Acesso Mensal:** R$ 97/mês
+- **Acesso Anual:** R$ 970/ano (2 meses grátis)
+- **Licença Vitalícia:** R$ 1.997
 
-### Credenciais
+**Bônus inclusos:**
+- Apostila sobre Equiparação Hospitalar
+- Templates prontos
+- Atualizações gratuitas
+- Suporte por email
 
-- **Usuário:** CNPJ do dentista (com formatação)
-- **Senha:** Mesma senha do portal da prefeitura
+## 🎯 PRÓXIMOS PASSOS
 
-### Formato XML
+Para venda na Hotmart:
 
-O sistema usa o padrão ABRASF com adaptações do IPM.
+1. ✅ Sistema funcional completo
+2. ⏳ Finalizar módulos (prontuário, financeiro)
+3. ⏳ Adicionar jsPDF para download real
+4. ⏳ Criar vídeo demonstrativo
+5. ⏳ Página de vendas
+6. ⏳ Integrar pagamento Hotmart
+7. ⏳ Sistema de licenças
 
-## 🐛 Troubleshooting
+## 📞 SUPORTE
 
-### Erro: "Acesso negado"
-- Verificar se liberou WebService na prefeitura
-- Confirmar usuário e senha
+Para dúvidas ou sugestões:
+- Email: contato@conversecommaria.com.br
+- Site: https://conversecommaria.com.br
 
-### Erro: "Código de serviço inválido"
-- Verificar se o código está cadastrado
-- Consultar lista no portal da prefeitura
+## 📝 LICENÇA
 
-### Erro: "Timeout"
-- Verificar conexão com internet
-- Prefeitura pode estar offline
-
-## 📞 Suporte
-
-Em caso de dúvidas sobre integração:
-- Prefeitura de Pomerode: (47) 3387-7271
-- Email: [email protected]
-
-## 📄 Licença
-
-MIT License - Uso livre para fins comerciais
+© 2025 - Todos os direitos reservados
+Sistema desenvolvido para dentistas profissionais
 
 ---
 
-**Desenvolvido com ❤️ para dentistas brasileiros**
+## 🎊 CRÉDITOS
+
+Sistema criado com:
+- HTML5
+- CSS3
+- JavaScript Vanilla
+- LocalStorage API
+- Muito carinho e profissionalismo! 🦷

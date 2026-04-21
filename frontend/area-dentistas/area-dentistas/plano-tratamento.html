@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Tratamento - Área do Dentista</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <!-- Sidebar (mesma do dashboard) -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🦷</div>
+            <h2>Dental Ultra</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="pacientes.html" class="nav-item">
+                <span class="icon">👥</span><span>Pacientes</span>
+            </a>
+            <a href="agenda.html" class="nav-item">
+                <span class="icon">📅</span>
+                <span>Agenda</span>
+            </a>
+            <a href="plano-tratamento.html" class="nav-item active">
+                <span class="icon">📋</span><span>Plano de Tratamento</span>
+            </a>
+            <a href="nota-fiscal.html" class="nav-item">
+                <span class="icon">📄</span><span>Notas Fiscais</span>
+            </a>
+            <a href="prontuario.html" class="nav-item">
+                <span class="icon">📝</span><span>Prontuário</span>
+            </a>
+            <a href="financeiro.html" class="nav-item">
+                <span class="icon">💰</span><span>Financeiro</span>
+            </a>
+            <a href="relatorios.html" class="nav-item">
+                <span class="icon">📈</span><span>Relatórios</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">👨‍⚕️</div>
+                <div class="user-details">
+                    <div class="user-name">Carregando...</div>
+                    <div class="user-role">CRO: ...</div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Plano de Tratamento</h1>
+                <p>Crie planos profissionais e completos</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">
+                    ← Voltar
+                </button>
+            </div>
+        </header>
+
+        <!-- Form -->
+        <div class="section">
+            <form id="planoForm" class="treatment-form">
+                <!-- Informações do Paciente -->
+                <div class="form-section">
+                    <h3>📋 Informações do Paciente</h3>
+                    
+                    <div class="paciente-busca-box">
+                        <p class="busca-instrucao">📌 <strong>ATENÇÃO:</strong> Selecione o paciente para preencher automaticamente os dados.</p>
+                        
+                        <div class="busca-row">
+                            <div class="busca-input-wrapper">
+                                <label>Buscar Paciente *</label>
+                                <input type="text" id="buscaPaciente" placeholder="Digite o nome, CPF ou telefone..." autocomplete="off">
+                                <div class="busca-resultados" id="buscaResultados"></div>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-novo-pac" onclick="abrirModalPaciente()">+ Novo</button>
+                        </div>
+                        
+                        <!-- Paciente Selecionado -->
+                        <div class="paciente-selecionado" id="pacienteSelecionado" style="display:none;">
+                            <div class="pac-sel-info">
+                                <div class="pac-sel-nome" id="pacSelNome">-</div>
+                                <div class="pac-sel-dados">
+                                    <span><strong>CPF:</strong> <span id="pacSelCPF">-</span></span>
+                                    <span><strong>Telefone:</strong> <span id="pacSelTel">-</span></span>
+                                    <span><strong>Email:</strong> <span id="pacSelEmail">-</span></span>
+                                    <span><strong>Cidade:</strong> <span id="pacSelCidade">-</span></span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-trocar" onclick="trocarPaciente()">✕ Trocar</button>
+                        </div>
+                        
+                        <!-- Botão cadastrar se não encontrou -->
+                        <div class="nao-encontrou" id="naoEncontrou" style="display:none;">
+                            <p>Paciente não encontrado?</p>
+                            <button type="button" class="btn btn-primary" onclick="abrirModalPaciente()">+ Cadastrar Novo Paciente</button>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="pacienteId" value="">
+                    <input type="hidden" id="pacienteNome" value="">
+                    <input type="hidden" id="pacienteCPF" value="">
+                    <input type="hidden" id="pacienteTelefone" value="">
+                </div>
+
+                <!-- Diagnóstico -->
+                <div class="form-section">
+                    <h3>🔍 Diagnóstico</h3>
+                    
+                    <div class="form-group">
+                        <label for="diagnostico">Diagnóstico Clínico *</label>
+                        <textarea id="diagnostico" rows="3" required placeholder="Descreva o diagnóstico..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="objetivo">Objetivo do Tratamento *</label>
+                        <textarea id="objetivo" rows="2" required placeholder="Ex: Reabilitação com implantes, correção ortodôntica..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Etapas do Tratamento -->
+                <div class="form-section">
+                    <h3>🦷 Etapas do Tratamento</h3>
+                    
+                    <div id="etapasContainer">
+                        <!-- Etapas serão adicionadas dinamicamente -->
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="addEtapa()">
+                        + Adicionar Etapa
+                    </button>
+                </div>
+
+                <!-- Forma de Pagamento -->
+                <div class="form-section">
+                    <h3>💰 Valores e Pagamento</h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Valor Total do Tratamento</label>
+                            <input type="text" id="valorTotal" readonly class="total-display">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="formaPagamento">Forma de Pagamento *</label>
+                            <select id="formaPagamento" required>
+                                <option value="vista">À Vista</option>
+                                <option value="parcelado">Parcelado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="parcelasGroup" style="display: none;">
+                            <label for="numParcelas">Número de Parcelas</label>
+                            <input type="number" id="numParcelas" min="2" max="24" value="10">
+                        </div>
+                        
+                        <div class="form-group" id="valorParcelaGroup" style="display: none;">
+                            <label>Valor da Parcela</label>
+                            <input type="text" id="valorParcela" readonly class="total-display">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="observacoes">Observações Adicionais</label>
+                        <textarea id="observacoes" rows="3" placeholder="Informações complementares..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="previewPlano()">
+                        👁️ Visualizar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="savePlano()">
+                        💾 Salvar Plano
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="downloadPlano()">
+                        📥 Baixar PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Modal -->
+        <div id="previewModal" class="modal" style="display: none;">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h2>📄 Pré-visualização do Plano de Tratamento</h2>
+                    <button class="modal-close" onclick="closePreview()">×</button>
+                </div>
+                <div class="modal-body" id="previewContent">
+                    <!-- Preview será gerado aqui -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closePreview()">Fechar</button>
+                    <button class="btn btn-success" onclick="downloadPlano()">📥 Baixar PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Cadastrar Novo Paciente -->
+        <div id="modalNovoPaciente" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>👤 Cadastrar Novo Paciente</h2>
+                    <button class="modal-close" onclick="fecharModalPaciente()">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNovoPaciente">
+                        <div class="form-group">
+                            <label for="novoPacNome">Nome Completo *</label>
+                            <input type="text" id="novoPacNome" required placeholder="Nome do paciente">
+                        </div>
+                        
+                        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+                            <div class="form-group">
+                                <label for="novoPacCPF">CPF *</label>
+                                <input type="text" id="novoPacCPF" required placeholder="000.000.000-00">
+                            </div>
+                            <div class="form-group">
+                                <label for="novoPacTelefone">Telefone *</label>
+                                <input type="tel" id="novoPacTelefone" required placeholder="(00) 00000-0000">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="novoPacEmail">E-mail</label>
+                            <input type="email" id="novoPacEmail" placeholder="email@exemplo.com">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="novoPacNascimento">Data de Nascimento</label>
+                            <input type="date" id="novoPacNascimento">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="fecharModalPaciente()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="salvarNovoPaciente()">💾 Cadastrar e Selecionar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        /* Caixa de busca de paciente */
+        .paciente-busca-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .busca-instrucao {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin: 0 0 16px 0;
+        }
+        .busca-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .busca-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .busca-input-wrapper label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #374151;
+        }
+        .busca-input-wrapper input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        .busca-input-wrapper input:focus {
+            outline: none;
+            border-color: #2d7a5f;
+        }
+        .btn-novo-pac {
+            white-space: nowrap;
+            height: 46px;
+        }
+        
+        /* Resultados da busca */
+        .busca-resultados {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 2px solid #2d7a5f;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .busca-resultados.show { display: block; }
+        .busca-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s;
+        }
+        .busca-item:hover { background: #dcfce7; }
+        .busca-item:last-child { border-bottom: none; }
+        .busca-item-nome { font-weight: 600; color: #1f2937; }
+        .busca-item-cpf { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .busca-empty {
+            padding: 20px;
+            text-align: center;
+            color: #9ca3af;
+        }
+        
+        /* Paciente Selecionado */
+        .paciente-selecionado {
+            background: linear-gradient(135deg, #dcfce7, #d1fae5);
+            border: 2px solid #22c55e;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pac-sel-info { flex: 1; }
+        .pac-sel-nome {
+            font-size: 18px;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 8px;
+        }
+        .pac-sel-dados {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 13px;
+            color: #15803d;
+        }
+        .btn-trocar {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-trocar:hover { background: #dc2626; }
+        
+        /* Não encontrou */
+        .nao-encontrou {
+            text-align: center;
+            margin-top: 16px;
+            padding: 16px;
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+        }
+        .nao-encontrou p {
+            margin: 0 0 12px 0;
+            color: #92400e;
+            font-weight: 500;
+        }
+        
+        /* Modal melhorado */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        .modal-content.large { max-width: 800px; }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.25rem; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .busca-row { flex-direction: column; }
+            .btn-novo-pac { width: 100%; }
+            .pac-sel-dados { flex-direction: column; gap: 4px; }
+        }
+    </style>
+
+    <script src="js/auth-check.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/pdf-generator.js"></script>
+    <script src="js/plano-tratamento.js"></script>
+</body>
+</html>

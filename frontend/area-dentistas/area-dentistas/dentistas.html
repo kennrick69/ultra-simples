@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converse com Maria - Sistema para Dentistas</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        /* Landing Page Styles */
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .landing-container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+            color: white;
+        }
+        
+        .landing-logo {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .landing-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .landing-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+        }
+        
+        .landing-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .landing-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-hero {
+            padding: 1.25rem 3rem;
+            font-size: 1.25rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-hero-primary {
+            background: white;
+            color: #047857;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        
+        .btn-hero-secondary {
+            background: transparent;
+            color: white;
+            border: 3px solid white;
+        }
+        
+        .btn-hero-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-3px);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+        
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .landing-title {
+                font-size: 2rem;
+            }
+            .landing-subtitle {
+                font-size: 1.2rem;
+            }
+            .landing-logo {
+                font-size: 4rem;
+            }
+            .btn-hero {
+                width: 100%;
+            }
+        }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <div class="landing-page">
+        <div class="landing-container">
+            <div class="landing-logo">🦷</div>
+            
+            <h1 class="landing-title">Sistema Profissional para Dentistas</h1>
+            <p class="landing-subtitle">
+                Gerencie sua clínica com foco em Equiparação Hospitalar<br>
+                Economize até 70% em impostos federais!
+            </p>
+            
+            <div class="landing-features">
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">Plano de Tratamento</div>
+                    <p>Crie planos profissionais em minutos com templates prontos</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <div class="feature-title">Notas Fiscais Corretas</div>
+                    <p>Emita notas com descrição adequada para Equiparação</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Gestão de Pacientes</div>
+                    <p>Organize todos os seus pacientes em um só lugar</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-title">Controle Financeiro</div>
+                    <p>Acompanhe receitas, despesas e economia tributária</p>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">70%</div>
+                    <div class="stat-label">Economia em Impostos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Legal e Seguro</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Disponível Sempre</div>
+                </div>
+            </div>
+            
+            <div class="landing-buttons">
+                <a href="login.html" class="btn-hero btn-hero-primary">
+                    🚀 Acessar Sistema
+                </a>
+                <a href="login.html" class="btn-hero btn-hero-secondary">
+                    📝 Criar Conta Grátis
+                </a>
+            </div>
+            
+            <p style="margin-top: 3rem; opacity: 0.8;">
+                ✨ Sistema 100% offline | 🔒 Dados privados no seu computador | 🦷 Específico para dentistas
+            </p>
+        </div>
+    </div>
+</body>
+</html>

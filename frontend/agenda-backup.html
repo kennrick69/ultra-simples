@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda - Dental Ultra</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .agenda-container { display: grid; grid-template-columns: 340px 1fr; gap: 24px; margin-top: 20px; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .card-header h3 { margin: 0; font-size: 18px; font-weight: 600; color: #1a1a2e; }
+        .nav-btns { display: flex; gap: 6px; }
+        .nav-btns button { width: 32px; height: 32px; border: 1px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .nav-btns button:hover { background: #2d7a5f; color: #fff; border-color: #2d7a5f; }
+        .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; font-size: 12px; color: #666; margin-bottom: 8px; }
+        .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; border: 2px solid transparent; position: relative; transition: all 0.15s; }
+        .cal-day:hover:not(.other) { background: #e8f5e9; border-color: #4caf50; }
+        .cal-day.other { color: #ccc; cursor: default; }
+        .cal-day.today { background: #e3f2fd; color: #1976d2; font-weight: 700; }
+        .cal-day.selected { background: #2d7a5f; color: #fff; font-weight: 700; }
+        .cal-day.has-app::after { content: ''; position: absolute; bottom: 4px; width: 6px; height: 6px; background: #ff9800; border-radius: 50%; }
+        .cal-day.selected.has-app::after { background: #fff; }
+        .btn-today { width: 100%; padding: 12px; margin-top: 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-today:hover { background: #2d7a5f; color: #fff; border-color: #2d7a5f; }
+        .hours-card { max-height: calc(100vh - 180px); display: flex; flex-direction: column; }
+        .hours-list { flex: 1; overflow-y: auto; padding-right: 8px; }
+        .date-badge { background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .slot { display: flex; align-items: center; padding: 14px; margin-bottom: 8px; border: 2px solid #eee; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+        .slot:hover:not(.blocked) { border-color: #4caf50; background: #f1f8e9; transform: translateX(4px); }
+        .slot.busy { background: linear-gradient(135deg, #fffbeb, #fff3e0); border-color: #ffb300; }
+        .slot.blocked { background: #ffebee; border-color: #ef5350; opacity: 0.6; cursor: not-allowed; }
+        .slot.fit { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px dashed #2196f3; }
+        .slot-time { font-weight: 700; min-width: 60px; font-size: 15px; color: #333; }
+        .slot-info { flex: 1; margin-left: 14px; }
+        .slot-name { font-weight: 600; color: #333; font-size: 15px; }
+        .slot-proc { font-size: 13px; color: #666; margin-top: 2px; }
+        .slot-empty { color: #999; font-size: 14px; }
+        .slot-dur { background: #f0f0f0; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #666; }
+        .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-bg.open { display: flex; }
+        .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow: visible; position: relative; }
+        .modal-box-inner { max-height: calc(90vh - 80px); overflow-y: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; border-radius: 16px 16px 0 0; }
+        .modal-header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #fff; }
+        .modal-close {
+            position: absolute;
+            top: -14px;
+            right: -14px;
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border: 3px solid #2d7a5f;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            color: #2d7a5f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            z-index: 1010;
+        }
+        .modal-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; transform: scale(1.1); }
+        
+        /* Botões de ação do header */
+        .header-actions { display: flex; gap: 12px; }
+        .btn-find-slot {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-find-slot:hover { box-shadow: 0 4px 12px rgba(33,150,243,0.4); transform: translateY(-2px); }
+        .btn-fit-queue {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-fit-queue:hover { box-shadow: 0 4px 12px rgba(255,152,0,0.4); transform: translateY(-2px); }
+        .badge-count {
+            background: #fff;
+            color: #f57c00;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        
+        /* ÁREA DE NOTIFICAÇÕES */
+        .notifications-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 800px) { .notifications-area { grid-template-columns: 1fr; } }
+        .notification-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #2196f3;
+        }
+        .notification-box.retornos { border-left-color: #ff9800; }
+        .notification-box.confirmacoes { border-left-color: #4caf50; }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .notification-count {
+            background: #e0e0e0;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .notification-box.retornos .notification-count { background: #fff3e0; color: #e65100; }
+        .notification-box.confirmacoes .notification-count { background: #e8f5e9; color: #2e7d32; }
+        .notification-list { max-height: 150px; overflow-y: auto; }
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .notification-item:hover { background: #f0f0f0; }
+        .notification-item-info { flex: 1; }
+        .notification-item-name { font-weight: 600; color: #333; }
+        .notification-item-detail { font-size: 11px; color: #666; }
+        .notification-item-actions { display: flex; gap: 4px; }
+        .notification-item-actions button {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .btn-notif-ok { background: #4caf50; color: #fff; }
+        .btn-notif-remove { background: #f44336; color: #fff; }
+        .btn-notif-agendar { background: #2196f3; color: #fff; }
+        .notification-empty { text-align: center; color: #999; font-size: 12px; padding: 10px; }
+        
+        /* Modal Encontrar Horário */
+        .find-slot-results { max-height: 300px; overflow-y: auto; margin-top: 16px; }
+        .find-slot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .find-slot-item:hover { border-color: #4caf50; background: #f1f8e9; }
+        .find-slot-date { font-weight: 600; color: #333; }
+        .find-slot-time { color: #2d7a5f; font-weight: 700; font-size: 18px; }
+        .find-slot-weekday { font-size: 12px; color: #666; }
+        
+        /* Fila de Encaixe */
+        .queue-list { max-height: 400px; overflow-y: auto; }
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+        .queue-item.urgente { border-color: #f44336; background: #ffebee; }
+        .queue-item-info { flex: 1; }
+        .queue-item-name { font-weight: 600; font-size: 16px; color: #333; }
+        .queue-item-proc { font-size: 13px; color: #666; margin-top: 4px; }
+        .queue-item-time { font-size: 12px; color: #999; margin-top: 4px; }
+        .queue-item-actions { display: flex; gap: 8px; }
+        .queue-item-actions button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-queue-schedule { background: #4caf50; color: #fff; }
+        .btn-queue-remove { background: #f44336; color: #fff; }
+        .queue-badge-urgente { background: #f44336; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+        .queue-empty { text-align: center; padding: 40px; color: #999; }
+        
+        .modal-time { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); margin: 20px 24px; padding: 20px; border-radius: 12px; text-align: center; }
+        .modal-time .date { font-size: 14px; color: #2e7d32; }
+        .modal-time .time { font-size: 32px; font-weight: 700; color: #1b5e20; }
+        .modal-body { padding: 0 24px 24px; }
+        .field { margin-bottom: 18px; }
+        .field label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333; }
+        .field select, .field input, .field textarea { width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
+        .field select:focus, .field input:focus, .field textarea:focus { outline: none; border-color: #2d7a5f; }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .patient-row { display: flex; gap: 12px; align-items: flex-end; }
+        .patient-row .field { flex: 1; margin-bottom: 0; }
+        .btn-new-patient { padding: 12px 16px; background: #e3f2fd; color: #1976d2; border: 2px solid #1976d2; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; white-space: nowrap; }
+        .btn-new-patient:hover { background: #1976d2; color: #fff; }
+        .fit-box { display: none; background: #fff3e0; border: 2px solid #ff9800; padding: 14px; border-radius: 10px; margin-bottom: 18px; align-items: center; gap: 12px; }
+        .fit-box.show { display: flex; }
+        .fit-box input[type="checkbox"] { width: 20px; height: 20px; }
+        .fit-box label { font-size: 14px; color: #e65100; font-weight: 500; cursor: pointer; }
+        .modal-footer { display: flex; gap: 12px; padding: 0 24px 24px; }
+        .modal-footer button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: #f5f5f5; color: #666; }
+        .btn-delete { background: #ffebee; color: #d32f2f; display: none; }
+        .btn-save { background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; }
+        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+        .error-msg { background: #ffebee; color: #c62828; padding: 12px; border-radius: 8px; margin: 0 24px 16px; font-size: 14px; display: none; }
+        
+        /* Busca de paciente com autocomplete */
+        .patient-search-box { position: relative; }
+        .patient-search-row { display: flex; gap: 12px; align-items: flex-start; }
+        .patient-search-input-wrap { flex: 1; position: relative; }
+        .patient-search-input-wrap input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        .patient-search-input-wrap input:focus { outline: none; border-color: #2d7a5f; }
+        .patient-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 2px solid #2d7a5f;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .patient-search-results.show { display: block; }
+        .patient-search-item {
+            padding: 12px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.15s;
+        }
+        .patient-search-item:hover { background: #e8f5e9; }
+        .patient-search-item:last-child { border-bottom: none; }
+        .patient-search-item-name { font-weight: 600; color: #1f2937; }
+        .patient-search-item-detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .patient-search-empty { padding: 14px; text-align: center; color: #999; font-size: 14px; }
+        
+        .patient-selected {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: linear-gradient(135deg, #dcfce7, #d1fae5);
+            border: 2px solid #22c55e;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .patient-selected-info strong { display: block; color: #166534; font-size: 15px; }
+        .patient-selected-info span { font-size: 12px; color: #4b5563; }
+        .btn-change-patient {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .btn-change-patient:hover { background: #fecaca; }
+        
+        /* Botões de intervalo */
+        .interval-btns { display: flex; gap: 8px; }
+        .interval-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            background: #fff;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        .interval-btn:hover { border-color: #2d7a5f; color: #2d7a5f; }
+        .interval-btn.active {
+            background: linear-gradient(135deg, #2d7a5f, #3d9970);
+            color: #fff;
+            border-color: #2d7a5f;
+        }
+        .dur-hint { display: block; margin-top: 6px; font-size: 12px; color: #999; }
+        
+        @media (max-width: 900px) { .agenda-container { grid-template-columns: 1fr; } }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🦷</div>
+            <h2>Dental Ultra</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+            <a href="pacientes.html" class="nav-item"><span class="icon">👥</span><span>Pacientes</span></a>
+            <a href="agenda.html" class="nav-item active"><span class="icon">📅</span><span>Agenda</span></a>
+            <a href="prontuario.html" class="nav-item"><span class="icon">📋</span><span>Prontuário</span></a>
+            <a href="estoque.html" class="nav-item"><span class="icon">📦</span><span>Estoque</span></a>
+            <a href="nota-fiscal.html" class="nav-item"><span class="icon">📄</span><span>Notas Fiscais</span></a>
+            <a href="financeiro.html" class="nav-item"><span class="icon">💰</span><span>Financeiro</span></a>
+            <a href="relatorios.html" class="nav-item"><span class="icon">📈</span><span>Relatórios</span></a>
+            <a href="configuracoes.html" class="nav-item"><span class="icon">⚙️</span><span>Configurações</span></a>
+        </nav>
+        <div class="user-info">
+            <div class="user-avatar">👨‍⚕️</div>
+            <div class="user-details">
+                <span class="user-name" id="userName">Carregando...</span>
+                <span class="user-role" id="userCRO">CRO: -----</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>📅 Agenda</h1>
+                <p>Clique em um dia no calendário, depois em um horário para agendar</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-find-slot" onclick="abrirModalEncontrarHorario()">
+                    🔍 Encontrar Horário
+                </button>
+                <button class="btn-fit-queue" onclick="abrirFilaEncaixe()">
+                    ⚡ Fila de Encaixe <span class="badge-count" id="encaixeCount">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ÁREA DE NOTIFICAÇÕES -->
+        <div class="notifications-area" id="notificationsArea" style="display:none;">
+            <div class="notification-box retornos" id="boxRetornos">
+                <div class="notification-header">
+                    <span>📅 Retornos Pendentes</span>
+                    <span class="notification-count" id="countRetornos">0</span>
+                </div>
+                <div class="notification-list" id="listRetornos"></div>
+            </div>
+            <div class="notification-box confirmacoes" id="boxConfirmacoes">
+                <div class="notification-header">
+                    <span>✅ Aguardando Confirmação (hoje)</span>
+                    <span class="notification-count" id="countConfirmacoes">0</span>
+                </div>
+                <div class="notification-list" id="listConfirmacoes"></div>
+            </div>
+        </div>
+
+        <div class="agenda-container">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="monthTitle">Janeiro 2026</h3>
+                    <div class="nav-btns">
+                        <button onclick="changeMonth(-1)">&#8249;</button>
+                        <button onclick="changeMonth(1)">&#8250;</button>
+                    </div>
+                </div>
+                <div class="cal-weekdays">
+                    <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div class="cal-days" id="calDays"></div>
+                <button class="btn-today" onclick="goToday()">📍 Ir para Hoje</button>
+            </div>
+
+            <div class="card hours-card">
+                <div class="card-header">
+                    <h3>Horários do Dia</h3>
+                    <span class="date-badge" id="dateBadge">26/01/2026</span>
+                </div>
+                <div class="hours-list" id="hoursList"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Agendamento -->
+    <div class="modal-bg" id="modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Agendamento</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="error-msg" id="modalError"></div>
+            <div class="modal-time">
+                <div class="date" id="modalDate">26 de Janeiro de 2026</div>
+                <div class="time" id="modalTime">08:00</div>
+            </div>
+            <div class="modal-body">
+                <form id="appForm" onsubmit="saveAppointment(event)">
+                    <input type="hidden" id="appId">
+                    <input type="hidden" id="appHour">
+                    <input type="hidden" id="fPatient">
+
+                    <div class="field">
+                        <label>Paciente *</label>
+                        <div class="patient-search-box">
+                            <div class="patient-search-row">
+                                <div class="patient-search-input-wrap">
+                                    <input type="text" id="buscaPacienteAgenda" placeholder="Digite nome, CPF ou telefone..." autocomplete="off">
+                                    <div class="patient-search-results" id="buscaResultadosAgenda"></div>
+                                </div>
+                                <button type="button" class="btn-new-patient" onclick="abrirCadastroPaciente()">+ Novo</button>
+                            </div>
+                            
+                            <!-- Paciente selecionado -->
+                            <div class="patient-selected" id="pacienteSelecionadoAgenda" style="display:none;">
+                                <div class="patient-selected-info">
+                                    <strong id="pacSelNomeAgenda">-</strong>
+                                    <span id="pacSelDetalhesAgenda">-</span>
+                                </div>
+                                <button type="button" class="btn-change-patient" onclick="trocarPacienteAgenda()">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field" style="margin-top: 18px;">
+                        <label>Procedimento *</label>
+                        <select id="fProc" required>
+                            <option value="">Selecione...</option>
+                            <option>Consulta Inicial</option>
+                            <option>Limpeza (Profilaxia)</option>
+                            <option>Restauração</option>
+                            <option>Extração</option>
+                            <option>Canal (Endodontia)</option>
+                            <option>Clareamento</option>
+                            <option>Prótese</option>
+                            <option>Implante</option>
+                            <option>Ortodontia</option>
+                            <option>Cirurgia</option>
+                            <option>Avaliação</option>
+                            <option>Retorno</option>
+                            <option>Urgência</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Intervalo Padrão</label>
+                        <div class="interval-btns">
+                            <button type="button" class="interval-btn" data-interval="15" onclick="setInterval(15)">15min</button>
+                            <button type="button" class="interval-btn active" data-interval="30" onclick="setInterval(30)">30min</button>
+                            <button type="button" class="interval-btn" data-interval="45" onclick="setInterval(45)">45min</button>
+                            <button type="button" class="interval-btn" data-interval="60" onclick="setInterval(60)">1h</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Duração da Consulta</label>
+                        <select id="fDur">
+                            <!-- Opções são geradas dinamicamente pelo intervalo selecionado -->
+                        </select>
+                        <small class="dur-hint">Se não selecionar, usará o intervalo padrão</small>
+                    </div>
+                    
+                    <input type="hidden" id="fStatus" value="agendado">
+
+                    <div class="field">
+                        <label>Rótulo</label>
+                        <select id="fRotulo">
+                            <option value="">Sem rótulo</option>
+                            <option value="primeira_consulta">🆕 Primeira consulta</option>
+                            <option value="retorno">🔄 Retorno</option>
+                            <option value="urgencia">🚨 Urgência</option>
+                            <option value="procedimento">🦷 Procedimento</option>
+                            <option value="avaliacao">📋 Avaliação</option>
+                        </select>
+                    </div>
+
+                    <div class="fit-box" id="fitBox">
+                        <input type="checkbox" id="fFit">
+                        <label for="fFit">Marcar como ENCAIXE (sobrepor horário)</label>
+                    </div>
+
+                    <div class="field">
+                        <label>Observações</label>
+                        <textarea id="fObs" rows="2" placeholder="Anotações..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button type="button" class="btn-delete" id="btnDelete" onclick="deleteAppointment()">Excluir</button>
+                <button type="button" class="btn-save" id="btnSave" onclick="document.getElementById('appForm').requestSubmit()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Encontrar Horário Livre -->
+    <div class="modal-bg" id="modalEncontrarHorario">
+        <div class="modal-box" style="max-width: 550px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #2196f3, #1976d2);">
+                <h2>🔍 Encontrar Horário Livre</h2>
+                <button class="modal-close" onclick="fecharModalEncontrarHorario()" style="border-color: #1976d2; color: #1976d2;">×</button>
+            </div>
+            <div class="modal-body" style="padding-top: 20px;">
+                <div class="field-row">
+                    <div class="field">
+                        <label>A partir de</label>
+                        <input type="date" id="findDataInicio">
+                    </div>
+                    <div class="field">
+                        <label>Duração necessária</label>
+                        <select id="findDuracao">
+                            <option value="30">30 minutos</option>
+                            <option value="60" selected>1 hora</option>
+                            <option value="90">1h 30min</option>
+                            <option value="120">2 horas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Período preferencial</label>
+                    <select id="findPeriodo">
+                        <option value="qualquer">Qualquer horário</option>
+                        <option value="manha">Manhã (08:00 - 12:00)</option>
+                        <option value="tarde">Tarde (13:00 - 18:00)</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-save" onclick="buscarHorariosLivres()" style="width: 100%; margin-top: 8px;">
+                    🔍 Buscar Horários
+                </button>
+                
+                <div class="find-slot-results" id="findSlotResults">
+                    <!-- Resultados aparecem aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Fila de Encaixe -->
+    <div class="modal-bg" id="modalFilaEncaixe">
+        <div class="modal-box" style="max-width: 600px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ff9800, #f57c00);">
+                <h2>⚡ Fila de Encaixe</h2>
+                <button class="modal-close" onclick="fecharFilaEncaixe()" style="border-color: #f57c00; color: #f57c00;">×</button>
+            </div>
+            <div class="modal-body" style="padding-top: 20px;">
+                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                    <button type="button" class="btn-save" onclick="abrirAdicionarEncaixe()" style="flex:1;">
+                        + Adicionar à Fila
+                    </button>
+                </div>
+                
+                <div class="queue-list" id="queueList">
+                    <div class="queue-empty">
+                        <p>Nenhum paciente na fila de encaixe</p>
+                        <p style="font-size: 13px;">Adicione pacientes que precisam de horário urgente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Selecionar Horário para Encaixe -->
+    <div class="modal-bg" id="modalSelecionarEncaixe">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ff9800, #f57c00);">
+                <h2>📅 Selecionar Horário para Encaixe</h2>
+                <button class="modal-close" onclick="fecharSelecionarEncaixe()" style="border-color: #f57c00; color: #f57c00;">×</button>
+            </div>
+            <div class="modal-body" style="padding-top: 20px;">
+                <p style="margin-bottom:16px;color:#666;">Paciente: <strong id="encaixePacienteNome">---</strong></p>
+                <p style="margin-bottom:16px;color:#666;font-size:13px;">Selecione um horário <strong>já ocupado</strong> para fazer o encaixe:</p>
+                <div class="field">
+                    <label>Data</label>
+                    <input type="date" id="encaixeData" onchange="carregarHorariosOcupados()">
+                </div>
+                <div id="horariosOcupadosList" style="max-height:300px;overflow-y:auto;">
+                    <p style="text-align:center;color:#999;padding:20px;">Selecione uma data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Adicionar à Fila de Encaixe -->
+    <div class="modal-bg" id="modalAdicionarEncaixe">
+        <div class="modal-box" style="max-width: 450px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ff9800, #f57c00);">
+                <h2>+ Adicionar à Fila</h2>
+                <button class="modal-close" onclick="fecharAdicionarEncaixe()" style="border-color: #f57c00; color: #f57c00;">×</button>
+            </div>
+            <div class="modal-body" style="padding-top: 20px;">
+                <div class="field">
+                    <label>Paciente *</label>
+                    <select id="encaixePaciente" style="width:100%;">
+                        <option value="">Selecione o paciente...</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Procedimento *</label>
+                    <input type="text" id="encaixeProcedimento" placeholder="Ex: Dor de dente, Emergência...">
+                </div>
+                <div class="field">
+                    <label>Duração estimada</label>
+                    <select id="encaixeDuracao">
+                        <option value="30">30 minutos</option>
+                        <option value="60" selected>1 hora</option>
+                        <option value="90">1h 30min</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="encaixeUrgente" style="width: 18px; height: 18px;">
+                        <span style="color: #f44336; font-weight: 600;">⚠️ URGENTE</span>
+                    </label>
+                </div>
+                <div class="field">
+                    <label>Observações</label>
+                    <textarea id="encaixeObs" rows="2" placeholder="Detalhes da urgência..."></textarea>
+                </div>
+                <button type="button" class="btn-save" onclick="salvarEncaixe()" style="width: 100%; background: linear-gradient(135deg, #ff9800, #f57c00);">
+                    Adicionar à Fila
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth-check.js"></script>
+    <script src="js/modal-paciente.js"></script>
+    <script>
+    var currentMonth = new Date();
+    var selectedDate = new Date();
+    var MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    var pacientesCache = [];
+    var agendamentosCache = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadUserInfo();
+        loadAllData();
+    });
+
+    function loadUserInfo() {
+        var d = getCurrentDentista();
+        if (d) {
+            document.getElementById('userName').textContent = d.nome || 'Usuário';
+            document.getElementById('userCRO').textContent = 'CRO: ' + (d.cro || '-----');
+        }
+    }
+
+    async function loadAllData() {
+        var resPac = await apiCall('/api/pacientes');
+        if (resPac && resPac.success) {
+            pacientesCache = resPac.pacientes || [];
+            updatePatientsSelect();
+        }
+
+        var resAg = await apiCall('/api/agendamentos');
+        if (resAg && resAg.success) {
+            agendamentosCache = resAg.agendamentos || [];
+        }
+
+        renderCalendar();
+        renderHours();
+        
+        // Inicializar opções de duração com intervalo padrão
+        generateDurationOptions(intervaloAtual);
+        
+        // Carregar notificações (retornos e confirmações)
+        carregarNotificacoes();
+    }
+    
+    // ========================================================
+    // ÁREA DE NOTIFICAÇÕES (RETORNOS E CONFIRMAÇÕES)
+    // ========================================================
+    var retornosPendentes = JSON.parse(localStorage.getItem('retornosPendentes') || '[]');
+    
+    function carregarNotificacoes() {
+        carregarRetornos();
+        carregarConfirmacoes();
+        
+        // Mostrar área se tiver notificações
+        var temRetornos = retornosPendentes.length > 0;
+        var temConfirmacoes = getConfirmacoesPendentes().length > 0;
+        
+        if (temRetornos || temConfirmacoes) {
+            document.getElementById('notificationsArea').style.display = 'grid';
+        } else {
+            document.getElementById('notificationsArea').style.display = 'none';
+        }
+    }
+    
+    function carregarRetornos() {
+        var container = document.getElementById('listRetornos');
+        document.getElementById('countRetornos').textContent = retornosPendentes.length;
+        
+        if (retornosPendentes.length === 0) {
+            container.innerHTML = '<div class="notification-empty">Nenhum retorno pendente</div>';
+            return;
+        }
+        
+        var html = '';
+        retornosPendentes.forEach(function(r, i) {
+            html += '<div class="notification-item">';
+            html += '<div class="notification-item-info">';
+            html += '<div class="notification-item-name">' + r.pacienteNome + '</div>';
+            html += '<div class="notification-item-detail">Retorno: ' + formatDateBR(r.dataRetorno) + ' - ' + r.procedimento + '</div>';
+            html += '</div>';
+            html += '<div class="notification-item-actions">';
+            html += '<button class="btn-notif-agendar" onclick="agendarRetorno(' + i + ')">Agendar</button>';
+            html += '<button class="btn-notif-remove" onclick="removerRetorno(' + i + ')">×</button>';
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+    }
+    
+    function getConfirmacoesPendentes() {
+        var hoje = formatDateISO(new Date());
+        return agendamentosCache.filter(function(ag) {
+            return ag.data === hoje && !ag.confirmado && !ag.cancelado;
+        });
+    }
+    
+    function carregarConfirmacoes() {
+        var container = document.getElementById('listConfirmacoes');
+        var pendentes = getConfirmacoesPendentes();
+        document.getElementById('countConfirmacoes').textContent = pendentes.length;
+        
+        if (pendentes.length === 0) {
+            container.innerHTML = '<div class="notification-empty">Todas as consultas de hoje confirmadas!</div>';
+            return;
+        }
+        
+        var html = '';
+        pendentes.forEach(function(ag) {
+            var horario = formatHour(ag.horario || ag.horaInicio);
+            html += '<div class="notification-item">';
+            html += '<div class="notification-item-info">';
+            html += '<div class="notification-item-name">' + (ag.pacienteNome || 'Paciente') + '</div>';
+            html += '<div class="notification-item-detail">' + horario + ' - ' + (ag.procedimento || 'Consulta') + '</div>';
+            html += '</div>';
+            html += '<div class="notification-item-actions">';
+            html += '<button class="btn-notif-ok" onclick="confirmarConsulta(\'' + ag.id + '\')">✓</button>';
+            html += '<button class="btn-notif-remove" onclick="cancelarConsulta(\'' + ag.id + '\')">×</button>';
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+    }
+    
+    function adicionarRetorno(pacienteId, pacienteNome, dataRetorno, procedimento) {
+        retornosPendentes.push({
+            pacienteId: pacienteId,
+            pacienteNome: pacienteNome,
+            dataRetorno: dataRetorno,
+            procedimento: procedimento || 'Retorno',
+            criadoEm: new Date().toISOString()
+        });
+        localStorage.setItem('retornosPendentes', JSON.stringify(retornosPendentes));
+        carregarNotificacoes();
+    }
+    
+    function agendarRetorno(index) {
+        var r = retornosPendentes[index];
+        var paciente = pacientesCache.find(function(p) { return p.id == r.pacienteId; });
+        
+        // Ir para a data do retorno
+        var dataRetorno = new Date(r.dataRetorno + 'T00:00:00');
+        currentMonth = new Date(dataRetorno);
+        selectedDate = new Date(dataRetorno);
+        renderCalendar();
+        renderHours();
+        
+        // Abrir modal de agendamento
+        setTimeout(function() {
+            openModal(r.dataRetorno, '08:00');
+            if (paciente) {
+                setTimeout(function() {
+                    selecionarPacienteAgenda(paciente);
+                    document.getElementById('fProc').value = r.procedimento || 'Retorno';
+                }, 200);
+            }
+        }, 100);
+        
+        // Remover da lista de retornos
+        removerRetorno(index);
+    }
+    
+    function removerRetorno(index) {
+        retornosPendentes.splice(index, 1);
+        localStorage.setItem('retornosPendentes', JSON.stringify(retornosPendentes));
+        carregarNotificacoes();
+    }
+    
+    async function confirmarConsulta(agId) {
+        var res = await apiCall('/api/agendamentos/' + agId, 'PUT', { confirmado: true });
+        if (res && res.success) {
+            // Atualizar cache local
+            var ag = agendamentosCache.find(function(a) { return a.id == agId; });
+            if (ag) ag.confirmado = true;
+            carregarConfirmacoes();
+            if (typeof mostrarSucesso === 'function') mostrarSucesso('Consulta confirmada!');
+        }
+    }
+    
+    async function cancelarConsulta(agId) {
+        if (!confirm('Cancelar esta consulta?')) return;
+        var res = await apiCall('/api/agendamentos/' + agId, 'DELETE');
+        if (res && res.success) {
+            agendamentosCache = agendamentosCache.filter(function(a) { return a.id != agId; });
+            carregarConfirmacoes();
+            renderHours();
+            if (typeof mostrarSucesso === 'function') mostrarSucesso('Consulta cancelada');
+        }
+    }
+
+    function updatePatientsSelect() {
+        // Função mantida para compatibilidade, mas não usamos mais select
+        // A busca é feita diretamente no cache
+    }
+    
+    // ========== BUSCA DE PACIENTE COM AUTOCOMPLETE ==========
+    var pacienteSelecionadoAgenda = null;
+    
+    function setupBuscaPacienteAgenda() {
+        var input = document.getElementById('buscaPacienteAgenda');
+        var resultsDiv = document.getElementById('buscaResultadosAgenda');
+        
+        if (!input) return;
+        
+        // Buscar ao digitar
+        input.addEventListener('input', function() {
+            var termo = this.value.trim();
+            if (termo.length < 2) {
+                resultsDiv.classList.remove('show');
+                return;
+            }
+            buscarPacientesAgenda(termo);
+        });
+        
+        // Mostrar resultados ao focar
+        input.addEventListener('focus', function() {
+            if (this.value.trim().length >= 2) {
+                resultsDiv.classList.add('show');
+            }
+        });
+        
+        // Fechar ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.patient-search-input-wrap')) {
+                resultsDiv.classList.remove('show');
+            }
+        });
+    }
+    
+    function buscarPacientesAgenda(termo) {
+        var resultsDiv = document.getElementById('buscaResultadosAgenda');
+        termo = termo.toLowerCase();
+        
+        var encontrados = pacientesCache.filter(function(p) {
+            var nomeMatch = p.nome && p.nome.toLowerCase().includes(termo);
+            var cpfMatch = p.cpf && p.cpf.replace(/\D/g, '').includes(termo.replace(/\D/g, ''));
+            var telMatch = p.telefone && p.telefone.replace(/\D/g, '').includes(termo.replace(/\D/g, ''));
+            var celMatch = p.celular && p.celular.replace(/\D/g, '').includes(termo.replace(/\D/g, ''));
+            return nomeMatch || cpfMatch || telMatch || celMatch;
+        }).slice(0, 8); // Máximo 8 resultados
+        
+        if (encontrados.length === 0) {
+            resultsDiv.innerHTML = '<div class="patient-search-empty">Nenhum paciente encontrado</div>';
+        } else {
+            resultsDiv.innerHTML = encontrados.map(function(p) {
+                var tel = p.celular || p.telefone || '';
+                return '<div class="patient-search-item" onclick="selecionarPacienteAgenda(\'' + p.id + '\')">' +
+                    '<div class="patient-search-item-name">' + p.nome + '</div>' +
+                    '<div class="patient-search-item-detail">CPF: ' + (p.cpf || '-') + ' | Tel: ' + (tel || '-') + '</div>' +
+                '</div>';
+            }).join('');
+        }
+        
+        resultsDiv.classList.add('show');
+    }
+    
+    function selecionarPacienteAgenda(id) {
+        var paciente = pacientesCache.find(function(p) { return p.id === id; });
+        if (!paciente) return;
+        
+        pacienteSelecionadoAgenda = paciente;
+        
+        // Atualizar hidden input
+        document.getElementById('fPatient').value = paciente.id;
+        
+        // Mostrar card do paciente selecionado
+        document.getElementById('pacSelNomeAgenda').textContent = paciente.nome;
+        var tel = paciente.celular || paciente.telefone || '-';
+        document.getElementById('pacSelDetalhesAgenda').textContent = 'CPF: ' + (paciente.cpf || '-') + ' | Tel: ' + tel;
+        
+        // Esconder busca, mostrar selecionado
+        document.getElementById('buscaPacienteAgenda').parentElement.parentElement.style.display = 'none';
+        document.getElementById('pacienteSelecionadoAgenda').style.display = 'flex';
+        
+        // Fechar dropdown
+        document.getElementById('buscaResultadosAgenda').classList.remove('show');
+    }
+    
+    function trocarPacienteAgenda() {
+        pacienteSelecionadoAgenda = null;
+        document.getElementById('fPatient').value = '';
+        
+        // Mostrar busca, esconder selecionado
+        document.getElementById('buscaPacienteAgenda').value = '';
+        document.getElementById('buscaPacienteAgenda').parentElement.parentElement.style.display = 'flex';
+        document.getElementById('pacienteSelecionadoAgenda').style.display = 'none';
+        
+        // Focar no input
+        document.getElementById('buscaPacienteAgenda').focus();
+    }
+    
+    // Inicializar busca quando DOM carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        setupBuscaPacienteAgenda();
+    });
+
+    function getPatientName(id) {
+        for (var i = 0; i < pacientesCache.length; i++) {
+            if (pacientesCache[i].id == id) return pacientesCache[i].nome;
+        }
+        return 'Paciente';
+    }
+
+    // Abrir modal de cadastro de paciente (usa o componente reutilizável)
+    function abrirCadastroPaciente() {
+        ModalPaciente.abrir(function(novoPaciente) {
+            // Callback quando paciente for criado
+            pacientesCache.push(novoPaciente);
+            // Selecionar automaticamente o novo paciente
+            selecionarPacienteAgenda(novoPaciente.id);
+        });
+    }
+
+    // Intervalo padrão selecionado
+    var intervaloAtual = 30;
+    
+    // Selecionar intervalo padrão
+    function setInterval(mins) {
+        intervaloAtual = mins;
+        
+        // Atualizar botões
+        document.querySelectorAll('.interval-btn').forEach(function(btn) {
+            btn.classList.remove('active');
+            if (parseInt(btn.dataset.interval) === mins) {
+                btn.classList.add('active');
+            }
+        });
+        
+        // Gerar opções de duração baseadas no intervalo
+        generateDurationOptions(mins);
+    }
+    
+    // Gerar opções de duração baseadas no intervalo
+    function generateDurationOptions(intervalo) {
+        var select = document.getElementById('fDur');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Usar intervalo padrão (' + intervalo + 'min)</option>';
+        
+        // Gerar opções de intervalo até 4 horas (240 min)
+        for (var min = intervalo; min <= 240; min += intervalo) {
+            var opt = document.createElement('option');
+            opt.value = min;
+            
+            if (min < 60) {
+                opt.textContent = min + ' minutos';
+            } else {
+                var h = Math.floor(min / 60);
+                var m = min % 60;
+                opt.textContent = m > 0 ? h + 'h ' + m + 'min' : h + ' hora' + (h > 1 ? 's' : '');
+            }
+            
+            select.appendChild(opt);
+        }
+    }
+
+    function renderCalendar() {
+        var container = document.getElementById('calDays');
+        var title = document.getElementById('monthTitle');
+        var year = currentMonth.getFullYear();
+        var month = currentMonth.getMonth();
+
+        title.textContent = MONTHS[month] + ' ' + year;
+
+        var firstDay = new Date(year, month, 1);
+        var lastDay = new Date(year, month + 1, 0);
+        var daysInMonth = lastDay.getDate();
+        var startWeekday = firstDay.getDay();
+        var prevMonthDays = new Date(year, month, 0).getDate();
+
+        var datesWithApps = {};
+        agendamentosCache.forEach(function(a) {
+            var d = typeof a.data === 'string' ? a.data.split('T')[0] : '';
+            if (d) datesWithApps[d] = true;
+        });
+
+        var today = new Date();
+        var todayStr = formatDateISO(today);
+        var selStr = formatDateISO(selectedDate);
+
+        var html = '';
+        for (var i = startWeekday - 1; i >= 0; i--) {
+            html += '<div class="cal-day other">' + (prevMonthDays - i) + '</div>';
+        }
+
+        for (var d = 1; d <= daysInMonth; d++) {
+            var dateStr = year + '-' + pad(month + 1) + '-' + pad(d);
+            var cls = 'cal-day';
+            if (dateStr === todayStr) cls += ' today';
+            if (dateStr === selStr) cls += ' selected';
+            if (datesWithApps[dateStr]) cls += ' has-app';
+            html += '<div class="' + cls + '" onclick="selectDay(' + year + ',' + month + ',' + d + ')">' + d + '</div>';
+        }
+
+        var total = startWeekday + daysInMonth;
+        var remaining = total <= 35 ? 35 - total : 42 - total;
+        for (var d = 1; d <= remaining; d++) {
+            html += '<div class="cal-day other">' + d + '</div>';
+        }
+
+        container.innerHTML = html;
+    }
+
+    function selectDay(y, m, d) {
+        selectedDate = new Date(y, m, d);
+        renderCalendar();
+        renderHours();
+    }
+
+    function changeMonth(delta) {
+        currentMonth.setMonth(currentMonth.getMonth() + delta);
+        renderCalendar();
+    }
+
+    function goToday() {
+        currentMonth = new Date();
+        selectedDate = new Date();
+        renderCalendar();
+        renderHours();
+    }
+
+    function generateHours() {
+        var list = [];
+        for (var h = 7; h < 20; h++) {
+            for (var m = 0; m < 60; m += 15) {
+                list.push(pad(h) + ':' + pad(m));
+            }
+        }
+        return list;
+    }
+
+    function renderHours() {
+        var container = document.getElementById('hoursList');
+        var badge = document.getElementById('dateBadge');
+        var dateStr = formatDateISO(selectedDate);
+        badge.textContent = formatDateBR(dateStr);
+
+        var hours = generateHours();
+        var dayApps = agendamentosCache.filter(function(a) {
+            var d = typeof a.data === 'string' ? a.data.split('T')[0] : '';
+            return d === dateStr;
+        });
+
+        var busy = {};
+        var blocked = {};
+
+        dayApps.forEach(function(a) {
+            var horario = formatHour(a.horario);
+            busy[horario] = a;
+
+            if (!a.encaixe) {
+                var dur = parseInt(a.duracao) || 60;
+                var slots = Math.ceil(dur / 15);
+                var idx = hours.indexOf(horario);
+                for (var s = 1; s < slots; s++) {
+                    if (hours[idx + s]) blocked[hours[idx + s]] = true;
+                }
+            }
+        });
+
+        var html = '';
+        hours.forEach(function(h) {
+            var app = busy[h];
+            var isBlocked = blocked[h];
+
+            if (app) {
+                var name = app.pacienteNome || getPatientName(app.pacienteId) || 'Paciente';
+                var isFit = app.encaixe;
+                html += '<div class="slot busy' + (isFit ? ' fit' : '') + '" onclick="editApp(\'' + app.id + '\')">';
+                html += '<span class="slot-time">' + h + '</span>';
+                html += '<div class="slot-info"><div class="slot-name">' + name + '</div><div class="slot-proc">' + (app.procedimento || 'Consulta') + '</div></div>';
+                html += '<span class="slot-dur">' + formatDur(app.duracao) + '</span>';
+                html += '</div>';
+            } else if (isBlocked) {
+                html += '<div class="slot blocked"><span class="slot-time">' + h + '</span><div class="slot-info"><span class="slot-empty">● Bloqueado</span></div></div>';
+            } else {
+                html += '<div class="slot" onclick="openModal(\'' + h + '\')"><span class="slot-time">' + h + '</span><div class="slot-info"><span class="slot-empty">Disponível - Clique para agendar</span></div></div>';
+            }
+        });
+
+        container.innerHTML = html || '<div style="padding:40px;text-align:center;color:#999;">Carregando...</div>';
+    }
+
+    function openModal(hour, app) {
+        var modal = document.getElementById('modal');
+        var title = document.getElementById('modalTitle');
+        var btnDelete = document.getElementById('btnDelete');
+        var fitBox = document.getElementById('fitBox');
+        var errDiv = document.getElementById('modalError');
+
+        errDiv.style.display = 'none';
+        document.getElementById('modalDate').textContent = formatDateExtenso(selectedDate);
+        document.getElementById('modalTime').textContent = hour;
+        document.getElementById('appHour').value = hour;
+
+        var hasConflict = checkConflict(hour, app ? app.id : null);
+        fitBox.className = hasConflict ? 'fit-box show' : 'fit-box';
+
+        // Reset busca de paciente
+        document.getElementById('buscaPacienteAgenda').value = '';
+        document.getElementById('buscaPacienteAgenda').parentElement.parentElement.style.display = 'flex';
+        document.getElementById('pacienteSelecionadoAgenda').style.display = 'none';
+        document.getElementById('buscaResultadosAgenda').classList.remove('show');
+        pacienteSelecionadoAgenda = null;
+
+        if (app) {
+            title.textContent = 'Editar Agendamento';
+            btnDelete.style.display = 'block';
+            document.getElementById('appId').value = app.id;
+            document.getElementById('fPatient').value = app.pacienteId || '';
+            document.getElementById('fProc').value = app.procedimento || '';
+            document.getElementById('fDur').value = app.duracao || '';
+            document.getElementById('fStatus').value = app.status || 'agendado';
+            document.getElementById('fFit').checked = app.encaixe || false;
+            document.getElementById('fObs').value = app.observacoes || '';
+            if (document.getElementById('fRotulo')) {
+                document.getElementById('fRotulo').value = app.rotulo || '';
+            }
+            
+            // Preencher paciente selecionado se existir
+            if (app.pacienteId) {
+                var paciente = pacientesCache.find(function(p) { return p.id === app.pacienteId; });
+                if (paciente) {
+                    selecionarPacienteAgenda(paciente.id);
+                } else if (app.pacienteNome) {
+                    // Paciente não está no cache, mostrar só o nome
+                    pacienteSelecionadoAgenda = { id: app.pacienteId, nome: app.pacienteNome };
+                    document.getElementById('pacSelNomeAgenda').textContent = app.pacienteNome;
+                    document.getElementById('pacSelDetalhesAgenda').textContent = '';
+                    document.getElementById('buscaPacienteAgenda').parentElement.parentElement.style.display = 'none';
+                    document.getElementById('pacienteSelecionadoAgenda').style.display = 'flex';
+                }
+            }
+        } else {
+            title.textContent = 'Novo Agendamento';
+            btnDelete.style.display = 'none';
+            document.getElementById('appForm').reset();
+            document.getElementById('appId').value = '';
+            document.getElementById('fDur').value = '';
+            document.getElementById('fPatient').value = '';
+            if (document.getElementById('fRotulo')) {
+                document.getElementById('fRotulo').value = '';
+            }
+        }
+
+        modal.classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('open');
+    }
+
+    function editApp(id) {
+        var app = agendamentosCache.find(function(a) { return a.id === id; });
+        if (!app) return;
+        
+        // Buscar dados do paciente
+        var paciente = pacientesCache.find(function(p) { return p.id === app.pacienteId; });
+        if (!paciente) {
+            paciente = {
+                id: app.pacienteId,
+                nome: app.pacienteNome || 'Paciente',
+                celular: '',
+                telefone: ''
+            };
+        }
+        
+        // Formatar dados do agendamento para o modal
+        var agendamento = {
+            id: app.id,
+            data: typeof app.data === 'string' ? app.data.split('T')[0] : formatDateISO(selectedDate),
+            horaInicio: formatHour(app.horario),
+            horaFim: calcularHoraFim(app.horario, app.duracao),
+            dentista: getCurrentDentista().nome || 'Dr(a).',
+            procedimento: app.procedimento || 'Consulta',
+            status: app.status || 'pendente',
+            observacao: app.observacoes || '',
+            rotulo: app.rotulo || ''
+        };
+        
+        // Abrir o modal de detalhes
+        if (typeof ModalAgendamento !== 'undefined') {
+            ModalAgendamento.abrir(agendamento, paciente);
+        } else {
+            // Fallback para o modal antigo
+            openModal(formatHour(app.horario), app);
+        }
+    }
+    
+    function calcularHoraFim(horaInicio, duracao) {
+        if (!horaInicio) return '';
+        var parts = horaInicio.split(':');
+        var h = parseInt(parts[0]) || 0;
+        var m = parseInt(parts[1]) || 0;
+        var dur = parseInt(duracao) || 60;
+        m += dur;
+        while (m >= 60) { h++; m -= 60; }
+        return pad(h) + ':' + pad(m);
+    }
+    
+    // Listener para eventos do ModalAgendamento
+    document.addEventListener('agendamentoAtualizado', function(e) {
+        var detail = e.detail;
+        if (detail && detail.agendamento) {
+            var idx = agendamentosCache.findIndex(function(a) { return a.id === detail.agendamento.id; });
+            if (idx !== -1) {
+                agendamentosCache[idx].status = detail.valor;
+                renderHours();
+            }
+        }
+    });
+    
+    document.addEventListener('editarAgendamento', function(e) {
+        var detail = e.detail;
+        if (detail && detail.agendamento) {
+            var app = agendamentosCache.find(function(a) { return a.id === detail.agendamento.id; });
+            if (app) openModal(formatHour(app.horario), app);
+        }
+    });
+    
+    document.addEventListener('excluirAgendamento', function(e) {
+        var detail = e.detail;
+        if (detail && detail.agendamento) {
+            deleteApp(detail.agendamento.id);
+        }
+    });
+
+    function checkConflict(hour, excludeId) {
+        var dateStr = formatDateISO(selectedDate);
+        var hours = generateHours();
+        var dayApps = agendamentosCache.filter(function(a) {
+            var d = typeof a.data === 'string' ? a.data.split('T')[0] : '';
+            return d === dateStr && a.id !== excludeId;
+        });
+
+        for (var i = 0; i < dayApps.length; i++) {
+            var a = dayApps[i];
+            var horario = formatHour(a.horario);
+            var dur = parseInt(a.duracao) || 60;
+            var slots = Math.ceil(dur / 15);
+            var idx = hours.indexOf(horario);
+            for (var s = 0; s < slots; s++) {
+                if (hours[idx + s] === hour) return true;
+            }
+        }
+        return false;
+    }
+
+    async function saveAppointment(e) {
+        e.preventDefault();
+        var btn = document.getElementById('btnSave');
+        var errDiv = document.getElementById('modalError');
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+        errDiv.style.display = 'none';
+
+        var id = document.getElementById('appId').value;
+        var hour = document.getElementById('appHour').value;
+        var pacienteId = document.getElementById('fPatient').value;
+        var proc = document.getElementById('fProc').value;
+        var dur = document.getElementById('fDur').value;
+        var status = document.getElementById('fStatus').value;
+        var fit = document.getElementById('fFit').checked;
+        var obs = document.getElementById('fObs').value;
+        var rotulo = document.getElementById('fRotulo') ? document.getElementById('fRotulo').value : '';
+        var dateStr = formatDateISO(selectedDate);
+        
+        // Se duração não foi selecionada, usar intervalo padrão
+        if (!dur || dur === '') {
+            dur = intervaloAtual;
+        }
+
+        if (!fit && checkConflict(hour, id || null)) {
+            errDiv.textContent = 'Horário ocupado. Marque como Encaixe para agendar.';
+            errDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Salvar';
+            return;
+        }
+
+        // Pegar nome do paciente selecionado
+        var pacienteNome = '';
+        if (pacienteSelecionadoAgenda) {
+            pacienteNome = pacienteSelecionadoAgenda.nome;
+        }
+        
+        // Validar se paciente foi selecionado
+        if (!pacienteId && !pacienteNome) {
+            errDiv.textContent = 'Selecione um paciente!';
+            errDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Salvar';
+            document.getElementById('buscaPacienteAgenda').focus();
+            return;
+        }
+
+        var payload = {
+            pacienteId: pacienteId || null,
+            pacienteNome: pacienteNome,
+            data: dateStr,
+            horario: hour,
+            duracao: parseInt(dur),
+            procedimento: proc,
+            status: status,
+            encaixe: fit,
+            observacoes: obs,
+            rotulo: rotulo
+        };
+
+        var res;
+        if (id) {
+            res = await apiCall('/api/agendamentos/' + id, 'PUT', payload);
+        } else {
+            res = await apiCall('/api/agendamentos', 'POST', payload);
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Salvar';
+
+        if (res && res.success) {
+            await loadAllData();
+            closeModal();
+        } else {
+            errDiv.textContent = res ? res.erro : 'Erro ao salvar';
+            errDiv.style.display = 'block';
+        }
+    }
+
+    async function deleteAppointment() {
+        var confirmado = await mostrarConfirmacao(
+            'Tem certeza que deseja excluir este agendamento?',
+            'Excluir Agendamento',
+            'Sim, Excluir',
+            'Cancelar'
+        );
+        
+        if (!confirmado) return;
+        
+        var id = document.getElementById('appId').value;
+        if (!id) return;
+
+        var res = await apiCall('/api/agendamentos/' + id, 'DELETE');
+        if (res && res.success) {
+            await loadAllData();
+            closeModal();
+            mostrarSucesso('Agendamento excluído com sucesso!');
+        } else {
+            mostrarErro('Erro ao excluir: ' + (res ? res.erro : 'Falha na operação'));
+        }
+    }
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function formatDateISO(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+    function formatDateBR(iso) { var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+    function formatDateExtenso(d) { return d.getDate() + ' de ' + MONTHS[d.getMonth()] + ' de ' + d.getFullYear(); }
+    function formatHour(h) { if (!h) return '00:00'; return typeof h === 'string' ? h.substring(0, 5) : h; }
+    function formatDur(m) { m = parseInt(m) || 60; if (m < 60) return m + 'min'; var h = Math.floor(m / 60); var r = m % 60; return r ? h + 'h' + r : h + 'h'; }
+
+    // ==========================================================================
+    // ENCONTRAR HORÁRIO LIVRE
+    // ==========================================================================
+    function abrirModalEncontrarHorario() {
+        document.getElementById('findDataInicio').value = formatDateISO(new Date());
+        document.getElementById('findSlotResults').innerHTML = '<p style="text-align:center;color:#666;padding:20px;">Configure os filtros e clique em buscar</p>';
+        document.getElementById('modalEncontrarHorario').classList.add('open');
+    }
+    
+    function fecharModalEncontrarHorario() {
+        document.getElementById('modalEncontrarHorario').classList.remove('open');
+    }
+    
+    function buscarHorariosLivres() {
+        var dataInicio = document.getElementById('findDataInicio').value;
+        var duracao = parseInt(document.getElementById('findDuracao').value);
+        var periodo = document.getElementById('findPeriodo').value;
+        
+        if (!dataInicio) {
+            mostrarAviso('Selecione uma data inicial');
+            return;
+        }
+        
+        var results = [];
+        var currentDate = new Date(dataInicio + 'T00:00:00');
+        var maxDays = 14; // Buscar nos próximos 14 dias
+        var diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+        
+        for (var d = 0; d < maxDays && results.length < 10; d++) {
+            var dateStr = formatDateISO(currentDate);
+            var dayOfWeek = currentDate.getDay();
+            
+            // Pular domingos (ou configurável)
+            if (dayOfWeek === 0) {
+                currentDate.setDate(currentDate.getDate() + 1);
+                continue;
+            }
+            
+            // Horários de trabalho
+            var horaInicio = 8, horaFim = 18;
+            if (periodo === 'manha') { horaFim = 12; }
+            else if (periodo === 'tarde') { horaInicio = 13; }
+            
+            // Verificar cada slot do dia
+            for (var h = horaInicio; h < horaFim; h++) {
+                for (var m = 0; m < 60; m += 30) {
+                    var horario = pad(h) + ':' + pad(m);
+                    var fimSlot = calcularHoraFim(horario, duracao);
+                    
+                    // Verificar se o slot está livre
+                    var ocupado = agendamentosCache.some(function(ag) {
+                        if (ag.data !== dateStr) return false;
+                        var agInicio = formatHour(ag.horario || ag.horaInicio);
+                        var agFim = calcularHoraFim(agInicio, ag.duracao || 60);
+                        return !(fimSlot <= agInicio || horario >= agFim);
+                    });
+                    
+                    if (!ocupado) {
+                        results.push({
+                            data: dateStr,
+                            horario: horario,
+                            diaSemana: diasSemana[dayOfWeek]
+                        });
+                        
+                        if (results.length >= 10) break;
+                    }
+                }
+                if (results.length >= 10) break;
+            }
+            
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        // Renderizar resultados
+        var container = document.getElementById('findSlotResults');
+        if (results.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#f44336;padding:20px;">Nenhum horário disponível encontrado</p>';
+            return;
+        }
+        
+        var html = '';
+        results.forEach(function(r) {
+            html += '<div class="find-slot-item" onclick="selecionarHorarioEncontrado(\'' + r.data + '\', \'' + r.horario + '\')">';
+            html += '<div><div class="find-slot-date">' + formatDateBR(r.data) + '</div><div class="find-slot-weekday">' + r.diaSemana + '</div></div>';
+            html += '<div class="find-slot-time">' + r.horario + '</div>';
+            html += '</div>';
+        });
+        container.innerHTML = html;
+    }
+    
+    function calcularHoraFim(horaInicio, duracao) {
+        var parts = horaInicio.split(':');
+        var h = parseInt(parts[0]);
+        var m = parseInt(parts[1]) + duracao;
+        h += Math.floor(m / 60);
+        m = m % 60;
+        return pad(h) + ':' + pad(m);
+    }
+    
+    function selecionarHorarioEncontrado(data, horario) {
+        fecharModalEncontrarHorario();
+        // Navegar para a data e abrir modal de agendamento
+        var d = new Date(data + 'T00:00:00');
+        currentMonth = new Date(d);
+        selectedDate = new Date(d);
+        renderCalendar();
+        renderHours();
+        // Abrir modal de agendamento
+        setTimeout(function() {
+            openModal(data, horario);
+        }, 200);
+    }
+    
+    // ==========================================================================
+    // FILA DE ENCAIXE
+    // ==========================================================================
+    var filaEncaixe = JSON.parse(localStorage.getItem('filaEncaixe') || '[]');
+    
+    function atualizarContadorEncaixe() {
+        var badge = document.getElementById('encaixeCount');
+        if (badge) badge.textContent = filaEncaixe.length;
+    }
+    
+    function abrirFilaEncaixe() {
+        renderFilaEncaixe();
+        document.getElementById('modalFilaEncaixe').classList.add('open');
+    }
+    
+    function fecharFilaEncaixe() {
+        document.getElementById('modalFilaEncaixe').classList.remove('open');
+    }
+    
+    function renderFilaEncaixe() {
+        var container = document.getElementById('queueList');
+        
+        if (filaEncaixe.length === 0) {
+            container.innerHTML = '<div class="queue-empty"><p>Nenhum paciente na fila de encaixe</p><p style="font-size:13px;">Adicione pacientes que precisam de horário urgente</p></div>';
+            return;
+        }
+        
+        // Ordenar: urgentes primeiro, depois por data de adição
+        filaEncaixe.sort(function(a, b) {
+            if (a.urgente && !b.urgente) return -1;
+            if (!a.urgente && b.urgente) return 1;
+            return new Date(a.adicionadoEm) - new Date(b.adicionadoEm);
+        });
+        
+        var html = '';
+        filaEncaixe.forEach(function(item, index) {
+            html += '<div class="queue-item' + (item.urgente ? ' urgente' : '') + '">';
+            html += '<div class="queue-item-info">';
+            html += '<div class="queue-item-name">' + item.pacienteNome;
+            if (item.urgente) html += '<span class="queue-badge-urgente">URGENTE</span>';
+            html += '</div>';
+            html += '<div class="queue-item-proc">' + item.procedimento + ' (' + formatDur(item.duracao) + ')</div>';
+            html += '<div class="queue-item-time">Adicionado: ' + formatarDataHora(item.adicionadoEm) + '</div>';
+            if (item.observacoes) html += '<div class="queue-item-proc" style="margin-top:4px;font-style:italic;">' + item.observacoes + '</div>';
+            html += '</div>';
+            html += '<div class="queue-item-actions">';
+            html += '<button class="btn-queue-schedule" onclick="agendarDaFila(' + index + ')">Agendar</button>';
+            html += '<button class="btn-queue-remove" onclick="removerDaFila(' + index + ')">Remover</button>';
+            html += '</div>';
+            html += '</div>';
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    function formatarDataHora(isoStr) {
+        var d = new Date(isoStr);
+        return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+    
+    function abrirAdicionarEncaixe() {
+        // Preencher select de pacientes
+        var select = document.getElementById('encaixePaciente');
+        var html = '<option value="">Selecione o paciente...</option>';
+        pacientesCache.forEach(function(p) {
+            html += '<option value="' + p.id + '" data-nome="' + p.nome + '">' + p.nome + (p.celular ? ' - ' + p.celular : '') + '</option>';
+        });
+        select.innerHTML = html;
+        
+        // Limpar campos
+        document.getElementById('encaixeProcedimento').value = '';
+        document.getElementById('encaixeDuracao').value = '60';
+        document.getElementById('encaixeUrgente').checked = false;
+        document.getElementById('encaixeObs').value = '';
+        
+        document.getElementById('modalAdicionarEncaixe').classList.add('open');
+    }
+    
+    function fecharAdicionarEncaixe() {
+        document.getElementById('modalAdicionarEncaixe').classList.remove('open');
+    }
+    
+    function salvarEncaixe() {
+        var select = document.getElementById('encaixePaciente');
+        var pacienteId = select.value;
+        var pacienteNome = select.options[select.selectedIndex].dataset.nome;
+        var procedimento = document.getElementById('encaixeProcedimento').value.trim();
+        var duracao = document.getElementById('encaixeDuracao').value;
+        var urgente = document.getElementById('encaixeUrgente').checked;
+        var obs = document.getElementById('encaixeObs').value.trim();
+        
+        if (!pacienteId) {
+            mostrarAviso('Selecione um paciente');
+            return;
+        }
+        if (!procedimento) {
+            mostrarAviso('Informe o procedimento');
+            return;
+        }
+        
+        filaEncaixe.push({
+            pacienteId: pacienteId,
+            pacienteNome: pacienteNome,
+            procedimento: procedimento,
+            duracao: parseInt(duracao),
+            urgente: urgente,
+            observacoes: obs,
+            adicionadoEm: new Date().toISOString()
+        });
+        
+        localStorage.setItem('filaEncaixe', JSON.stringify(filaEncaixe));
+        atualizarContadorEncaixe();
+        fecharAdicionarEncaixe();
+        renderFilaEncaixe();
+        mostrarSucesso('Paciente adicionado à fila de encaixe!');
+    }
+    
+    function removerDaFila(index) {
+        filaEncaixe.splice(index, 1);
+        localStorage.setItem('filaEncaixe', JSON.stringify(filaEncaixe));
+        atualizarContadorEncaixe();
+        renderFilaEncaixe();
+    }
+    
+    // ========================================================
+    // SELECIONAR HORÁRIO OCUPADO PARA ENCAIXE
+    // ========================================================
+    var encaixeAtualIndex = -1;
+    
+    function agendarDaFila(index) {
+        encaixeAtualIndex = index;
+        var item = filaEncaixe[index];
+        
+        // Mostrar nome do paciente
+        document.getElementById('encaixePacienteNome').textContent = item.pacienteNome + ' - ' + item.procedimento;
+        
+        // Definir data de hoje
+        document.getElementById('encaixeData').value = formatDateISO(new Date());
+        
+        // Carregar horários ocupados
+        carregarHorariosOcupados();
+        
+        // Abrir modal de seleção
+        document.getElementById('modalSelecionarEncaixe').classList.add('open');
+    }
+    
+    function fecharSelecionarEncaixe() {
+        document.getElementById('modalSelecionarEncaixe').classList.remove('open');
+        encaixeAtualIndex = -1;
+    }
+    
+    function carregarHorariosOcupados() {
+        var data = document.getElementById('encaixeData').value;
+        if (!data) {
+            document.getElementById('horariosOcupadosList').innerHTML = '<p style="text-align:center;color:#999;padding:20px;">Selecione uma data</p>';
+            return;
+        }
+        
+        // Filtrar agendamentos do dia selecionado
+        var agendamentosDia = agendamentosCache.filter(function(ag) {
+            return ag.data === data;
+        });
+        
+        if (agendamentosDia.length === 0) {
+            document.getElementById('horariosOcupadosList').innerHTML = '<p style="text-align:center;color:#f44336;padding:20px;">Nenhum horário ocupado neste dia.<br><small>Encaixe é para sobrepor horários já marcados.</small></p>';
+            return;
+        }
+        
+        // Ordenar por horário
+        agendamentosDia.sort(function(a, b) {
+            return (a.horario || a.horaInicio || '').localeCompare(b.horario || b.horaInicio || '');
+        });
+        
+        var html = '';
+        agendamentosDia.forEach(function(ag) {
+            var horario = formatHour(ag.horario || ag.horaInicio);
+            var pacNome = ag.pacienteNome || 'Paciente';
+            var proc = ag.procedimento || 'Consulta';
+            var dur = ag.duracao || 60;
+            
+            html += '<div class="slot busy" style="cursor:pointer;margin-bottom:8px;" onclick="selecionarHorarioEncaixe(\'' + data + '\', \'' + horario + '\')">';
+            html += '<span class="slot-time">' + horario + '</span>';
+            html += '<div class="slot-info">';
+            html += '<div class="slot-name">' + pacNome + '</div>';
+            html += '<div class="slot-proc">' + proc + '</div>';
+            html += '</div>';
+            html += '<span class="slot-dur">' + formatDur(dur) + '</span>';
+            html += '</div>';
+        });
+        
+        document.getElementById('horariosOcupadosList').innerHTML = html;
+    }
+    
+    function selecionarHorarioEncaixe(data, horario) {
+        if (encaixeAtualIndex < 0) return;
+        
+        var item = filaEncaixe[encaixeAtualIndex];
+        
+        fecharSelecionarEncaixe();
+        fecharFilaEncaixe();
+        
+        // Navegar para a data selecionada
+        var d = new Date(data + 'T00:00:00');
+        currentMonth = new Date(d);
+        selectedDate = new Date(d);
+        renderCalendar();
+        renderHours();
+        
+        // Abrir modal de agendamento
+        setTimeout(function() {
+            openModal(data, horario);
+            
+            // Preencher dados após delay
+            setTimeout(function() {
+                var paciente = pacientesCache.find(function(p) { return p.id == item.pacienteId; });
+                if (paciente) {
+                    selecionarPacienteAgenda(paciente);
+                }
+                document.getElementById('fProc').value = item.procedimento;
+                document.getElementById('fDur').value = item.duracao.toString();
+                document.getElementById('fFit').checked = true; // Marcar como ENCAIXE
+                document.getElementById('fObs').value = (item.observacoes || '') + ' [ENCAIXE]';
+                
+                // Remover da fila
+                filaEncaixe.splice(encaixeAtualIndex, 1);
+                localStorage.setItem('filaEncaixe', JSON.stringify(filaEncaixe));
+                atualizarContadorEncaixe();
+                encaixeAtualIndex = -1;
+            }, 300);
+        }, 200);
+    }
+    
+    // Inicializar contador ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        atualizarContadorEncaixe();
+    });
+
+    document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    document.getElementById('modalEncontrarHorario').addEventListener('click', function(e) { if (e.target === this) fecharModalEncontrarHorario(); });
+    document.getElementById('modalFilaEncaixe').addEventListener('click', function(e) { if (e.target === this) fecharFilaEncaixe(); });
+    document.getElementById('modalSelecionarEncaixe').addEventListener('click', function(e) { if (e.target === this) fecharSelecionarEncaixe(); });
+    document.getElementById('modalAdicionarEncaixe').addEventListener('click', function(e) { if (e.target === this) fecharAdicionarEncaixe(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+    </script>
+    <script src="js/whatsapp-integration.js"></script>
+    <script src="js/modal-agendamento.js"></script>
+    <script src="js/onboarding.js"></script>
+</body>
+</html>

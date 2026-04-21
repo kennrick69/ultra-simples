@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Preços - Dental Ultra</title>
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+        .sidebar { width: 220px; background: var(--du-surface, #fff); border-right: 1px solid var(--du-border, #e5e7eb); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
+        .sidebar .logo-link { display: block; width: 220px; height: 120px; overflow: hidden; border-bottom: 1px solid var(--du-border, #e5e7eb); }
+        .sidebar .logo-header { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+        .sidebar .logo-link:hover .logo-header { transform: scale(1.03); }
+        .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--du-text-2, #6b7280); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.2s; }
+        .sidebar nav a:hover { background: var(--du-surface-2, #f3f4f6); border-left-color: var(--du-primary, #1FA2FF); }
+        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: var(--du-primary, #1FA2FF); color: var(--du-primary, #1FA2FF); font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border, #e5e7eb); display: flex; align-items: center; gap: 12px; }
+        .sidebar .user-details { flex: 1; }
+        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text, #1f2937); display: block; }
+        .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
+        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .sidebar .btn-logout:hover { background: #fecaca; }
+        .main-content { margin-left: 220px; min-height: 100vh; }
+        .page-header { background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 50%, #1FA2FF 100%); padding: 14px 24px; color: white; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 20px rgba(31, 162, 255, 0.3); }
+        .page-header h1 { margin: 0; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+        .container { max-width: 900px; margin: 24px auto; padding: 0 24px; }
+
+        .info-card { background: linear-gradient(135deg, #eff6ff, #f0f9ff); border: 1px solid #bfdbfe; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .info-card .info-icon { font-size: 28px; }
+        .info-card .info-text h3 { font-size: 14px; color: #1e3a5f; margin-bottom: 2px; }
+        .info-card .info-text p { font-size: 12px; color: #64748b; }
+
+        .add-form { background: white; border-radius: 14px; border: 1px solid #e5e7eb; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .add-form h3 { font-size: 14px; margin-bottom: 12px; color: #374151; display: flex; align-items: center; gap: 6px; }
+        .add-form .form-row { display: flex; gap: 10px; align-items: flex-end; }
+        .add-form .form-group { flex: 1; }
+        .add-form .form-group label { display: block; font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .add-form .form-group input, .add-form .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 13px; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
+        .add-form .form-group input:focus, .add-form .form-group select:focus { outline: none; border-color: #1FA2FF; box-shadow: 0 0 0 3px rgba(31,162,255,0.1); }
+        .add-form .btn-add { padding: 10px 20px; background: #1FA2FF; color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .add-form .btn-add:hover { background: #0d8de6; transform: translateY(-1px); }
+
+        .precos-table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 14px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .precos-table thead th { background: #f8fafc; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+        .precos-table tbody tr { transition: background 0.15s; }
+        .precos-table tbody tr:hover { background: #f0f9ff; }
+        .precos-table tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #374151; }
+        .precos-table .proc-name { font-weight: 600; }
+        .precos-table .proc-valor { font-weight: 700; color: #1e5080; font-size: 14px; }
+        .precos-table .proc-actions { display: flex; gap: 6px; }
+        .precos-table .proc-actions button { padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid #e5e7eb; background: white; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .precos-table .proc-actions .btn-edit { color: #1FA2FF; }
+        .precos-table .proc-actions .btn-edit:hover { background: #eff6ff; border-color: #93c5fd; }
+        .precos-table .proc-actions .btn-del { color: #ef4444; }
+        .precos-table .proc-actions .btn-del:hover { background: #fef2f2; border-color: #fecaca; }
+        .precos-table .edit-input { padding: 6px 10px; border: 2px solid #1FA2FF; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; }
+        .precos-table .edit-input-valor { width: 100px; text-align: right; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+        .empty-state h4 { color: #6b7280; margin-bottom: 6px; font-size: 15px; }
+        .empty-state p { font-size: 13px; }
+
+        .sugestoes-dropdown { margin-top: 10px; position: relative; }
+        .btn-sugestoes-toggle { width: 100%; padding: 10px 16px; background: #f8fafc; border: 2px dashed #d1d5db; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; color: #6b7280; transition: all 0.2s; }
+        .btn-sugestoes-toggle:hover { border-color: #93c5fd; color: #1FA2FF; background: #eff6ff; }
+        .sug-arrow { transition: transform 0.3s; font-size: 12px; }
+        .sug-arrow.open { transform: rotate(180deg); }
+        .sugestoes-lista { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; border-radius: 0 0 10px 10px; }
+        .sugestoes-lista.open { max-height: 600px; overflow-y: auto; border: 1px solid #e5e7eb; border-top: none; }
+        .sug-categoria { padding: 8px 14px; background: #f1f5f9; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 1; }
+        .sug-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid #f1f5f9; }
+        .sug-item:hover { background: #eff6ff; }
+        .sug-item:last-child { border-bottom: none; }
+        .sug-item-nome { font-size: 13px; color: #374151; font-weight: 500; }
+        .sug-item-valor { font-size: 13px; color: #1FA2FF; font-weight: 700; white-space: nowrap; }
+        .sug-item-check { color: #22c55e; font-size: 14px; margin-right: 8px; }
+        .sug-item.cadastrado { opacity: 0.45; pointer-events: none; }
+        .sug-item.cadastrado .sug-item-nome { text-decoration: line-through; }
+
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; color: white; font-size: 13px; font-weight: 600; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: #1FA2FF; }
+
+        .stats-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+        .stat-card { flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; text-align: center; }
+        .stat-card .stat-num { font-size: 24px; font-weight: 800; color: #1e5080; }
+        .stat-card .stat-label { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    </style>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="dashboard.html" class="logo-link">
+            <img src="img/logo-header.png" alt="Dental Ultra" class="logo-header" onerror="this.style.display='none'">
+        </a>
+        <nav>
+            <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+            <a href="pacientes.html"><span class="nav-icon">👥</span> Pacientes</a>
+            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
+            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
+            <a href="casos-proteticos.html"><span class="nav-icon">🦷</span> Casos Protéticos</a>
+            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
+            <a href="nota-fiscal.html"><span class="nav-icon">📄</span> Notas Fiscais</a>
+            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
+            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
+            <a href="tabela-precos.html" class="active"><span class="nav-icon">💲</span> Tabela de Preços</a>
+            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        </nav>
+        <div class="user-info">
+            <div class="user-details">
+                <span class="user-name" id="user-name">Carregando...</span>
+                <span class="user-role" id="user-role"></span>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>💲 Tabela de Preços</h1>
+        </div>
+
+        <div class="container">
+            <div class="info-card">
+                <div class="info-icon">💡</div>
+                <div class="info-text">
+                    <h3>Sua tabela de preços personalizada</h3>
+                    <p>Cadastre os procedimentos e valores que você cobra. Esses valores serão usados automaticamente ao gerar orçamentos no prontuário.</p>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-total">0</div>
+                    <div class="stat-label">Procedimentos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-menor">-</div>
+                    <div class="stat-label">Menor valor</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-maior">-</div>
+                    <div class="stat-label">Maior valor</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num" id="stat-media">-</div>
+                    <div class="stat-label">Valor médio</div>
+                </div>
+            </div>
+
+            <div class="add-form">
+                <h3>➕ Adicionar Procedimento</h3>
+                <div class="form-row">
+                    <div class="form-group" style="flex:2;">
+                        <label>Procedimento</label>
+                        <input type="text" id="novo-proc" placeholder="Ex: Restauração Composta" autocomplete="off">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Valor (R$)</label>
+                        <input type="number" id="novo-valor" placeholder="0,00" step="0.01" min="0">
+                    </div>
+                    <button class="btn-add" onclick="adicionarPreco()">+ Adicionar</button>
+                </div>
+                <div class="sugestoes-dropdown" id="sugestoes-dropdown">
+                    <button class="btn-sugestoes-toggle" onclick="toggleSugestoesDropdown()">
+                        <span>📋 Sugestões de procedimentos com valores</span>
+                        <span class="sug-arrow" id="sug-arrow">▼</span>
+                    </button>
+                    <div class="sugestoes-lista" id="sugestoes-lista">
+                        <!-- renderizado por JS -->
+                    </div>
+                </div>
+            </div>
+
+            <table class="precos-table" id="precos-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th>Procedimento</th>
+                        <th style="width:140px;">Valor</th>
+                        <th style="width:140px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="precos-tbody">
+                    <tr><td colspan="4"><div class="empty-state"><div class="icon">💲</div><h4>Nenhum procedimento cadastrado</h4><p>Use o formulário acima ou as sugestões rápidas para começar</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const API_URL = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://dentist-backend-v2-production.up.railway.app';
+        let precos = [];
+        let editingId = null;
+
+        // Sugestões de procedimentos comuns
+        const sugestoesPadrao = [
+            { proc: 'Consulta / Avaliação', valor: 150 },
+            { proc: 'Restauração Simples', valor: 200 },
+            { proc: 'Restauração Composta', valor: 300 },
+            { proc: 'Tratamento de Canal (Anterior)', valor: 700 },
+            { proc: 'Tratamento de Canal (Pré-molar)', valor: 850 },
+            { proc: 'Tratamento de Canal (Molar)', valor: 1200 },
+            { proc: 'Extração Simples', valor: 250 },
+            { proc: 'Extração de Siso', valor: 600 },
+            { proc: 'Limpeza / Profilaxia', valor: 180 },
+            { proc: 'Clareamento', valor: 800 },
+            { proc: 'Coroa Provisória', valor: 150 },
+            { proc: 'Coroa Definitiva', valor: 1500 },
+            { proc: 'Faceta de Porcelana', valor: 1800 },
+            { proc: 'Faceta de Resina', valor: 600 },
+            { proc: 'Implante Unitário', valor: 3500 },
+            { proc: 'Prótese Total', valor: 2500 },
+            { proc: 'Prótese Parcial Removível', valor: 1500 },
+            { proc: 'Selante', valor: 100 },
+            { proc: 'Raspagem Periodontal', valor: 250 },
+            { proc: 'Gengivectomia', valor: 400 },
+            { proc: 'Cirurgia de Frenectomia', valor: 500 },
+            { proc: 'Radiografia Periapical', valor: 50 },
+            { proc: 'Radiografia Panorâmica', valor: 120 },
+            { proc: 'Moldagem', valor: 100 },
+            { proc: 'Aplicação de Flúor', valor: 80 },
+        ];
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            const opts = {
+                method,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(`${API_URL}${endpoint}`, opts);
+            if (res.status === 401) { localStorage.clear(); window.location.href = 'login.html'; return; }
+            return res.json();
+        }
+
+        function mostrarToast(msg, tipo = 'info') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `toast ${tipo} show`;
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        function formatReal(v) { return `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`; }
+
+        async function carregarPrecos() {
+            try {
+                const data = await apiCall('/api/tabela-precos');
+                if (data.success) {
+                    precos = data.precos || [];
+                    // Auto-popular com 25 procedimentos padrão se vazio
+                    if (precos.length === 0) {
+                        const pop = await apiCall('/api/tabela-precos/popular-padrao', 'POST');
+                        if (pop && pop.success && pop.total > 0) {
+                            mostrarToast('✅ 25 procedimentos padrão inseridos! Edite os valores conforme sua clínica.', 'success');
+                            const data2 = await apiCall('/api/tabela-precos');
+                            if (data2.success) precos = data2.precos || [];
+                        }
+                    }
+                    renderPrecos();
+                    renderSugestoes();
+                    atualizarStats();
+                }
+            } catch(e) {
+                mostrarToast('Erro ao carregar tabela', 'error');
+            }
+        }
+
+        function atualizarStats() {
+            document.getElementById('stat-total').textContent = precos.length;
+            if (precos.length === 0) {
+                document.getElementById('stat-menor').textContent = '-';
+                document.getElementById('stat-maior').textContent = '-';
+                document.getElementById('stat-media').textContent = '-';
+                return;
+            }
+            const valores = precos.map(p => p.valor);
+            const menor = Math.min(...valores);
+            const maior = Math.max(...valores);
+            const media = valores.reduce((s, v) => s + v, 0) / valores.length;
+            document.getElementById('stat-menor').textContent = formatReal(menor);
+            document.getElementById('stat-maior').textContent = formatReal(maior);
+            document.getElementById('stat-media').textContent = formatReal(media);
+        }
+
+        function renderPrecos() {
+            const tbody = document.getElementById('precos-tbody');
+            if (precos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="icon">💲</div><h4>Nenhum procedimento cadastrado</h4><p>Use o formulário acima ou as sugestões rápidas para começar</p></div></td></tr>';
+                return;
+            }
+            tbody.innerHTML = precos.map((p, i) => {
+                if (editingId === p.id) {
+                    return `<tr>
+                        <td style="color:#9ca3af;font-weight:600;">${i + 1}</td>
+                        <td><input type="text" class="edit-input" id="edit-proc" value="${p.procedimento}" style="width:100%;"></td>
+                        <td><input type="number" class="edit-input edit-input-valor" id="edit-valor" value="${p.valor}" step="0.01"></td>
+                        <td class="proc-actions">
+                            <button class="btn-edit" onclick="salvarEdicao(${p.id})">✅ Salvar</button>
+                            <button class="btn-del" onclick="cancelarEdicao()">✖</button>
+                        </td>
+                    </tr>`;
+                }
+                return `<tr>
+                    <td style="color:#9ca3af;font-weight:600;">${i + 1}</td>
+                    <td class="proc-name">${p.procedimento}</td>
+                    <td class="proc-valor">${formatReal(p.valor)}</td>
+                    <td class="proc-actions">
+                        <button class="btn-edit" onclick="iniciarEdicao(${p.id})">✏️ Editar</button>
+                        <button class="btn-del" onclick="removerPreco(${p.id}, '${p.procedimento.replace(/'/g, "\\'")}')">🗑️</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Sugestões agrupadas por categoria
+        const categoriasSugestao = {
+            'Consultas e Exames': ['Consulta / Avaliação', 'Radiografia Periapical', 'Radiografia Panorâmica', 'Moldagem'],
+            'Prevenção': ['Limpeza / Profilaxia', 'Aplicação de Flúor', 'Selante'],
+            'Restaurações': ['Restauração Simples', 'Restauração Composta'],
+            'Endodontia': ['Tratamento de Canal (Anterior)', 'Tratamento de Canal (Pré-molar)', 'Tratamento de Canal (Molar)'],
+            'Cirurgia': ['Extração Simples', 'Extração de Siso', 'Cirurgia de Frenectomia'],
+            'Periodontia': ['Raspagem Periodontal', 'Gengivectomia'],
+            'Prótese': ['Coroa Provisória', 'Coroa Definitiva', 'Prótese Total', 'Prótese Parcial Removível'],
+            'Estética': ['Clareamento', 'Faceta de Porcelana', 'Faceta de Resina'],
+            'Implante': ['Implante Unitário'],
+        };
+
+        function toggleSugestoesDropdown() {
+            const lista = document.getElementById('sugestoes-lista');
+            const arrow = document.getElementById('sug-arrow');
+            lista.classList.toggle('open');
+            arrow.classList.toggle('open');
+        }
+
+        function renderSugestoes() {
+            const container = document.getElementById('sugestoes-lista');
+            const cadastrados = precos.map(p => p.procedimento.toLowerCase());
+            const sugestoesMap = {};
+            sugestoesPadrao.forEach(s => { sugestoesMap[s.proc] = s.valor; });
+
+            let totalDisponiveis = 0;
+            let html = '';
+
+            for (const [categoria, procs] of Object.entries(categoriasSugestao)) {
+                const itens = procs.map(proc => {
+                    const valor = sugestoesMap[proc];
+                    if (valor === undefined) return '';
+                    const jaCadastrado = cadastrados.includes(proc.toLowerCase());
+                    if (!jaCadastrado) totalDisponiveis++;
+                    return `<div class="sug-item ${jaCadastrado ? 'cadastrado' : ''}" onclick="${jaCadastrado ? '' : `usarSugestao('${proc.replace(/'/g, "\\\\'")}', ${valor})`}">
+                        <div style="display:flex;align-items:center;">
+                            ${jaCadastrado ? '<span class="sug-item-check">✓</span>' : ''}
+                            <span class="sug-item-nome">${proc}</span>
+                        </div>
+                        <span class="sug-item-valor">${formatReal(valor)}</span>
+                    </div>`;
+                }).filter(Boolean).join('');
+
+                if (itens) {
+                    html += `<div class="sug-categoria">${categoria}</div>${itens}`;
+                }
+            }
+
+            if (totalDisponiveis === 0) {
+                html = '<div style="padding:16px;text-align:center;color:#22c55e;font-size:13px;font-weight:600;">✅ Todos os procedimentos sugeridos já foram cadastrados!</div>';
+            }
+
+            container.innerHTML = html;
+
+            // Atualizar label do botão
+            const btn = document.querySelector('.btn-sugestoes-toggle span:first-child');
+            if (btn) btn.textContent = totalDisponiveis > 0
+                ? `📋 Sugestões de procedimentos (${totalDisponiveis} disponíveis)`
+                : '✅ Todas as sugestões já foram cadastradas';
+        }
+
+        function usarSugestao(proc, valor) {
+            document.getElementById('novo-proc').value = proc;
+            document.getElementById('novo-valor').value = valor;
+            document.getElementById('novo-proc').focus();
+        }
+
+        async function adicionarPreco() {
+            const proc = document.getElementById('novo-proc').value.trim();
+            const valor = parseFloat(document.getElementById('novo-valor').value);
+            if (!proc) return mostrarToast('Digite o nome do procedimento', 'error');
+            if (!valor || valor <= 0) return mostrarToast('Digite um valor válido', 'error');
+            // Check duplicado
+            if (precos.some(p => p.procedimento.toLowerCase() === proc.toLowerCase())) {
+                return mostrarToast('Procedimento já cadastrado!', 'error');
+            }
+            try {
+                const data = await apiCall('/api/tabela-precos', 'POST', { procedimento: proc, valor });
+                if (data.success) {
+                    mostrarToast(`"${proc}" adicionado!`, 'success');
+                    document.getElementById('novo-proc').value = '';
+                    document.getElementById('novo-valor').value = '';
+                    await carregarPrecos();
+                }
+            } catch(e) { mostrarToast('Erro ao adicionar', 'error'); }
+        }
+
+        function iniciarEdicao(id) {
+            editingId = id;
+            renderPrecos();
+            document.getElementById('edit-proc')?.focus();
+        }
+
+        function cancelarEdicao() {
+            editingId = null;
+            renderPrecos();
+        }
+
+        async function salvarEdicao(id) {
+            const proc = document.getElementById('edit-proc').value.trim();
+            const valor = parseFloat(document.getElementById('edit-valor').value);
+            if (!proc || !valor) return mostrarToast('Preencha os campos', 'error');
+            try {
+                await apiCall(`/api/tabela-precos/${id}`, 'PUT', { procedimento: proc, valor });
+                mostrarToast('Atualizado!', 'success');
+                editingId = null;
+                await carregarPrecos();
+            } catch(e) { mostrarToast('Erro ao atualizar', 'error'); }
+        }
+
+        async function removerPreco(id, nome) {
+            if (!confirm(`Remover "${nome}" da tabela?`)) return;
+            try {
+                await apiCall(`/api/tabela-precos/${id}`, 'DELETE');
+                mostrarToast('Removido!', 'success');
+                await carregarPrecos();
+            } catch(e) { mostrarToast('Erro ao remover', 'error'); }
+        }
+
+        // Enter para adicionar
+        document.getElementById('novo-proc').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('novo-valor').focus(); });
+        document.getElementById('novo-valor').addEventListener('keydown', e => { if (e.key === 'Enter') adicionarPreco(); });
+
+        // Init
+        async function init() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            try {
+                const data = await apiCall('/api/dentistas/me');
+                if (data.success && data.dentist) {
+                    document.getElementById('user-name').textContent = data.dentist.name || 'Dentista';
+                    document.getElementById('user-role').textContent = data.dentist.cro ? `CRO: ${data.dentist.cro}` : '';
+                }
+            } catch(e) {}
+            await carregarPrecos();
+        }
+
+        init();
+    </script>
+    <script src="js/orcamentos-modal.js"></script>
+</body>
+</html>

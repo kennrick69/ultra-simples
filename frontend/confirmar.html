@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <title>Confirmacao de Consulta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 40px;
+        }
+        
+        .icon.success {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: #fff;
+        }
+        
+        .icon.cancelled {
+            background: linear-gradient(135deg, #f44336, #c62828);
+            color: #fff;
+        }
+        
+        .icon.loading {
+            background: linear-gradient(135deg, #2196f3, #1565c0);
+            color: #fff;
+        }
+        
+        .icon.error {
+            background: linear-gradient(135deg, #ff9800, #e65100);
+            color: #fff;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
+        
+        .message {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        
+        .details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .details-row:last-child {
+            border-bottom: none;
+        }
+        
+        .details-label {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .details-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .clinic-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d7a5f;
+            margin-top: 20px;
+        }
+        
+        .clinic-phone {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .clinic-phone a {
+            color: #2d7a5f;
+            text-decoration: none;
+        }
+        
+        /* Estado de loading */
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Botoes de acao (para quando abre sem codigo) */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-confirm {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: #fff;
+        }
+        
+        .btn-cancel {
+            background: linear-gradient(135deg, #f44336, #c62828);
+            color: #fff;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Esconder elementos */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Estado: Carregando -->
+        <div id="stateLoading">
+            <div class="icon loading">
+                <span class="loading-spinner">⏳</span>
+            </div>
+            <h1>Processando...</h1>
+            <p class="message">Aguarde um momento enquanto confirmamos sua consulta.</p>
+        </div>
+        
+        <!-- Estado: Confirmado -->
+        <div id="stateConfirmed" class="hidden">
+            <div class="icon success">✓</div>
+            <h1>Consulta Confirmada!</h1>
+            <p class="message">Obrigado por confirmar. Aguardamos voce!</p>
+            <div class="details" id="detailsConfirmed">
+                <div class="details-row">
+                    <span class="details-label">Paciente</span>
+                    <span class="details-value" id="confPaciente">-</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Data</span>
+                    <span class="details-value" id="confData">-</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Horario</span>
+                    <span class="details-value" id="confHora">-</span>
+                </div>
+            </div>
+            <div class="clinic-name" id="confClinica">Clinica Odontologica</div>
+            <div class="clinic-phone">Duvidas? <a href="tel:" id="confTelefone">(00) 0000-0000</a></div>
+        </div>
+        
+        <!-- Estado: Cancelado -->
+        <div id="stateCancelled" class="hidden">
+            <div class="icon cancelled">✕</div>
+            <h1>Consulta Cancelada</h1>
+            <p class="message">Sua consulta foi cancelada. Entre em contato para reagendar.</p>
+            <div class="details" id="detailsCancelled">
+                <div class="details-row">
+                    <span class="details-label">Paciente</span>
+                    <span class="details-value" id="cancPaciente">-</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Data</span>
+                    <span class="details-value" id="cancData">-</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Horario</span>
+                    <span class="details-value" id="cancHora">-</span>
+                </div>
+            </div>
+            <div class="clinic-name" id="cancClinica">Clinica Odontologica</div>
+            <div class="clinic-phone">Reagendar: <a href="tel:" id="cancTelefone">(00) 0000-0000</a></div>
+        </div>
+        
+        <!-- Estado: Erro -->
+        <div id="stateError" class="hidden">
+            <div class="icon error">!</div>
+            <h1>Link Invalido</h1>
+            <p class="message">Este link de confirmacao e invalido ou ja foi utilizado. Entre em contato com a clinica.</p>
+            <div class="clinic-phone">Contato: <a href="tel:" id="errTelefone">(00) 0000-0000</a></div>
+        </div>
+        
+        <!-- Estado: Escolha (quando abre com codigo mas sem acao) -->
+        <div id="stateChoice" class="hidden">
+            <div class="icon loading">📅</div>
+            <h1>Confirmar Consulta</h1>
+            <p class="message">Voce deseja confirmar ou cancelar sua consulta?</p>
+            <div class="details" id="detailsChoice">
+                <div class="details-row">
+                    <span class="details-label">Paciente</span>
+                    <span class="details-value" id="choicePaciente">-</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Data</span>
+                    <span class="details-value" id="choiceData">-</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Horario</span>
+                    <span class="details-value" id="choiceHora">-</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-confirm" onclick="confirmarConsulta()">Confirmar</button>
+                <button class="btn btn-cancel" onclick="cancelarConsulta()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+    // Pegar parametros da URL
+    var params = new URLSearchParams(window.location.search);
+    var codigoConfirmar = params.get('c'); // confirmar
+    var codigoCancelar = params.get('x');  // cancelar
+    var codigoEscolha = params.get('a');   // escolha (mostra botoes)
+    
+    var codigo = codigoConfirmar || codigoCancelar || codigoEscolha;
+    var acao = codigoConfirmar ? 'confirmar' : (codigoCancelar ? 'cancelar' : 'escolha');
+    
+    // Esconder todos os estados
+    function esconderTodos() {
+        document.getElementById('stateLoading').classList.add('hidden');
+        document.getElementById('stateConfirmed').classList.add('hidden');
+        document.getElementById('stateCancelled').classList.add('hidden');
+        document.getElementById('stateError').classList.add('hidden');
+        document.getElementById('stateChoice').classList.add('hidden');
+    }
+    
+    // Mostrar estado
+    function mostrarEstado(estado) {
+        esconderTodos();
+        document.getElementById('state' + estado).classList.remove('hidden');
+    }
+    
+    // Preencher detalhes
+    function preencherDetalhes(prefixo, dados) {
+        if (dados.pacienteNome) {
+            var el = document.getElementById(prefixo + 'Paciente');
+            if (el) el.textContent = dados.pacienteNome;
+        }
+        if (dados.data) {
+            var el = document.getElementById(prefixo + 'Data');
+            if (el) el.textContent = formatarData(dados.data);
+        }
+        if (dados.horario) {
+            var el = document.getElementById(prefixo + 'Hora');
+            if (el) el.textContent = dados.horario;
+        }
+        if (dados.clinicaNome) {
+            var el = document.getElementById(prefixo + 'Clinica');
+            if (el) el.textContent = dados.clinicaNome;
+        }
+        if (dados.clinicaTelefone) {
+            var el = document.getElementById(prefixo + 'Telefone');
+            if (el) {
+                el.textContent = dados.clinicaTelefone;
+                el.href = 'tel:' + dados.clinicaTelefone.replace(/\D/g, '');
+            }
+        }
+    }
+    
+    // Formatar data
+    function formatarData(dataStr) {
+        var data = new Date(dataStr + 'T00:00:00');
+        var dias = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
+        return data.toLocaleDateString('pt-BR') + ' (' + dias[data.getDay()] + ')';
+    }
+    
+    // Dados do agendamento (preenchido pela API)
+    var dadosAgendamento = null;
+    
+    // Processar confirmacao
+    async function processarAcao(acao) {
+        if (!codigo) {
+            mostrarEstado('Error');
+            return;
+        }
+        
+        try {
+            var url = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + 
+                      '/api/agendamentos/confirmar';
+            
+            var response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    codigo: codigo,
+                    acao: acao // 'confirmar' ou 'cancelar'
+                })
+            });
+            
+            var data = await response.json();
+            
+            if (data.success) {
+                dadosAgendamento = data.agendamento;
+                
+                if (acao === 'confirmar') {
+                    preencherDetalhes('conf', dadosAgendamento);
+                    mostrarEstado('Confirmed');
+                } else {
+                    preencherDetalhes('canc', dadosAgendamento);
+                    mostrarEstado('Cancelled');
+                }
+            } else {
+                mostrarEstado('Error');
+            }
+        } catch (err) {
+            console.error('Erro:', err);
+            mostrarEstado('Error');
+        }
+    }
+    
+    // Buscar dados do agendamento (para mostrar opcoes)
+    async function buscarDados() {
+        if (!codigo) {
+            mostrarEstado('Error');
+            return;
+        }
+        
+        try {
+            var url = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + 
+                      '/api/agendamentos/buscar-codigo/' + codigo;
+            
+            var response = await fetch(url);
+            var data = await response.json();
+            
+            if (data.success) {
+                dadosAgendamento = data.agendamento;
+                preencherDetalhes('choice', dadosAgendamento);
+                mostrarEstado('Choice');
+            } else {
+                mostrarEstado('Error');
+            }
+        } catch (err) {
+            console.error('Erro:', err);
+            mostrarEstado('Error');
+        }
+    }
+    
+    // Funcoes dos botoes
+    function confirmarConsulta() {
+        mostrarEstado('Loading');
+        processarAcao('confirmar');
+    }
+    
+    function cancelarConsulta() {
+        mostrarEstado('Loading');
+        processarAcao('cancelar');
+    }
+    
+    // Iniciar
+    if (!codigo) {
+        mostrarEstado('Error');
+    } else if (acao === 'escolha') {
+        buscarDados();
+    } else {
+        processarAcao(acao);
+    }
+    </script>
+</body>
+</html>

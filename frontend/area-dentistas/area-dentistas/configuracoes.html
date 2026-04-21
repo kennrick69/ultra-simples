@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <title>Configurações - Dental Ultra</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Dental Ultra UI Kit -->
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <style>
+        .config-container { max-width: 800px; margin: 20px auto; }
+        .config-card {
+            background: var(--du-surface);
+            border-radius: var(--du-r-lg);
+            padding: var(--du-5);
+            margin-bottom: var(--du-5);
+            box-shadow: var(--du-sh-sm);
+            border: 1px solid var(--du-border);
+        }
+        .config-card h2 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            color: var(--du-text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--du-border);
+        }
+        .config-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .config-row-full {
+            grid-template-columns: 1fr;
+        }
+        .config-field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--du-text);
+        }
+        .config-field input, .config-field textarea, .config-field select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--du-border);
+            border-radius: var(--du-r-md);
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: var(--du-font);
+        }
+        .config-field input:focus, .config-field textarea:focus, .config-field select:focus {
+            outline: none;
+            border-color: var(--du-primary);
+            box-shadow: var(--du-focus);
+        }
+        .config-field textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .config-field small {
+            display: block;
+            margin-top: 4px;
+            color: var(--du-text-2);
+            font-size: 12px;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--du-primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--du-r-md);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--du-font);
+        }
+        .btn-save:hover {
+            background: var(--du-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--du-sh-glow);
+        }
+        .preview-box {
+            background: var(--du-surface-2);
+            border: 2px dashed var(--du-border);
+            border-radius: var(--du-r-md);
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .preview-box h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .preview-msg {
+            background: #dcf8c6;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        @media (max-width: 600px) {
+            .config-row { grid-template-columns: 1fr; }
+        }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><img src="img/logo.png" alt="Dental Ultra" style="width: 40px; height: 40px; border-radius: 8px;"></div>
+            <h2>Dental Ultra</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+            <a href="pacientes.html" class="nav-item"><span class="icon">👥</span><span>Pacientes</span></a>
+            <a href="agenda.html" class="nav-item"><span class="icon">📅</span><span>Agenda</span></a>
+            <a href="prontuario.html" class="nav-item"><span class="icon">📋</span><span>Prontuário</span></a>
+            <a href="estoque.html" class="nav-item"><span class="icon">📦</span><span>Estoque</span></a>
+            <a href="nota-fiscal.html" class="nav-item"><span class="icon">📄</span><span>Notas Fiscais</span></a>
+            <a href="financeiro.html" class="nav-item"><span class="icon">💰</span><span>Financeiro</span></a>
+            <a href="relatorios.html" class="nav-item"><span class="icon">📈</span><span>Relatórios</span></a>
+            <a href="configuracoes.html" class="nav-item active"><span class="icon">⚙️</span><span>Configurações</span></a>
+        </nav>
+        <div class="user-info">
+            <div class="user-avatar">👨‍⚕️</div>
+            <div class="user-details">
+                <span class="user-name" id="userName">Carregando...</span>
+                <span class="user-role" id="userCRO">CRO: -----</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>⚙️ Configurações</h1>
+                <p>Configure os dados da clínica para uso nas mensagens</p>
+            </div>
+        </header>
+
+        <div class="config-container">
+            <!-- Dados da Clínica -->
+            <div class="config-card">
+                <h2>🏥 Dados da Clínica</h2>
+                
+                <div class="config-row">
+                    <div class="config-field">
+                        <label>Nome da Clínica</label>
+                        <input type="text" id="cfgNome" placeholder="Ex: Clínica Odontológica Sorriso">
+                    </div>
+                    <div class="config-field">
+                        <label>Nome do(a) Dentista Principal</label>
+                        <input type="text" id="cfgDentista" placeholder="Ex: Dra. Maria Silva">
+                    </div>
+                </div>
+                
+                <div class="config-row">
+                    <div class="config-field">
+                        <label>Telefone da Clínica</label>
+                        <input type="tel" id="cfgTelefone" placeholder="(00) 0000-0000">
+                    </div>
+                    <div class="config-field">
+                        <label>WhatsApp da Clínica</label>
+                        <input type="tel" id="cfgWhatsApp" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+                
+                <div class="config-row config-row-full">
+                    <div class="config-field">
+                        <label>Endereço</label>
+                        <input type="text" id="cfgEndereco" placeholder="Rua, número, bairro - Cidade/UF">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assinatura de Mensagens -->
+            <div class="config-card">
+                <h2>✍️ Assinatura das Mensagens</h2>
+                
+                <div class="config-row config-row-full">
+                    <div class="config-field">
+                        <label>Assinatura para mensagens de WhatsApp</label>
+                        <textarea id="cfgAssinatura" placeholder="Ex: Atenciosamente,&#10;Equipe Clínica Sorriso&#10;📞 (47) 3333-3333"></textarea>
+                        <small>Esta assinatura será usada nas mensagens de recados enviadas para familiares</small>
+                    </div>
+                </div>
+                
+                <div class="preview-box">
+                    <h4>Preview da mensagem de recados:</h4>
+                    <div class="preview-msg" id="previewRecados">
+Ola!
+
+*João da Silva* tem uma consulta agendada na *Clinica Sorriso* para:
+
+*27/01/2026 (segunda-feira)* as *14:00*
+Dr(a). Maria Silva
+
+Voce esta cadastrado(a) como contato para recados. Por favor, lembre-o(a) de confirmar a presenca!
+
+Atenciosamente,
+Equipe Clinica Sorriso
+                    </div>
+                </div>
+            </div>
+
+            <!-- Horários de Funcionamento -->
+            <div class="config-card">
+                <h2>🕐 Horários de Funcionamento</h2>
+                
+                <div class="config-row">
+                    <div class="config-field">
+                        <label>Horário de Abertura</label>
+                        <input type="time" id="cfgHoraAbre" value="08:00">
+                    </div>
+                    <div class="config-field">
+                        <label>Horário de Fechamento</label>
+                        <input type="time" id="cfgHoraFecha" value="18:00">
+                    </div>
+                </div>
+                
+                <div class="config-row">
+                    <div class="config-field">
+                        <label>Intervalo padrão de consultas</label>
+                        <select id="cfgIntervalo">
+                            <option value="15">15 minutos</option>
+                            <option value="30" selected>30 minutos</option>
+                            <option value="45">45 minutos</option>
+                            <option value="60">1 hora</option>
+                        </select>
+                    </div>
+                    <div class="config-field">
+                        <label>Dias de atendimento</label>
+                        <input type="text" id="cfgDias" value="Segunda a Sexta" placeholder="Ex: Segunda a Sexta">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-save" onclick="salvarConfiguracoes()">
+                💾 Salvar Configurações
+            </button>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/whatsapp-integration.js"></script>
+    <script>
+    // Função de alerta de sucesso
+    function mostrarSucesso(mensagem) {
+        var toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        toast.innerHTML = '✅ ' + mensagem;
+        document.body.appendChild(toast);
+        
+        var style = document.createElement('style');
+        style.textContent = '@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
+        document.head.appendChild(style);
+        
+        setTimeout(function() {
+            toast.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, 3000);
+    }
+    
+    function mostrarErro(mensagem) {
+        var toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #f44336, #c62828);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(244, 67, 54, 0.4);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        `;
+        toast.innerHTML = '❌ ' + mensagem;
+        document.body.appendChild(toast);
+        
+        setTimeout(function() {
+            toast.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, 4000);
+    }
+    
+    // Carregar configurações ao abrir
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarConfiguracoes();
+        setupMascaras();
+        atualizarPreview();
+    });
+    
+    async function carregarConfiguracoes() {
+        var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        
+        // Info do usuário na sidebar
+        document.getElementById('userName').textContent = user.name || 'Usuário';
+        document.getElementById('userCRO').textContent = 'CRO: ' + (user.cro || '-----');
+        
+        // Fallback para localStorage primeiro
+        var configLocal = JSON.parse(localStorage.getItem('configClinica') || '{}');
+        console.log('📦 Config do localStorage:', configLocal);
+        
+        function preencherCampos(c, isFromApi) {
+            var nomeClinica = (isFromApi ? c.nome_clinica : c.nome) || '';
+            var nomeDentista = (isFromApi ? c.nome_dentista : c.dentista) || '';
+            
+            console.log('📝 Preenchendo campos (isFromApi=' + isFromApi + '):', {
+                nome_clinica: nomeClinica,
+                nome_dentista: nomeDentista
+            });
+            
+            document.getElementById('cfgNome').value = nomeClinica;
+            document.getElementById('cfgDentista').value = nomeDentista;
+            document.getElementById('cfgTelefone').value = c.telefone || '';
+            document.getElementById('cfgWhatsApp').value = c.whatsapp || '';
+            document.getElementById('cfgEndereco').value = c.endereco || '';
+            document.getElementById('cfgAssinatura').value = c.assinatura || '';
+            document.getElementById('cfgHoraAbre').value = (isFromApi ? c.hora_abre : c.horaAbre) || '08:00';
+            document.getElementById('cfgHoraFecha').value = (isFromApi ? c.hora_fecha : c.horaFecha) || '18:00';
+            document.getElementById('cfgIntervalo').value = (isFromApi ? c.intervalo_padrao : c.intervalo) || '30';
+            document.getElementById('cfgDias').value = (isFromApi ? c.dias_atendimento : c.dias) || 'Segunda a Sexta';
+        }
+        
+        // Preencher com localStorage primeiro (evita tela vazia)
+        preencherCampos(configLocal, false);
+        
+        // Tentar buscar da API
+        try {
+            var token = localStorage.getItem('auth_token');
+            console.log('📡 Buscando config da API...');
+            
+            var response = await fetch(getApiUrl() + '/api/config-clinica', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            
+            console.log('📥 Resposta API:', response.status);
+            
+            // Se não for 200, manter localStorage
+            if (!response.ok) {
+                console.log('⚠️ API retornou erro, mantendo dados locais');
+                atualizarPreview();
+                return;
+            }
+            
+            var data = await response.json();
+            console.log('📦 Dados da API:', data);
+            
+            if (data.success && data.config) {
+                var c = data.config;
+                
+                // SÓ SOBRESCREVER SE A API TIVER DADOS!
+                if (c.nome_clinica || c.nome_dentista) {
+                    console.log('✅ API tem dados, preenchendo campos');
+                    preencherCampos(c, true);
+                    
+                    // Atualizar localStorage com dados da API
+                    localStorage.setItem('configClinica', JSON.stringify({
+                        nome: c.nome_clinica,
+                        dentista: c.nome_dentista,
+                        telefone: c.telefone,
+                        whatsapp: c.whatsapp,
+                        endereco: c.endereco,
+                        assinatura: c.assinatura,
+                        horaAbre: c.hora_abre,
+                        horaFecha: c.hora_fecha,
+                        intervalo: c.intervalo_padrao,
+                        dias: c.dias_atendimento
+                    }));
+                } else {
+                    console.log('ℹ️ API retornou vazio, mantendo dados locais');
+                }
+            }
+        } catch (err) {
+            console.log('❌ Erro ao buscar API:', err);
+        }
+        
+        atualizarPreview();
+    }
+    
+    async function salvarConfiguracoes() {
+        var btnSalvar = document.querySelector('.btn-save');
+        var textoOriginal = btnSalvar.innerHTML;
+        btnSalvar.innerHTML = '⏳ Salvando...';
+        btnSalvar.disabled = true;
+        
+        var config = {
+            nome_clinica: document.getElementById('cfgNome').value.trim(),
+            nome_dentista: document.getElementById('cfgDentista').value.trim(),
+            telefone: document.getElementById('cfgTelefone').value.trim(),
+            whatsapp: document.getElementById('cfgWhatsApp').value.trim(),
+            endereco: document.getElementById('cfgEndereco').value.trim(),
+            assinatura: document.getElementById('cfgAssinatura').value.trim(),
+            hora_abre: document.getElementById('cfgHoraAbre').value,
+            hora_fecha: document.getElementById('cfgHoraFecha').value,
+            intervalo_padrao: parseInt(document.getElementById('cfgIntervalo').value),
+            dias_atendimento: document.getElementById('cfgDias').value.trim()
+        };
+        
+        console.log('📤 Salvando config:', config);
+        
+        // Salvar no localStorage como backup
+        var localConfig = {
+            nome: config.nome_clinica,
+            dentista: config.nome_dentista,
+            telefone: config.telefone,
+            whatsapp: config.whatsapp,
+            endereco: config.endereco,
+            assinatura: config.assinatura,
+            horaAbre: config.hora_abre,
+            horaFecha: config.hora_fecha,
+            intervalo: config.intervalo_padrao,
+            dias: config.dias_atendimento
+        };
+        localStorage.setItem('configClinica', JSON.stringify(localConfig));
+        
+        // Atualizar WhatsAppIntegration
+        if (typeof WhatsAppIntegration !== 'undefined') {
+            WhatsAppIntegration.salvarConfigClinica(config);
+        }
+        
+        // SALVAR NA API (banco de dados)
+        try {
+            var token = localStorage.getItem('auth_token');
+            console.log('🔑 Token:', token ? 'Existe (' + token.substring(0,20) + '...)' : '❌ NÃO EXISTE');
+            
+            if (!token) {
+                console.error('❌ Sem token! Usuário não está logado.');
+                mostrarErro('⚠️ Sessão expirada. Faça login novamente.');
+                btnSalvar.innerHTML = textoOriginal;
+                btnSalvar.disabled = false;
+                return;
+            }
+            
+            console.log('📡 Enviando para API:', getApiUrl() + '/api/config-clinica');
+            
+            var response = await fetch(getApiUrl() + '/api/config-clinica', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token 
+                },
+                body: JSON.stringify(config)
+            });
+            
+            console.log('📥 Resposta API:', response.status);
+            
+            if (response.ok) {
+                var data = await response.json();
+                console.log('✅ Dados salvos no banco:', data);
+                if (data.success) {
+                    mostrarSucesso('✅ Configurações salvas no servidor!');
+                    btnSalvar.innerHTML = textoOriginal;
+                    btnSalvar.disabled = false;
+                    return;
+                }
+            }
+            
+            // Verificar se é erro de autenticação
+            if (response.status === 403 || response.status === 401) {
+                console.error('❌ Sessão expirada ou token inválido');
+                mostrarErro('⚠️ Sessão expirada! Faça login novamente.');
+                // Redirecionar para login após 2 segundos
+                setTimeout(function() {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                }, 2000);
+                btnSalvar.innerHTML = textoOriginal;
+                btnSalvar.disabled = false;
+                return;
+            }
+            
+            // API retornou outro erro
+            console.error('❌ API retornou erro:', response.status);
+            mostrarErro('⚠️ Erro ao salvar no servidor. Salvo apenas localmente.');
+            
+        } catch (err) {
+            console.error('❌ Erro de rede:', err);
+            mostrarErro('⚠️ Sem conexão. Configurações salvas apenas localmente.');
+        }
+        
+        btnSalvar.innerHTML = textoOriginal;
+        btnSalvar.disabled = false;
+    }
+    
+    function mostrarErro(msg) {
+        var aviso = document.createElement('div');
+        aviso.style.cssText = 'position:fixed;top:20px;right:20px;background:#f44336;color:#fff;padding:16px 24px;border-radius:8px;z-index:9999;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+        aviso.textContent = msg;
+        document.body.appendChild(aviso);
+        setTimeout(function() { aviso.remove(); }, 4000);
+    }
+    
+    function setupMascaras() {
+        // Máscara telefone
+        ['cfgTelefone', 'cfgWhatsApp'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', function(e) {
+                    var v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 11) v = v.slice(0, 11);
+                    if (v.length > 10) v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                    else if (v.length > 6) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                    else if (v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+                    e.target.value = v;
+                });
+            }
+        });
+        
+        // Atualizar preview ao editar
+        ['cfgNome', 'cfgDentista', 'cfgAssinatura'].forEach(function(id) {
+            document.getElementById(id).addEventListener('input', atualizarPreview);
+        });
+    }
+    
+    function atualizarPreview() {
+        var nome = document.getElementById('cfgNome').value || 'Clinica Sorriso';
+        var dentista = document.getElementById('cfgDentista').value || 'Maria Silva';
+        var assinatura = document.getElementById('cfgAssinatura').value || 'Atenciosamente,\nEquipe ' + nome;
+        
+        var preview = `Ola!
+
+*Joao da Silva* tem uma consulta agendada na *${nome}* para:
+
+*27/01/2026 (segunda-feira)* as *14:00*
+Dr(a). ${dentista}
+
+Voce esta cadastrado(a) como contato para recados. Por favor, lembre-o(a) de confirmar a presenca!
+
+${assinatura}`;
+        
+        document.getElementById('previewRecados').textContent = preview;
+    }
+    </script>
+    <script src="js/dental-ultra.ui.js"></script>
+</body>
+</html>

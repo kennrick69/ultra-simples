@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Notas Fiscais - Dentistas</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+    <style>
+        /* === SIDEBAR STYLES === */
+        .sidebar { width: 220px; background: var(--du-surface); border-right: 1px solid var(--du-border); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
+        .sidebar .logo-link { display: block; width: 220px; height: 120px; overflow: hidden; border-bottom: 1px solid var(--du-border); }
+        .sidebar .logo-header { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+        .sidebar .logo-link:hover .logo-header { transform: scale(1.03); }
+        .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--du-text-2); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.2s; }
+        .sidebar nav a:hover { background: var(--du-surface-2); border-left-color: var(--du-primary); }
+        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
+        
+        .sidebar .user-details { flex: 1; }
+        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; }
+        .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
+        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        /* Loading styles */
+        .loading-state { text-align: center; padding: 60px 20px; color: #666; }
+        .loading-more { text-align: center; padding: 20px; color: #666; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        .spinner-small { width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .load-more-info { text-align: center; padding: 16px; color: #666; font-size: 13px; background: #f9fafb; border-radius: 8px; margin-top: 16px; }
+        /* === END SIDEBAR === */
+
+        /* === SIDEBAR STYLES === */
+        .sidebar {
+            width: 220px;
+            background: var(--du-surface);
+            border-right: 1px solid var(--du-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+        .sidebar .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .logo-icon { font-size: 48px; margin-bottom: 8px; }
+        .sidebar .logo span { font-size: 18px; font-weight: 700; color: var(--du-primary-dark); }
+        .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--du-text-2);
+            text-decoration: none;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .sidebar nav a:hover { background: var(--du-surface-2); border-left-color: var(--du-primary); }
+        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
+        
+        .sidebar .user-details { flex: 1; }
+        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; }
+        .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
+        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    </style>
+</head>
+<body>
+                <aside class="sidebar">
+        <a href="agenda.html" class="logo-link" title="Ir para Agenda">
+            <img src="img/logo-header.png" alt="Dental Ultra" class="logo-header">
+        </a>
+        <nav>
+            <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+            <a href="pacientes.html"><span class="nav-icon">👥</span> Pacientes</a>
+            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
+            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
+            <a href="casos-proteticos.html"><span class="nav-icon">🦷</span> Casos Protéticos</a>
+            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
+            <a href="nota-fiscal.html" class="active"><span class="nav-icon">📄</span> Notas Fiscais</a>
+            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
+            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
+            <a href="tabela-precos.html"><span class="nav-icon">💲</span> Tabela de Preços</a>
+            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        </nav>
+        <div class="user-info">
+            <div class="user-details">
+                <span class="user-name" id="userName">...</span>
+                <span class="user-role" id="userCRO">CRO: ...</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div><h1>Gerador de Notas Fiscais</h1><p>Emita notas com descrição correta dos procedimentos</p></div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn" onclick="abrirConfigPrefeituras()" style="background: #8b5cf6; color: white;">
+                    🏛️ Configurar Prefeituras
+                </button>
+                <button class="btn" onclick="abrirHistoricoNotas()" style="background: #3b82f6; color: white;">
+                    📋 Histórico de Notas
+                </button>
+            </div>
+        </header>
+
+        <div class="section">
+            <div class="form-section">
+                <h3>👤 Dados do Paciente/Tomador</h3>
+                <div class="alert alert-info">
+                    <strong>📋 ATENÇÃO:</strong> Selecione o paciente para preencher automaticamente os dados da nota fiscal.
+                </div>
+                
+                <!-- BUSCA DE PACIENTE -->
+                <div class="form-group" style="position: relative;">
+                    <label>Buscar Paciente *</label>
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="buscaPaciente" 
+                            placeholder="🔍 Digite o nome, CPF ou telefone do paciente..."
+                            oninput="buscarPacienteNota()"
+                            autocomplete="off"
+                            style="width: 100%; padding-right: 100px;"
+                        >
+                        <button 
+                            type="button" 
+                            class="btn btn-sm btn-primary" 
+                            onclick="abrirCadastroRapido()"
+                            style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);"
+                        >
+                            + Novo
+                        </button>
+                    </div>
+                    
+                    <!-- RESULTADOS DA BUSCA -->
+                    <div id="resultadosBusca" style="display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 9999; background: white; border: 2px solid #1FA2FF; border-radius: 0.5rem; margin-top: 0.25rem; max-height: 400px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);"></div>
+                </div>
+                
+                <!-- PACIENTE SELECIONADO -->
+                <div id="pacienteSelecionado" style="display: none; background: #ecfdf5; border: 2px solid #10b981; border-radius: 0.75rem; padding: 1.5rem; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 1.25rem; font-weight: 600; color: #065f46; margin-bottom: 0.5rem;" id="pacienteNomeSel"></div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">CPF</div>
+                                    <div style="color: #065f46;" id="pacienteCPFSel"></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">Telefone</div>
+                                    <div style="color: #065f46;" id="pacienteTelSel"></div>
+                                </div>
+                                <div id="pacienteEmailDiv" style="display: none;">
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">Email</div>
+                                    <div style="color: #065f46;" id="pacienteEmailSel"></div>
+                                </div>
+                                <div id="pacienteCidadeDiv" style="display: none;">
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">Cidade</div>
+                                    <div style="color: #065f46;" id="pacienteCidadeSel"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm" style="background: #ef4444; color: white;" onclick="limparPacienteSelecionado()">
+                            ✕ Trocar
+                        </button>
+                    </div>
+                    
+                    <!-- SEÇÃO RESPONSÁVEL (MENOR DE IDADE) -->
+                    <div id="responsavelSection" style="display: none; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <span style="font-size: 1.25rem;">👶</span>
+                            <strong style="color: #92400e;">Paciente Menor de Idade / Incapaz</strong>
+                        </div>
+                        <div style="background: #fffbeb; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.75rem;">
+                            <p style="margin: 0; color: #78350f; font-size: 0.875rem;">
+                                <strong>⚠️ IMPORTANTE:</strong> A nota fiscal será emitida no CPF do responsável legal para fins de dedução no Imposto de Renda.
+                            </p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">Nome do Responsável</div>
+                                <div style="color: #78350f; font-weight: 500;" id="responsavelNomeSel"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">CPF do Responsável</div>
+                                <div style="color: #78350f; font-weight: 500;" id="responsavelCPFSel"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">Parentesco</div>
+                                <div style="color: #78350f; font-weight: 500;" id="responsavelParentescoSel"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="pacienteId">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="form-section">
+                <h3>📄 Descrição da Nota Fiscal</h3>
+                <div class="alert alert-info">
+                    <strong>⚠️ IMPORTANTE:</strong> Para Equiparação Hospitalar, a nota fiscal DEVE conter descrição DETALHADA do procedimento, não apenas "Serviços Odontológicos".
+                </div>
+                
+                <div class="form-group">
+                    <label>Procedimentos Realizados *</label>
+                    
+                    <!-- ELEGÍVEIS - Verde -->
+                    <div style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 2px solid #10b981; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <span style="background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">✅ ELEGÍVEIS</span>
+                            <span style="color: #065f46; font-size: 0.75rem;">Equiparação Hospitalar garantida</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #a7f3d0; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981';this.style.boxShadow='0 2px 8px rgba(16,185,129,0.2)'" onmouseout="this.style.borderColor='#a7f3d0';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="implante" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #10b981;">
+                                <span style="font-size: 0.875rem; color: #065f46; font-weight: 500;">Implante Dentário</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #a7f3d0; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981';this.style.boxShadow='0 2px 8px rgba(16,185,129,0.2)'" onmouseout="this.style.borderColor='#a7f3d0';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="enxerto" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #10b981;">
+                                <span style="font-size: 0.875rem; color: #065f46; font-weight: 500;">Enxerto Ósseo</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #a7f3d0; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981';this.style.boxShadow='0 2px 8px rgba(16,185,129,0.2)'" onmouseout="this.style.borderColor='#a7f3d0';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="cirurgia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #10b981;">
+                                <span style="font-size: 0.875rem; color: #065f46; font-weight: 500;">Cirurgia Bucomaxilofacial</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #a7f3d0; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981';this.style.boxShadow='0 2px 8px rgba(16,185,129,0.2)'" onmouseout="this.style.borderColor='#a7f3d0';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="extracao" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #10b981;">
+                                <span style="font-size: 0.875rem; color: #065f46; font-weight: 500;">Extração Cirúrgica</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #a7f3d0; transition: all 0.2s;" onmouseover="this.style.borderColor='#10b981';this.style.boxShadow='0 2px 8px rgba(16,185,129,0.2)'" onmouseout="this.style.borderColor='#a7f3d0';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="periodontia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #10b981;">
+                                <span style="font-size: 0.875rem; color: #065f46; font-weight: 500;">Cirurgia Periodontal</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- DEPENDE - Amarelo -->
+                    <div style="background: linear-gradient(135deg, #fefce8, #fef3c7); border: 2px solid #eab308; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <span style="background: #eab308; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">⚠️ DEPENDE</span>
+                            <span style="color: #854d0e; font-size: 0.75rem;">Consultar contador / análise individual</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #fde047; transition: all 0.2s;" onmouseover="this.style.borderColor='#eab308';this.style.boxShadow='0 2px 8px rgba(234,179,8,0.2)'" onmouseout="this.style.borderColor='#fde047';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="endodontia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #eab308;">
+                                <span style="font-size: 0.875rem; color: #854d0e; font-weight: 500;">Endodontia Complexa</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #fde047; transition: all 0.2s;" onmouseover="this.style.borderColor='#eab308';this.style.boxShadow='0 2px 8px rgba(234,179,8,0.2)'" onmouseout="this.style.borderColor='#fde047';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="protese" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #eab308;">
+                                <span style="font-size: 0.875rem; color: #854d0e; font-weight: 500;">Prótese sobre Implante</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- NÃO ELEGÍVEIS - Vermelho -->
+                    <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #ef4444; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <span style="background: #ef4444; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">❌ NÃO ELEGÍVEIS</span>
+                            <span style="color: #991b1b; font-size: 0.75rem;">Não se enquadram na equiparação</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #fca5a5; transition: all 0.2s;" onmouseover="this.style.borderColor='#ef4444';this.style.boxShadow='0 2px 8px rgba(239,68,68,0.2)'" onmouseout="this.style.borderColor='#fca5a5';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="ortodontia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #ef4444;">
+                                <span style="font-size: 0.875rem; color: #991b1b; font-weight: 500;">Ortodontia</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #fca5a5; transition: all 0.2s;" onmouseover="this.style.borderColor='#ef4444';this.style.boxShadow='0 2px 8px rgba(239,68,68,0.2)'" onmouseout="this.style.borderColor='#fca5a5';this.style.boxShadow='none'">
+                                <input type="checkbox" name="procedimento" value="limpeza" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #ef4444;">
+                                <span style="font-size: 0.875rem; color: #991b1b; font-weight: 500;">Limpeza Dental</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- OUTROS - Cinza -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0.75rem; background: white; border-radius: 8px; border: 1px solid #cbd5e1; transition: all 0.2s; width: fit-content;" onmouseover="this.style.borderColor='#64748b';this.style.boxShadow='0 2px 8px rgba(100,116,139,0.2)'" onmouseout="this.style.borderColor='#cbd5e1';this.style.boxShadow='none'">
+                            <input type="checkbox" name="procedimento" value="outro" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px; accent-color: #64748b;">
+                            <span style="font-size: 0.875rem; color: #475569; font-weight: 500;">📝 Outro Procedimento</span>
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                        <small style="color: #6b7280;">✨ Selecione um ou mais procedimentos realizados na mesma sessão</small>
+                        <button type="button" class="btn btn-sm" style="background: #6b7280; color: white; padding: 0.375rem 0.75rem; font-size: 0.875rem;" onclick="limparSelecao()">🔄 Limpar</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Elemento(s) Dentário(s)</label>
+                    <input type="text" id="elemento" placeholder="Ex: 46, 47">
+                </div>
+                
+                <div class="form-group">
+                    <label>Descrição Completa para a Nota *</label>
+                    <textarea id="descricao" rows="4" placeholder="A descrição será gerada automaticamente ao selecionar o procedimento"></textarea>
+                    <small style="color: #10b981;">✓ Esta descrição está correta para Equiparação Hospitalar</small>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Valor (R$) *</label>
+                        <input type="text" id="valor" placeholder="0,00" required oninput="formatarMoeda(this)" style="text-align: right; font-weight: 600;">
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Serviço *</label>
+                        <input type="date" id="dataServico" required>
+                    </div>
+                </div>
+                
+                <!-- EQUIPARAÇÃO HOSPITALAR -->
+                <div id="boxEquiparacaoHospitalar" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 2px solid #10b981; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="equiparacaoHospitalar" onchange="toggleEquiparacaoHospitalar()" style="margin-right: 0.75rem; width: 22px; height: 22px; cursor: pointer; accent-color: #10b981;">
+                        <div style="flex:1;">
+                            <strong style="color: #065f46; font-size: 1rem;">🏥 Equiparação Hospitalar</strong>
+                            <p style="margin: 0.25rem 0 0 0; color: #047857; font-size: 0.875rem;">
+                                Marque para procedimentos com tributação reduzida (cirurgias, implantes, endodontia, etc.)
+                            </p>
+                        </div>
+                        <div id="serieAtualInfo" style="text-align:right; padding-left:1rem; min-width:100px;">
+                            <div style="font-size:0.7rem; color:#6b7280;">Série / RPS:</div>
+                            <div style="font-size:1.1rem; font-weight:700; color:#065f46;">
+                                <span id="serieAtualValor">1</span> / <span id="rpsAtualValor">1</span>
+                            </div>
+                        </div>
+                    </label>
+                    <div id="equiparacaoInfo" style="display:none; margin-top:0.75rem; padding:0.75rem; background:rgba(16,185,129,0.15); border-radius:0.375rem;">
+                        <p style="margin:0; color:#065f46; font-size:0.875rem;">
+                            ✅ <strong>Série alterada para equiparação hospitalar!</strong><br>
+                            <span style="font-size:0.8rem;">Série <span id="serieEquiparacaoValor" style="font-weight:700;">2</span> | Próximo RPS: <span id="rpsEquiparacaoValor" style="font-weight:700;">1</span></span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- MODO TESTE -->
+                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="modo-teste" style="margin-right: 0.75rem; width: 20px; height: 20px; cursor: pointer;">
+                        <div>
+                            <strong style="color: #92400e; font-size: 1rem;">🧪 Modo Teste (Homologação)</strong>
+                            <p style="margin: 0.25rem 0 0 0; color: #78350f; font-size: 0.875rem;">
+                                Ativa esta opção para validar o XML sem emitir a nota fiscal real. Ideal para testes de integração.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-success" onclick="salvarNota()">💾 Salvar Nota</button>
+                <button class="btn btn-primary" onclick="baixarModeloPDF()">📥 Baixar Modelo PDF</button>
+                <button class="btn" style="background: #10b981; color: white;" onclick="emitirNotaAutomatica()">⚡ Emitir Nota Agora</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Notas Fiscais Emitidas</h2>
+            <div id="listaNotas">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Nenhuma nota registrada ainda</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL CONFIGURAÇÕES DE PREFEITURAS -->
+    <div id="modalConfigPrefeituras" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; overflow-y:auto; padding:2rem;">
+        <div style="max-width:900px; margin:0 auto; background:white; border-radius:16px; box-shadow:0 25px 50px rgba(0,0,0,0.25); position:relative;">
+            <!-- Botão X fora do modal -->
+            <button onclick="fecharConfigPrefeituras()" style="position:absolute; top:-12px; right:-12px; background:#6b7280; border:3px solid white; color:white; width:32px; height:32px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); z-index:10; line-height:1;" onmouseover="this.style.background='#ef4444';this.style.transform='scale(1.1)'" onmouseout="this.style.background='#6b7280';this.style.transform='scale(1)'">×</button>
+            <!-- Header -->
+            <div style="padding:1.5rem 2rem; border-bottom:1px solid #e5e7eb; background:linear-gradient(135deg, #8b5cf6, #6366f1); border-radius:16px 16px 0 0;">
+                <div>
+                    <h2 style="margin:0; color:white; font-size:1.5rem;">🏛️ Configurações de Prefeituras</h2>
+                    <p style="margin:0.25rem 0 0; color:rgba(255,255,255,0.8); font-size:0.875rem;">Configure os Web Services para emissão automática de NFS-e</p>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display:flex; border-bottom:1px solid #e5e7eb; background:#f9fafb;">
+                <button id="tabListaPrefeituras" onclick="mostrarTabPrefeitura('lista')" style="flex:1; padding:1rem; border:none; background:white; border-bottom:3px solid #8b5cf6; font-weight:600; color:#8b5cf6; cursor:pointer;">
+                    📋 Prefeituras Cadastradas
+                </button>
+                <button id="tabNovaPrefeitura" onclick="mostrarTabPrefeitura('nova')" style="flex:1; padding:1rem; border:none; background:transparent; border-bottom:3px solid transparent; font-weight:500; color:#6b7280; cursor:pointer;">
+                    ➕ Nova Prefeitura
+                </button>
+                <button id="tabDocumentacao" onclick="mostrarTabPrefeitura('docs')" style="flex:1; padding:1rem; border:none; background:transparent; border-bottom:3px solid transparent; font-weight:500; color:#6b7280; cursor:pointer;">
+                    📖 Documentação
+                </button>
+            </div>
+
+            <!-- Conteúdo -->
+            <div style="padding:2rem;">
+                
+                <!-- TAB: LISTA DE PREFEITURAS -->
+                <div id="conteudoListaPrefeituras">
+                    <!-- SEÇÃO DE PREFEITURAS PRÉ-CONFIGURADAS -->
+                    <div id="prefeiturasPreconfiguradasSection" style="background:linear-gradient(135deg, #dbeafe, #e0e7ff); border:2px solid #93c5fd; border-radius:12px; padding:1.5rem; margin-bottom:2rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h4 style="margin:0; color:#1e40af; display:flex; align-items:center; gap:0.5rem;">
+                                <span style="font-size:1.5rem;">🚀</span>
+                                Configurações Prontas para Uso
+                            </h4>
+                            <span style="background:#22c55e; color:white; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.75rem; font-weight:600;">
+                                ✨ Já configurado
+                            </span>
+                        </div>
+                        <p style="color:#1e40af; font-size:0.875rem; margin:0 0 1rem;">
+                            Clique para importar uma configuração completa com todos os dados da prefeitura:
+                        </p>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+                            <!-- POMERODE -->
+                            <div style="background:white; border:1px solid #93c5fd; border-radius:8px; padding:1rem; display:flex; align-items:center; justify-content:space-between;">
+                                <div>
+                                    <div style="font-weight:600; color:#1e293b; display:flex; align-items:center; gap:0.5rem;">
+                                        <span style="font-size:1.25rem;">🏛️</span>
+                                        Pomerode - SC
+                                    </div>
+                                    <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">
+                                        Sistema IPM/Atende.Net • TOM: 8273
+                                    </div>
+                                </div>
+                                <button onclick="importarPrefeituraPomerode()" class="btn" style="background:#8b5cf6; color:white; font-size:0.875rem; padding:0.5rem 1rem;">
+                                    📥 Importar
+                                </button>
+                            </div>
+                            
+                            <!-- Placeholder para outras cidades -->
+                            <div style="background:rgba(255,255,255,0.5); border:2px dashed #93c5fd; border-radius:8px; padding:1rem; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:0.875rem;">
+                                <span>Mais cidades em breve...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="listaPrefeiturasCadastradas">
+                        <div style="text-align:center; padding:3rem; color:#9ca3af;">
+                            <div style="font-size:4rem; margin-bottom:1rem;">🏛️</div>
+                            <p>Nenhuma prefeitura configurada ainda</p>
+                            <button onclick="mostrarTabPrefeitura('nova')" class="btn" style="background:#8b5cf6; color:white; margin-top:1rem;">
+                                ➕ Adicionar Primeira Prefeitura
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: NOVA PREFEITURA / EDIÇÃO -->
+                <div id="conteudoNovaPrefeitura" style="display:none;">
+                    <input type="hidden" id="prefeituraEditId">
+                    
+                    <!-- Seção 1: Identificação -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+                        <h3 style="margin:0 0 1rem; color:#1e293b; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="background:#8b5cf6; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.875rem;">1</span>
+                            Identificação da Prefeitura
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                            <div class="form-group">
+                                <label>Nome da Cidade *</label>
+                                <input type="text" id="prefCidade" placeholder="Ex: São Paulo" required>
+                            </div>
+                            <div class="form-group">
+                                <label>UF *</label>
+                                <select id="prefUF" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+                                    <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                                    <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+                                    <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                                    <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+                                    <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+                                    <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+                                    <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                                    <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Código TOM (IBGE) *</label>
+                                <input type="text" id="prefCodigoTOM" placeholder="Ex: 9999" maxlength="9">
+                                <small style="color:#6b7280;">Código da cidade junto à Receita Federal</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Sistema da Prefeitura *</label>
+                                <select id="prefSistema" onchange="atualizarURLPadrao()">
+                                    <option value="ipm">IPM / Atende.Net</option>
+                                    <option value="betha">Betha Sistemas</option>
+                                    <option value="ginfes">GINFES</option>
+                                    <option value="issnet">ISSNet</option>
+                                    <option value="simpliss">SimplISS</option>
+                                    <option value="abrasf">ABRASF Padrão Nacional</option>
+                                    <option value="outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 2: Conexão Web Service -->
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+                        <h3 style="margin:0 0 1rem; color:#166534; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="background:#22c55e; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.875rem;">2</span>
+                            Conexão com Web Service
+                        </h3>
+                        <div class="form-group">
+                            <label>URL do Web Service *</label>
+                            <input type="url" id="prefURL" placeholder="https://ws-cidade.atende.net:7443/?pg=rest&service=WNERestServiceNFSe">
+                            <small style="color:#6b7280;">URL completa do endpoint de emissão de NFS-e</small>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                            <div class="form-group">
+                                <label>CPF/CNPJ do Prestador *</label>
+                                <input type="text" id="prefCPFCNPJ" placeholder="Apenas números" maxlength="14">
+                            </div>
+                            <div class="form-group">
+                                <label>Senha do Web Service *</label>
+                                <div style="position:relative;">
+                                    <input type="password" id="prefSenha" placeholder="Senha de acesso">
+                                    <button type="button" onclick="toggleSenhaWS()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">👁️</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Série da NFS-e</label>
+                                <input type="text" id="prefSerieNFSe" placeholder="Ex: 1" value="1" oninput="atualizarSerieEquiparacao()">
+                                <small>Série para procedimentos comuns</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Último RPS (Série Principal)</label>
+                                <input type="number" id="prefUltimoRps" placeholder="Ex: 150" value="0" min="0">
+                                <small>Número do último RPS emitido na série principal</small>
+                            </div>
+                        </div>
+                        <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:1rem; margin-top:1rem;">
+                            <p style="margin:0 0 0.75rem; color:#065f46; font-weight:600; font-size:0.9rem;">🏥 Equiparação Hospitalar (Lucro Presumido)</p>
+                            <p style="margin:0 0 1rem; color:#047857; font-size:0.8rem;">Série separada para procedimentos com tributação reduzida (cirurgias, implantes, endodontia...)</p>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Série Equiparação Hospitalar</label>
+                                    <input type="text" id="prefSerieEquiparacao" value="2" disabled style="background:#f0fdf4; font-weight:600; color:#065f46;">
+                                    <small>Automático: Série + 1</small>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Último RPS (Equiparação)</label>
+                                    <input type="number" id="prefUltimoRpsEquiparacao" placeholder="Ex: 0" value="0" min="0">
+                                    <small>Número do último RPS emitido na série de equiparação</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-top:1rem;">
+                            <div class="form-group">
+                                <label>Ambiente</label>
+                                <select id="prefAmbiente">
+                                    <option value="producao">🟢 Produção</option>
+                                    <option value="homologacao">🟡 Homologação/Teste</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:1rem; margin-top:1rem; padding:1rem; background:rgba(34,197,94,0.1); border-radius:8px;">
+                            <input type="checkbox" id="prefExigeCertificado" onchange="toggleCertificadoSection()">
+                            <label for="prefExigeCertificado" style="margin:0; cursor:pointer;">
+                                🔐 Esta prefeitura exige Certificado Digital (A1/A3)
+                            </label>
+                        </div>
+                        <div id="certificadoSection" style="display:none; margin-top:1rem; padding:1rem; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px;">
+                            <p style="margin:0 0 0.5rem; color:#92400e; font-weight:600;">⚠️ Certificado Digital</p>
+                            <p style="margin:0; color:#78350f; font-size:0.875rem;">
+                                O certificado digital deve ser configurado no servidor. Consulte a documentação técnica para instruções de instalação.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Seção 3: Configurações Tributárias -->
+                    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+                        <h3 style="margin:0 0 1rem; color:#1e40af; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="background:#3b82f6; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.875rem;">3</span>
+                            Configurações Tributárias
+                        </h3>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+                            <div class="form-group">
+                                <label>Alíquota ISS (%)</label>
+                                <input type="number" id="prefAliquotaISS" placeholder="Ex: 3.00" step="0.01" min="0" max="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Código Atividade (CNAE)</label>
+                                <input type="text" id="prefCodigoServico" placeholder="Ex: 8630504">
+                                <small style="color:#6b7280;">Odontologia: 8630504</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Item Lista Serviços (LC 116)</label>
+                                <input type="text" id="prefItemListaServico" placeholder="Ex: 4.12" value="4.12">
+                                <small style="color:#6b7280;">Odontologia: 4.12</small>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-top:1rem;">
+                            <div class="form-group">
+                                <label>Código Tributação Nacional (cTribNac) *</label>
+                                <input type="text" id="prefCodigoTribNacional" placeholder="Ex: 041201" value="041201">
+                                <small style="color:#6b7280;">Odontologia: 041201 (6 dígitos - NFS-e Nacional)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Código NBS (Nomenclatura Brasileira de Serviços)</label>
+                                <input type="text" id="prefCodigoNBS" placeholder="Ex: 1.1101.30.00">
+                                <small style="color:#6b7280;">Odontologia: 1.1101.30.00</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Situação Tributária ISS</label>
+                                <select id="prefSituacaoTributaria" style="width:100%;">
+                                    <option value="1">1 - Exigível (Tributação no município)</option>
+                                    <option value="2">2 - Não incidência</option>
+                                    <option value="3">3 - Isenção</option>
+                                    <option value="4">4 - Exportação</option>
+                                    <option value="5">5 - Imunidade</option>
+                                    <option value="6">6 - Exigibilidade suspensa por decisão judicial</option>
+                                    <option value="7">7 - Exigibilidade suspensa por procedimento administrativo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 4: Reforma Tributária (IBS/CBS) -->
+                    <div style="background:#fdf4ff; border:1px solid #e9d5ff; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 style="margin:0; color:#7e22ce; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                                <span style="background:#a855f7; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.875rem;">4</span>
+                                Reforma Tributária (IBS/CBS)
+                            </h3>
+                            <span style="background:#fef3c7; color:#92400e; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.75rem; font-weight:600;">
+                                🆕 Vigência a partir de 2026
+                            </span>
+                        </div>
+                        <div style="background:#faf5ff; padding:1rem; border-radius:8px; margin-bottom:1rem;">
+                            <p style="margin:0; color:#6b21a8; font-size:0.875rem;">
+                                <strong>📋 Nota:</strong> Configurações conforme Nota Técnica 122/2025 do IPM. 
+                                O envio em 01/01/2026 é facultativo, mas será obrigatório em breve.
+                            </p>
+                        </div>
+                        
+                        <!-- CST e Classificação Tributária -->
+                        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-bottom:1rem;">
+                            <div class="form-group">
+                                <label>CST IBS/CBS *</label>
+                                <select id="prefCSTIBSCBS">
+                                    <option value="200">200 - Tributação Normal</option>
+                                    <option value="210">210 - Tributação Monofásica</option>
+                                    <option value="220">220 - Imunidade</option>
+                                    <option value="230">230 - Redução de Base de Cálculo</option>
+                                    <option value="240">240 - Diferimento</option>
+                                    <option value="250">250 - Suspensão</option>
+                                    <option value="290">290 - Outros</option>
+                                </select>
+                                <small style="color:#6b7280;">Código de Situação Tributária do IBS/CBS</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Classificação Tributária *</label>
+                                <input type="text" id="prefClassTrib" placeholder="Ex: 200029" value="200029">
+                                <small style="color:#6b7280;">Odontologia: 200029 (Serviços de saúde - Anexo III)</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Indicadores -->
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1rem;">
+                            <div class="form-group">
+                                <label>Finalidade NFS-e</label>
+                                <select id="prefFinNFSe">
+                                    <option value="0">0 - NFS-e Regular</option>
+                                    <option value="1">1 - Substituição</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Indicador Consumidor Final</label>
+                                <select id="prefIndFinal">
+                                    <option value="1">1 - Consumidor Final</option>
+                                    <option value="0">0 - Não é Consumidor Final</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Código Indicador Operação</label>
+                                <input type="text" id="prefCIndOp" placeholder="Ex: 030102" value="030102">
+                                <small style="color:#6b7280;">Conforme Anexo VII</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Alíquotas -->
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+                            <div class="form-group">
+                                <label>Alíquota IBS UF (%)</label>
+                                <input type="number" id="prefAliquotaIBSUF" placeholder="Ex: 0.1" step="0.01" min="0" value="0.1">
+                                <small style="color:#6b7280;">Estadual (0,1% em 2026)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Alíquota IBS Municipal (%)</label>
+                                <input type="number" id="prefAliquotaIBSMun" placeholder="Ex: 0" step="0.01" min="0" value="0">
+                                <small style="color:#6b7280;">Municipal (0% em 2026)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Alíquota CBS (%)</label>
+                                <input type="number" id="prefAliquotaCBS" placeholder="Ex: 0.9" step="0.01" min="0" value="0.9">
+                                <small style="color:#6b7280;">Federal (0,9% em 2026)</small>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-top:1rem;">
+                            <div class="form-group">
+                                <label>% Redução Alíquota (se aplicável)</label>
+                                <input type="number" id="prefReducaoAliquota" placeholder="Ex: 0" step="0.01" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>% Redutor Compra Governamental</label>
+                                <input type="number" id="prefRedutorGov" placeholder="Ex: 0" step="0.01" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 5: PIS/COFINS -->
+                    <div style="background:#fefce8; border:1px solid #fef08a; border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+                        <h3 style="margin:0 0 1rem; color:#854d0e; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span style="background:#eab308; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.875rem;">5</span>
+                            PIS/COFINS (Retenções)
+                        </h3>
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+                            <div class="form-group">
+                                <label>Tipo de Retenção</label>
+                                <select id="prefTipoRetencao">
+                                    <option value="2">2 - PIS/COFINS Não Retido</option>
+                                    <option value="1">1 - PIS/COFINS Retido</option>
+                                    <option value="3">3 - PIS Retido / COFINS Não Retido</option>
+                                    <option value="4">4 - PIS Não Retido / COFINS Retido</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Alíquota PIS (%)</label>
+                                <input type="number" id="prefAliquotaPIS" placeholder="Ex: 0.65" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Alíquota COFINS (%)</label>
+                                <input type="number" id="prefAliquotaCOFINS" placeholder="Ex: 3.00" step="0.01" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <div style="display:flex; justify-content:flex-end; gap:1rem; padding-top:1rem; border-top:1px solid #e5e7eb;">
+                        <button onclick="mostrarTabPrefeitura('lista')" class="btn" style="background:#f3f4f6; color:#374151;">
+                            ← Voltar à Lista
+                        </button>
+                        <button onclick="criarNovaPrefeitura()" class="btn" style="background:#10b981; color:white;">
+                            ➕ Criar Nova
+                        </button>
+                        <button onclick="testarConexaoPrefeitura()" class="btn" style="background:#f59e0b; color:white;">
+                            🔌 Testar Conexão
+                        </button>
+                        <button onclick="salvarPrefeitura()" class="btn" style="background:#8b5cf6; color:white;">
+                            💾 Salvar Prefeitura
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB: DOCUMENTAÇÃO -->
+                <div id="conteudoDocumentacao" style="display:none;">
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:2rem;">
+                        <h3 style="margin:0 0 1.5rem; color:#1e293b;">📖 Documentação Técnica - Web Service NFS-e</h3>
+                        
+                        <div style="margin-bottom:2rem;">
+                            <h4 style="color:#3b82f6; margin:0 0 0.75rem;">🔗 URL do Web Service (IPM/Atende.Net)</h4>
+                            <code style="display:block; background:#1e293b; color:#22c55e; padding:1rem; border-radius:8px; font-size:0.875rem; overflow-x:auto;">
+https://ws-CIDADE.atende.net:7443/?pg=rest&service=WNERestServiceNFSe
+                            </code>
+                            <p style="color:#64748b; margin:0.5rem 0 0; font-size:0.875rem;">
+                                Substitua "CIDADE" pelo nome da cidade sem espaços e acentos (ex: saopaulo, riodejaneiro)
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom:2rem;">
+                            <h4 style="color:#3b82f6; margin:0 0 0.75rem;">🔐 Autenticação</h4>
+                            <ul style="color:#475569; line-height:1.8; padding-left:1.5rem;">
+                                <li><strong>Header:</strong> Authorization: Basic {base64(cpfcnpj:senha)}</li>
+                                <li><strong>Content-Type:</strong> multipart/form-data</li>
+                                <li><strong>Cookie:</strong> Manter sessão PHPSESSID para requisições subsequentes</li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-bottom:2rem;">
+                            <h4 style="color:#3b82f6; margin:0 0 0.75rem;">📋 Campos Obrigatórios do XML</h4>
+                            <table style="width:100%; border-collapse:collapse; font-size:0.875rem;">
+                                <tr style="background:#f1f5f9;">
+                                    <th style="padding:0.75rem; text-align:left; border:1px solid #e2e8f0;">Tag</th>
+                                    <th style="padding:0.75rem; text-align:left; border:1px solid #e2e8f0;">Descrição</th>
+                                    <th style="padding:0.75rem; text-align:left; border:1px solid #e2e8f0;">Exemplo</th>
+                                </tr>
+                                <tr><td style="padding:0.75rem; border:1px solid #e2e8f0;"><code>&lt;identificador&gt;</code></td><td style="padding:0.75rem; border:1px solid #e2e8f0;">ID único da nota</td><td style="padding:0.75rem; border:1px solid #e2e8f0;">NF-2024-001</td></tr>
+                                <tr><td style="padding:0.75rem; border:1px solid #e2e8f0;"><code>&lt;data_fato_gerador&gt;</code></td><td style="padding:0.75rem; border:1px solid #e2e8f0;">Data do serviço</td><td style="padding:0.75rem; border:1px solid #e2e8f0;">03/02/2026</td></tr>
+                                <tr><td style="padding:0.75rem; border:1px solid #e2e8f0;"><code>&lt;valor_total&gt;</code></td><td style="padding:0.75rem; border:1px solid #e2e8f0;">Valor total</td><td style="padding:0.75rem; border:1px solid #e2e8f0;">500,00</td></tr>
+                                <tr><td style="padding:0.75rem; border:1px solid #e2e8f0;"><code>&lt;cpfcnpj&gt;</code></td><td style="padding:0.75rem; border:1px solid #e2e8f0;">CPF/CNPJ tomador</td><td style="padding:0.75rem; border:1px solid #e2e8f0;">12345678901</td></tr>
+                                <tr><td style="padding:0.75rem; border:1px solid #e2e8f0;"><code>&lt;cidade&gt;</code></td><td style="padding:0.75rem; border:1px solid #e2e8f0;">Código TOM</td><td style="padding:0.75rem; border:1px solid #e2e8f0;">8055</td></tr>
+                            </table>
+                        </div>
+
+                        <div style="background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; padding:1rem;">
+                            <p style="margin:0; color:#92400e;">
+                                <strong>⚠️ IMPORTANTE:</strong> Para solicitar acesso ao Web Service, acesse o Portal do Cidadão da prefeitura 
+                                e busque pelo serviço "Emissão de NFS-e por WebService".
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTÓRICO DE NOTAS -->
+    <div id="modalHistoricoNotas" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; overflow-y:auto; padding:2rem;">
+        <div style="max-width:1000px; margin:0 auto; background:white; border-radius:16px; box-shadow:0 25px 50px rgba(0,0,0,0.25); position:relative;">
+            <!-- Botão X fora do modal -->
+            <button onclick="fecharHistoricoNotas()" style="position:absolute; top:-12px; right:-12px; background:#6b7280; border:3px solid white; color:white; width:32px; height:32px; border-radius:50%; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); z-index:10; line-height:1;" onmouseover="this.style.background='#ef4444';this.style.transform='scale(1.1)'" onmouseout="this.style.background='#6b7280';this.style.transform='scale(1)'">×</button>
+            <div style="padding:1.5rem 2rem; border-bottom:1px solid #e5e7eb; background:linear-gradient(135deg, #0891b2, #06b6d4); border-radius:16px 16px 0 0;">
+                <h2 style="margin:0; color:white;">📋 Histórico de Notas Fiscais</h2>
+            </div>
+            <div style="padding:2rem;">
+                <div id="historicoNotasConteudo">
+                    <div style="text-align:center; padding:3rem; color:#9ca3af;">
+                        <div style="font-size:4rem; margin-bottom:1rem;">📭</div>
+                        <p>Nenhuma nota fiscal emitida ainda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth-check.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/modal-paciente.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/pdf-generator.js"></script>
+    <!-- Integração NFSe -->
+    <script src="js/nfse-integration.js"></script>
+    <script>
+        // Formatar valor como moeda brasileira (R$ 1.234,56)
+        function formatarMoeda(input) {
+            // Remove tudo que não for número
+            let valor = input.value.replace(/\D/g, '');
+            
+            // Converte para número e divide por 100 para ter os centavos
+            valor = (parseInt(valor) / 100).toFixed(2);
+            
+            // Se for NaN ou 0.00, limpa o campo
+            if (isNaN(valor) || valor === '0.00') {
+                input.value = '';
+                return;
+            }
+            
+            // Formata com separadores brasileiros
+            valor = valor.replace('.', ',');
+            valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+            // Corrige a posição dos pontos de milhar
+            let partes = valor.split(',');
+            partes[0] = partes[0].replace(/\./g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            valor = partes.join(',');
+            
+            input.value = valor;
+        }
+        
+        // Obter valor numérico para enviar ao servidor (sem formatação)
+        function getValorNumerico() {
+            const valorFormatado = document.getElementById('valor').value;
+            if (!valorFormatado) return 0;
+            // Remove pontos, troca vírgula por ponto
+            return parseFloat(valorFormatado.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+        
+        // Definir valor formatado a partir de número
+        function setValorFormatado(numero) {
+            const input = document.getElementById('valor');
+            if (!numero || numero === 0) {
+                input.value = '';
+                return;
+            }
+            // Converte para string com 2 casas decimais
+            let valor = parseFloat(numero).toFixed(2);
+            valor = valor.replace('.', ',');
+            // Adiciona pontos de milhar
+            let partes = valor.split(',');
+            partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            input.value = partes.join(',');
+        }
+        
+        function updateDescricaoMultipla() {
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]:checked');
+            const elem = document.getElementById('elemento').value;
+            
+            if (checkboxes.length === 0) {
+                document.getElementById('descricao').value = '';
+                return;
+            }
+            
+            let descricoes = [];
+            
+            checkboxes.forEach(checkbox => {
+                const proc = checkbox.value;
+                let desc = '';
+                
+                switch(proc) {
+                    case 'implante':
+                        desc = `Implante dentário osseointegrado - Sistema ${elem ? 'Elemento ' + elem : '[Elemento]'}, marca [Sistema], com planejamento cirúrgico digital, confecção de guia cirúrgico, instalação de implante de titânio grau IV, com superfície tratada por jateamento e ataque ácido, comprimento [XX]mm e diâmetro [X]mm, incluindo material de enxertia óssea e membrana reabsorvível quando necessário`;
+                        break;
+                    case 'enxerto':
+                        desc = `Enxerto ósseo ${elem ? 'na região do elemento ' + elem : 'em área edêntula'} - Preparação para implante com utilização de biomaterial ósseo particulado, fixação com membrana de colágeno reabsorvível, técnica de regeneração óssea guiada (ROG), com elevação de seio maxilar quando indicado`;
+                        break;
+                    case 'cirurgia':
+                        desc = `Cirurgia bucomaxilofacial - ${elem ? 'Elemento ' + elem : '[Descrição do procedimento]'} com anestesia local, incisão, descolamento de retalho mucoperiosteal, osteotomia quando necessária, curetagem, irrigação abundante, sutura com fio reabsorvível`;
+                        break;
+                    case 'extracao':
+                        desc = `Extração cirúrgica ${elem ? 'do elemento ' + elem : '[Elemento]'} - Odontossecção com alta rotação, remoção de osso pericoronário, regularização óssea, curetagem alveolar, compressão das corticais, sutura`;
+                        break;
+                    case 'periodontia':
+                        desc = `Cirurgia periodontal ${elem ? '- Elementos ' + elem : '- Retalho de acesso'} com raspagem e alisamento radicular, debridamento de bolsas periodontais, enxerto gengival livre quando indicado, reposicionamento de retalho, sutura`;
+                        break;
+                    case 'endodontia':
+                        desc = `Retratamento endodôntico ${elem ? 'do elemento ' + elem : '[Elemento]'} - Alta complexidade com remoção de material obturador prévio, desobstrução de canais calcificados, preparo químico-mecânico, obturação tridimensional com cimento endodôntico biocompatível`;
+                        break;
+                    case 'protese':
+                        desc = `Prótese unitária sobre implante ${elem ? '- Elemento ' + elem : '[Elemento]'} com confecção de coroa cerâmica, moldagem de transferência, seleção de cor, prova e instalação`;
+                        break;
+                    case 'ortodontia':
+                        desc = `Tratamento ortodôntico ${elem ? 'envolvendo elemento ' + elem : ''} - Instalação/manutenção de aparelho ortodôntico fixo`;
+                        break;
+                    case 'limpeza':
+                        desc = `Profilaxia dentária com remoção de biofilme e cálculo dentário, polimento coronário, aplicação tópica de flúor`;
+                        break;
+                    case 'outro':
+                        desc = 'Descreva detalhadamente o procedimento realizado';
+                        break;
+                    default:
+                        desc = '';
+                }
+                
+                if (desc) {
+                    descricoes.push(desc);
+                }
+            });
+            
+            // Juntar todas as descrições com ponto e vírgula
+            let descricaoCompleta = descricoes.join('; ') + '.';
+            
+            // Se for menor de idade, adicionar dados do paciente na descrição
+            if (typeof pacienteSelecionadoAtual !== 'undefined' && pacienteSelecionadoAtual && pacienteSelecionadoAtual.menorIdade) {
+                descricaoCompleta += '\n\n--- DADOS DO PACIENTE (MENOR/INCAPAZ) ---';
+                descricaoCompleta += '\nPaciente: ' + pacienteSelecionadoAtual.nome;
+                if (pacienteSelecionadoAtual.cpf) {
+                    descricaoCompleta += '\nCPF: ' + pacienteSelecionadoAtual.cpf;
+                }
+                if (pacienteSelecionadoAtual.dataNascimento) {
+                    const dn = pacienteSelecionadoAtual.dataNascimento.split('T')[0].split('-');
+                    descricaoCompleta += '\nData de Nascimento: ' + dn[2] + '/' + dn[1] + '/' + dn[0];
+                }
+                descricaoCompleta += '\n\nResponsável Legal: ' + (pacienteSelecionadoAtual.responsavelNome || 'Não informado');
+                if (pacienteSelecionadoAtual.responsavelParentesco) {
+                    descricaoCompleta += ' (' + pacienteSelecionadoAtual.responsavelParentesco + ')';
+                }
+            }
+            
+            document.getElementById('descricao').value = descricaoCompleta;
+        }
+        
+        function limparSelecao() {
+            // Desmarcar todos os checkboxes
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            // Limpar descrição
+            document.getElementById('descricao').value = '';
+            
+            // Feedback visual
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Limpo!';
+            btn.style.background = '#10b981';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '#6b7280';
+            }, 1500);
+        }
+        
+        // Também atualizar quando mudar o elemento
+        document.getElementById('elemento').addEventListener('input', function() {
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]:checked');
+            if (checkboxes.length > 0) {
+                updateDescricaoMultipla();
+            }
+        });
+        
+        function updateDescricao() {
+            // Mantém compatibilidade com código antigo
+            updateDescricaoMultipla();
+        }
+        
+        // ==================== EQUIPARAÇÃO HOSPITALAR ====================
+        
+        // Variável global para armazenar config da prefeitura selecionada
+        let prefeituraAtual = {
+            id: null,
+            serie: '1',
+            ultimoRps: 0,
+            ultimoRpsEquiparacao: 0
+        };
+        
+        // Função para selecionar prefeitura para emissão
+        function usarPrefeituraParaEmissao(id, serie, ultimoRps, ultimoRpsEquiparacao) {
+            prefeituraAtual = {
+                id: id,
+                serie: serie || '1',
+                ultimoRps: ultimoRps || 0,
+                ultimoRpsEquiparacao: ultimoRpsEquiparacao || 0
+            };
+            
+            // Atualiza a série exibida
+            atualizarInfoSerie();
+            
+            // Fecha o modal de configurações
+            fecharConfigPrefeituras();
+            
+            // Feedback visual
+            const serieBase = parseInt(serie) || 1;
+            alert(`✅ Prefeitura selecionada!\n\n📋 Série Principal: ${serieBase}\n🏥 Série Equiparação: ${serieBase + 1}\n📄 Último RPS Principal: ${ultimoRps}\n📄 Último RPS Equip.: ${ultimoRpsEquiparacao}`);
+        }
+        
+        // Atualiza info de série na tela de emissão
+        function atualizarInfoSerie() {
+            const isEquiparacao = document.getElementById('equiparacaoHospitalar').checked;
+            const serieBase = parseInt(prefeituraAtual.serie) || 1;
+            const serieAtual = isEquiparacao ? serieBase + 1 : serieBase;
+            const proximoRps = isEquiparacao ? 
+                (prefeituraAtual.ultimoRpsEquiparacao || 0) + 1 : 
+                (prefeituraAtual.ultimoRps || 0) + 1;
+            
+            document.getElementById('serieAtualValor').textContent = serieAtual;
+            document.getElementById('rpsAtualValor').textContent = proximoRps;
+            document.getElementById('serieEquiparacaoValor').textContent = serieBase + 1;
+            document.getElementById('rpsEquiparacaoValor').textContent = (prefeituraAtual.ultimoRpsEquiparacao || 0) + 1;
+        }
+        
+        // Toggle da checkbox de equiparação hospitalar
+        function toggleEquiparacaoHospitalar() {
+            const checkbox = document.getElementById('equiparacaoHospitalar');
+            const infoBox = document.getElementById('equiparacaoInfo');
+            const mainBox = document.getElementById('boxEquiparacaoHospitalar');
+            
+            if (checkbox.checked) {
+                infoBox.style.display = 'block';
+                mainBox.style.background = 'linear-gradient(135deg, #d1fae5, #a7f3d0)';
+                mainBox.style.borderColor = '#059669';
+            } else {
+                infoBox.style.display = 'none';
+                mainBox.style.background = 'linear-gradient(135deg, #ecfdf5, #d1fae5)';
+                mainBox.style.borderColor = '#10b981';
+            }
+            
+            atualizarInfoSerie();
+        }
+        
+        // Retorna a série a ser usada na emissão
+        function getSerieEmissao() {
+            const isEquiparacao = document.getElementById('equiparacaoHospitalar').checked;
+            const serieBase = parseInt(prefeituraAtual.serie) || 1;
+            return isEquiparacao ? (serieBase + 1).toString() : serieBase.toString();
+        }
+        
+        // Retorna o próximo RPS a ser usado
+        function getProximoRps() {
+            const isEquiparacao = document.getElementById('equiparacaoHospitalar').checked;
+            if (isEquiparacao) {
+                return (prefeituraAtual.ultimoRpsEquiparacao || 0) + 1;
+            } else {
+                return (prefeituraAtual.ultimoRps || 0) + 1;
+            }
+        }
+        
+        // ==================== FIM EQUIPARAÇÃO HOSPITALAR ====================
+        
+        function salvarNota() {
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]:checked');
+            const procedimentos = Array.from(checkboxes).map(cb => cb.value);
+            const isEquiparacao = document.getElementById('equiparacaoHospitalar').checked;
+            
+            const nota = {
+                id: Date.now(),
+                descricao: document.getElementById('descricao').value,
+                valor: getValorNumerico(),
+                data: document.getElementById('dataServico').value,
+                procedimentos: procedimentos,
+                serie: getSerieEmissao(),
+                equiparacao_hospitalar: isEquiparacao,
+                rps: getProximoRps()
+            };
+            
+            const user = getCurrentDentista();
+            const key = `notas_${user.id}`;
+            const notas = JSON.parse(localStorage.getItem(key) || '[]');
+            notas.push(nota);
+            localStorage.setItem(key, JSON.stringify(notas));
+            
+            alert('✅ Nota salva com sucesso!' + (isEquiparacao ? '\n🏥 Série de Equiparação Hospitalar' : ''));
+            carregarNotas();
+        }
+        
+        function carregarNotas() {
+            const user = getCurrentDentista();
+            const key = `notas_${user.id}`;
+            const notas = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            const lista = document.getElementById('listaNotas');
+            if (notas.length === 0) {
+                lista.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma nota registrada</p></div>';
+                return;
+            }
+            
+            lista.innerHTML = notas.reverse().map(n => {
+                const status = n.status || 'ativa';
+                const isCancelada = status === 'cancelada';
+                const numeroNota = n.numero || n.numero_nota;
+                const emitidaAuto = n.emitida_automaticamente;
+                
+                // Badge de status
+                const statusBadge = isCancelada 
+                    ? '<span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">❌ CANCELADA</span>'
+                    : '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">✅ ATIVA</span>';
+                
+                // Informações extras
+                let extraInfo = '';
+                if (emitidaAuto && numeroNota) {
+                    extraInfo = `<div style="font-size: 0.875rem; color: #059669; margin-top: 0.25rem;">📋 Nota Nº ${numeroNota}</div>`;
+                }
+                if (isCancelada && n.motivo_cancelamento) {
+                    extraInfo += `<div style="font-size: 0.875rem; color: #dc2626; margin-top: 0.25rem;">Motivo: ${n.motivo_cancelamento}</div>`;
+                }
+                
+                // Botão de cancelar (só para notas ativas e emitidas automaticamente)
+                const btnCancelar = (!isCancelada && emitidaAuto && numeroNota)
+                    ? `<button class="btn btn-sm" style="background: #dc2626; margin-left: 0.5rem;" onclick="event.stopPropagation(); mostrarModalCancelamento('${numeroNota}')">🗑️ Cancelar</button>`
+                    : '';
+                
+                return `
+                <div class="activity-item" style="opacity: ${isCancelada ? '0.6' : '1'};">
+                    <div class="activity-icon">${isCancelada ? '❌' : '📄'}</div>
+                    <div class="activity-details" style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div class="activity-title">${n.descricao}</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                ${statusBadge}
+                                ${btnCancelar}
+                            </div>
+                        </div>
+                        <div class="activity-time">${new Date(n.data).toLocaleDateString('pt-BR')} - ${new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(n.valor)}</div>
+                        ${extraInfo}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+        
+        function baixarModeloPDF() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = getValorNumerico();
+            const data = document.getElementById('dataServico').value;
+            const procedimento = document.getElementById('procedimento').value;
+            
+            if (!descricao || !valor || !data) {
+                alert('⚠️ Preencha todos os campos antes de gerar o PDF');
+                return;
+            }
+            
+            const nota = {
+                descricao,
+                valor,
+                data,
+                procedimento
+            };
+            
+            const user = getCurrentDentista();
+            gerarPDFNotaFiscal(nota, user);
+        }
+        
+        function gerarModelo() {
+            alert('📄 Use o botão "Baixar Modelo PDF" para gerar o modelo em PDF!\n\nO PDF pode ser usado como referência ao emitir a nota fiscal no sistema da prefeitura.');
+        }
+        
+        // ==================== CONFIGURAÇÕES DE PREFEITURAS ====================
+        
+        function abrirConfigPrefeituras() {
+            document.getElementById('modalConfigPrefeituras').style.display = 'block';
+            carregarPrefeituras();
+            mostrarTabPrefeitura('lista');
+        }
+        
+        function fecharConfigPrefeituras() {
+            document.getElementById('modalConfigPrefeituras').style.display = 'none';
+        }
+        
+        function abrirHistoricoNotas() {
+            document.getElementById('modalHistoricoNotas').style.display = 'block';
+            carregarHistoricoNotas();
+        }
+        
+        function fecharHistoricoNotas() {
+            document.getElementById('modalHistoricoNotas').style.display = 'none';
+        }
+        
+        function mostrarTabPrefeitura(tab) {
+            // Esconder todos os conteúdos
+            document.getElementById('conteudoListaPrefeituras').style.display = 'none';
+            document.getElementById('conteudoNovaPrefeitura').style.display = 'none';
+            document.getElementById('conteudoDocumentacao').style.display = 'none';
+            
+            // Resetar estilos dos tabs
+            ['tabListaPrefeituras', 'tabNovaPrefeitura', 'tabDocumentacao'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.background = 'transparent';
+                el.style.borderBottomColor = 'transparent';
+                el.style.color = '#6b7280';
+            });
+            
+            // Mostrar conteúdo selecionado
+            if (tab === 'lista') {
+                document.getElementById('conteudoListaPrefeituras').style.display = 'block';
+                document.getElementById('tabListaPrefeituras').style.background = 'white';
+                document.getElementById('tabListaPrefeituras').style.borderBottomColor = '#8b5cf6';
+                document.getElementById('tabListaPrefeituras').style.color = '#8b5cf6';
+            } else if (tab === 'nova') {
+                document.getElementById('conteudoNovaPrefeitura').style.display = 'block';
+                document.getElementById('tabNovaPrefeitura').style.background = 'white';
+                document.getElementById('tabNovaPrefeitura').style.borderBottomColor = '#8b5cf6';
+                document.getElementById('tabNovaPrefeitura').style.color = '#8b5cf6';
+                // NÃO limpar automaticamente - dados permanecem carregados!
+            } else if (tab === 'docs') {
+                document.getElementById('conteudoDocumentacao').style.display = 'block';
+                document.getElementById('tabDocumentacao').style.background = 'white';
+                document.getElementById('tabDocumentacao').style.borderBottomColor = '#8b5cf6';
+                document.getElementById('tabDocumentacao').style.color = '#8b5cf6';
+            }
+        }
+        
+        // Função para criar nova prefeitura do zero (limpa o formulário)
+        function criarNovaPrefeitura() {
+            limparFormPrefeitura();
+            document.getElementById('tabNovaPrefeitura').textContent = '➕ Nova Prefeitura';
+            mostrarInfo('Formulário limpo. Preencha os dados da nova prefeitura.');
+        }
+        
+        function limparFormPrefeitura() {
+            document.getElementById('prefeituraEditId').value = '';
+            document.getElementById('prefCidade').value = '';
+            document.getElementById('prefUF').value = '';
+            document.getElementById('prefCodigoTOM').value = '';
+            document.getElementById('prefSistema').value = 'ipm';
+            document.getElementById('prefURL').value = '';
+            document.getElementById('prefCPFCNPJ').value = '';
+            document.getElementById('prefSenha').value = '';
+            document.getElementById('prefSerieNFSe').value = '1';
+            document.getElementById('prefUltimoRps').value = '0';
+            document.getElementById('prefUltimoRpsEquiparacao').value = '0';
+            atualizarSerieEquiparacao();
+            document.getElementById('prefAmbiente').value = 'producao';
+            document.getElementById('prefExigeCertificado').checked = false;
+            document.getElementById('certificadoSection').style.display = 'none';
+            document.getElementById('prefAliquotaISS').value = '';
+            document.getElementById('prefCodigoServico').value = '';
+            document.getElementById('prefItemListaServico').value = '4.12';
+            document.getElementById('prefCodigoTribNacional').value = '041201';
+            document.getElementById('prefCodigoNBS').value = '';
+            document.getElementById('prefSituacaoTributaria').value = '1';
+            // IBS/CBS
+            document.getElementById('prefCSTIBSCBS').value = '200';
+            document.getElementById('prefClassTrib').value = '200029';
+            document.getElementById('prefFinNFSe').value = '0';
+            document.getElementById('prefIndFinal').value = '1';
+            document.getElementById('prefCIndOp').value = '030102';
+            document.getElementById('prefAliquotaIBSUF').value = '0.1';
+            document.getElementById('prefAliquotaIBSMun').value = '0';
+            document.getElementById('prefAliquotaCBS').value = '0.9';
+            document.getElementById('prefReducaoAliquota').value = '';
+            document.getElementById('prefRedutorGov').value = '';
+            // PIS/COFINS
+            document.getElementById('prefTipoRetencao').value = '2';
+            document.getElementById('prefAliquotaPIS').value = '';
+            document.getElementById('prefAliquotaCOFINS').value = '';
+        }
+        
+        // Função para calcular série de equiparação (série + 1)
+        function atualizarSerieEquiparacao() {
+            const serie = document.getElementById('prefSerieNFSe').value || '1';
+            // Tenta converter para número e somar 1
+            const serieNum = parseInt(serie);
+            if (!isNaN(serieNum)) {
+                document.getElementById('prefSerieEquiparacao').value = (serieNum + 1).toString();
+            } else {
+                // Se não for número, adiciona "E" no final (ex: RPS -> RPSE)
+                document.getElementById('prefSerieEquiparacao').value = serie + 'E';
+            }
+        }
+        
+        // ==================== IMPORTAR PREFEITURA PRÉ-CONFIGURADA ====================
+        
+        // Templates locais (fallback caso backend não responda)
+        const TEMPLATES_LOCAIS = {
+            // ==================== POMERODE-SC ====================
+            'pomerode-sc-simples': {
+                cidade: 'Pomerode',
+                uf: 'SC',
+                codigo_tom: '8259',
+                sistema: 'ipm',
+                url_webservice: 'https://ws-pomerode.atende.net:7443/?pg=rest&service=WNERestServiceNFSe',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'simples',
+                aliquota_iss: '0.00', // ISS já no DAS
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1', // Simples Nacional
+                cst_ibs_cbs: '200', // Simples Nacional
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0',
+                tipo_retencao: '1', // Não retém
+                aliquota_pis: '0',
+                aliquota_cofins: '0'
+            },
+            'pomerode-sc-presumido': {
+                cidade: 'Pomerode',
+                uf: 'SC',
+                codigo_tom: '8259',
+                sistema: 'ipm',
+                url_webservice: 'https://ws-pomerode.atende.net:7443/?pg=rest&service=WNERestServiceNFSe',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'presumido',
+                aliquota_iss: '2.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1', // Tributação normal
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0.1',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0.9',
+                tipo_retencao: '2',
+                aliquota_pis: '0.65',
+                aliquota_cofins: '3.00'
+            },
+            // ==================== SÃO PAULO-SP ====================
+            'sao-paulo-sp-simples': {
+                cidade: 'São Paulo',
+                uf: 'SP',
+                codigo_tom: '7107',
+                sistema: 'nfpaulistana',
+                url_webservice: 'https://nfe.prefeitura.sp.gov.br/ws/lotenfe.asmx',
+                serie_nfse: 'RPS',
+                ambiente: 'producao',
+                regime: 'simples',
+                aliquota_iss: '0.00',
+                codigo_servico: '04693',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0',
+                tipo_retencao: '1',
+                aliquota_pis: '0',
+                aliquota_cofins: '0'
+            },
+            'sao-paulo-sp-presumido': {
+                cidade: 'São Paulo',
+                uf: 'SP',
+                codigo_tom: '7107',
+                sistema: 'nfpaulistana',
+                url_webservice: 'https://nfe.prefeitura.sp.gov.br/ws/lotenfe.asmx',
+                serie_nfse: 'RPS',
+                ambiente: 'producao',
+                regime: 'presumido',
+                aliquota_iss: '2.00',
+                codigo_servico: '04693',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0.1',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0.9',
+                tipo_retencao: '2',
+                aliquota_pis: '0.65',
+                aliquota_cofins: '3.00'
+            },
+            // ==================== BLUMENAU-SC ====================
+            'blumenau-sc-simples': {
+                cidade: 'Blumenau',
+                uf: 'SC',
+                codigo_tom: '8047',
+                sistema: 'ipm',
+                url_webservice: 'https://ws-blumenau.atende.net:7443/?pg=rest&service=WNERestServiceNFSe',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'simples',
+                aliquota_iss: '0.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0',
+                tipo_retencao: '1',
+                aliquota_pis: '0',
+                aliquota_cofins: '0'
+            },
+            'blumenau-sc-presumido': {
+                cidade: 'Blumenau',
+                uf: 'SC',
+                codigo_tom: '8047',
+                sistema: 'ipm',
+                url_webservice: 'https://ws-blumenau.atende.net:7443/?pg=rest&service=WNERestServiceNFSe',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'presumido',
+                aliquota_iss: '2.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0.1',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0.9',
+                tipo_retencao: '2',
+                aliquota_pis: '0.65',
+                aliquota_cofins: '3.00'
+            },
+            // ==================== JOINVILLE-SC ====================
+            'joinville-sc-simples': {
+                cidade: 'Joinville',
+                uf: 'SC',
+                codigo_tom: '8179',
+                sistema: 'ipm',
+                url_webservice: 'https://ws-joinville.atende.net:7443/?pg=rest&service=WNERestServiceNFSe',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'simples',
+                aliquota_iss: '0.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0',
+                tipo_retencao: '1',
+                aliquota_pis: '0',
+                aliquota_cofins: '0'
+            },
+            'joinville-sc-presumido': {
+                cidade: 'Joinville',
+                uf: 'SC',
+                codigo_tom: '8179',
+                sistema: 'ipm',
+                url_webservice: 'https://ws-joinville.atende.net:7443/?pg=rest&service=WNERestServiceNFSe',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'presumido',
+                aliquota_iss: '2.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0.1',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0.9',
+                tipo_retencao: '2',
+                aliquota_pis: '0.65',
+                aliquota_cofins: '3.00'
+            },
+            // ==================== FLORIANÓPOLIS-SC ====================
+            'florianopolis-sc-simples': {
+                cidade: 'Florianópolis',
+                uf: 'SC',
+                codigo_tom: '8105',
+                sistema: 'betha',
+                url_webservice: 'https://e-gov.betha.com.br/e-nota-contribuinte-ws/nfseWS',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'simples',
+                aliquota_iss: '0.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0',
+                tipo_retencao: '1',
+                aliquota_pis: '0',
+                aliquota_cofins: '0'
+            },
+            'florianopolis-sc-presumido': {
+                cidade: 'Florianópolis',
+                uf: 'SC',
+                codigo_tom: '8105',
+                sistema: 'betha',
+                url_webservice: 'https://e-gov.betha.com.br/e-nota-contribuinte-ws/nfseWS',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'presumido',
+                aliquota_iss: '2.00',
+                codigo_servico: '8630504',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0.1',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0.9',
+                tipo_retencao: '2',
+                aliquota_pis: '0.65',
+                aliquota_cofins: '3.00'
+            },
+            // ==================== CURITIBA-PR ====================
+            'curitiba-pr-simples': {
+                cidade: 'Curitiba',
+                uf: 'PR',
+                codigo_tom: '7535',
+                sistema: 'curitiba',
+                url_webservice: 'https://isscuritiba.curitiba.pr.gov.br/Iss.NfseWebService/nfsews.asmx',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'simples',
+                aliquota_iss: '0.00',
+                codigo_servico: '0412',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0',
+                tipo_retencao: '1',
+                aliquota_pis: '0',
+                aliquota_cofins: '0'
+            },
+            'curitiba-pr-presumido': {
+                cidade: 'Curitiba',
+                uf: 'PR',
+                codigo_tom: '7535',
+                sistema: 'curitiba',
+                url_webservice: 'https://isscuritiba.curitiba.pr.gov.br/Iss.NfseWebService/nfsews.asmx',
+                serie_nfse: '1',
+                ambiente: 'producao',
+                regime: 'presumido',
+                aliquota_iss: '2.00',
+                codigo_servico: '0412',
+                item_lista_servico: '4.12',
+                codigo_trib_nacional: '041201',
+                codigo_nbs: '1.1101.30.00',
+                situacao_tributaria: '1',
+                cst_ibs_cbs: '200',
+                class_trib: '200029',
+                fin_nfse: '0',
+                ind_final: '1',
+                c_ind_op: '030102',
+                aliquota_ibs_uf: '0.1',
+                aliquota_ibs_mun: '0',
+                aliquota_cbs: '0.9',
+                tipo_retencao: '2',
+                aliquota_pis: '0.65',
+                aliquota_cofins: '3.00'
+            }
+        };
+        
+        // Função para preencher os campos do formulário
+        function preencherFormularioPrefeitura(t) {
+            console.log('📝 Preenchendo formulário com:', t);
+            
+            // Identificação
+            document.getElementById('prefCidade').value = t.cidade || '';
+            document.getElementById('prefUF').value = t.uf || '';
+            document.getElementById('prefCodigoTOM').value = t.codigo_tom || '';
+            document.getElementById('prefSistema').value = t.sistema || 'ipm';
+            
+            // Conexão
+            document.getElementById('prefURL').value = t.url_webservice || '';
+            document.getElementById('prefSerieNFSe').value = t.serie_nfse || '1';
+            document.getElementById('prefUltimoRps').value = t.ultimo_rps || '0';
+            document.getElementById('prefUltimoRpsEquiparacao').value = t.ultimo_rps_equiparacao || '0';
+            atualizarSerieEquiparacao();
+            document.getElementById('prefAmbiente').value = t.ambiente || 'producao';
+            
+            // Tributação
+            document.getElementById('prefAliquotaISS').value = t.aliquota_iss || '';
+            document.getElementById('prefCodigoServico').value = t.codigo_servico || '';
+            document.getElementById('prefItemListaServico').value = t.item_lista_servico || '4.12';
+            document.getElementById('prefCodigoTribNacional').value = t.codigo_trib_nacional || '041201';
+            document.getElementById('prefCodigoNBS').value = t.codigo_nbs || '';
+            document.getElementById('prefSituacaoTributaria').value = t.situacao_tributaria || '1';
+            
+            // IBS/CBS
+            document.getElementById('prefCSTIBSCBS').value = t.cst_ibs_cbs || '200';
+            document.getElementById('prefClassTrib').value = t.class_trib || '200029';
+            document.getElementById('prefFinNFSe').value = t.fin_nfse || '0';
+            document.getElementById('prefIndFinal').value = t.ind_final || '1';
+            document.getElementById('prefCIndOp').value = t.c_ind_op || '030102';
+            document.getElementById('prefAliquotaIBSUF').value = t.aliquota_ibs_uf || '0.1';
+            document.getElementById('prefAliquotaIBSMun').value = t.aliquota_ibs_mun || '0';
+            document.getElementById('prefAliquotaCBS').value = t.aliquota_cbs || '0.9';
+            document.getElementById('prefReducaoAliquota').value = t.reducao_aliquota || '';
+            document.getElementById('prefRedutorGov').value = t.redutor_gov || '';
+            
+            // PIS/COFINS
+            document.getElementById('prefTipoRetencao').value = t.tipo_retencao || '2';
+            document.getElementById('prefAliquotaPIS').value = t.aliquota_pis || '';
+            document.getElementById('prefAliquotaCOFINS').value = t.aliquota_cofins || '';
+            
+            console.log('✅ Formulário preenchido!');
+        }
+        
+        // Função principal para importar template
+        async function importarPrefeituraTemplate(templateId) {
+            console.log('🏛️ Importando template:', templateId);
+            
+            // Usar template local
+            const t = TEMPLATES_LOCAIS[templateId];
+            
+            if (!t) {
+                alert('❌ Template não encontrado: ' + templateId);
+                return;
+            }
+            
+            // Identificar regime
+            const isSimples = templateId.includes('-simples');
+            const regimeNome = isSimples ? 'Simples Nacional' : 'Lucro Presumido';
+            const regimeIcon = isSimples ? '📗' : '📘';
+            
+            // PRIMEIRO: Ir para aba de nova prefeitura e limpar formulário
+            mostrarTabPrefeitura('nova');
+            limparFormPrefeitura();
+            document.getElementById('tabNovaPrefeitura').textContent = `${regimeIcon} ${t.cidade} - ${regimeNome}`;
+            
+            // DEPOIS: Preencher todos os campos do formulário
+            document.getElementById('prefeituraEditId').value = '';
+            
+            // Identificação
+            document.getElementById('prefCidade').value = t.cidade || '';
+            document.getElementById('prefUF').value = t.uf || '';
+            document.getElementById('prefCodigoTOM').value = t.codigo_tom || '';
+            document.getElementById('prefSistema').value = t.sistema || 'ipm';
+            
+            // Conexão
+            document.getElementById('prefURL').value = t.url_webservice || '';
+            document.getElementById('prefCPFCNPJ').value = ''; // Usuário precisa preencher
+            document.getElementById('prefSenha').value = ''; // Usuário precisa preencher
+            document.getElementById('prefSerieNFSe').value = t.serie_nfse || '1';
+            document.getElementById('prefUltimoRps').value = '0';
+            document.getElementById('prefUltimoRpsEquiparacao').value = '0';
+            atualizarSerieEquiparacao();
+            document.getElementById('prefAmbiente').value = t.ambiente || 'producao';
+            document.getElementById('prefExigeCertificado').checked = false;
+            document.getElementById('certificadoSection').style.display = 'none';
+            
+            // Tributação
+            document.getElementById('prefAliquotaISS').value = t.aliquota_iss || '';
+            document.getElementById('prefCodigoServico').value = t.codigo_servico || '';
+            document.getElementById('prefItemListaServico').value = t.item_lista_servico || '4.12';
+            document.getElementById('prefCodigoTribNacional').value = t.codigo_trib_nacional || '041201';
+            document.getElementById('prefCodigoNBS').value = t.codigo_nbs || '';
+            document.getElementById('prefSituacaoTributaria').value = t.situacao_tributaria || '1';
+            
+            // IBS/CBS (Reforma Tributária 2026)
+            document.getElementById('prefCSTIBSCBS').value = t.cst_ibs_cbs || '200';
+            document.getElementById('prefClassTrib').value = t.class_trib || '200029';
+            document.getElementById('prefFinNFSe').value = t.fin_nfse || '0';
+            document.getElementById('prefIndFinal').value = t.ind_final || '1';
+            document.getElementById('prefCIndOp').value = t.c_ind_op || '030102';
+            document.getElementById('prefAliquotaIBSUF').value = t.aliquota_ibs_uf || '0';
+            document.getElementById('prefAliquotaIBSMun').value = t.aliquota_ibs_mun || '0';
+            document.getElementById('prefAliquotaCBS').value = t.aliquota_cbs || '0';
+            document.getElementById('prefReducaoAliquota').value = t.reducao_aliquota || '';
+            document.getElementById('prefRedutorGov').value = t.redutor_gov || '';
+            
+            // PIS/COFINS
+            document.getElementById('prefTipoRetencao').value = t.tipo_retencao || '1';
+            document.getElementById('prefAliquotaPIS').value = t.aliquota_pis || '';
+            document.getElementById('prefAliquotaCOFINS').value = t.aliquota_cofins || '';
+            
+            // Mensagem de orientação
+            let msgRegime = '';
+            if (isSimples) {
+                msgRegime = '📗 SIMPLES NACIONAL:\n' +
+                           '• ISS já incluído no DAS (não destacar na nota)\n' +
+                           '• PIS/COFINS zerados\n\n';
+            } else {
+                msgRegime = '📘 LUCRO PRESUMIDO:\n' +
+                           '• ISS destacado na nota (3% padrão)\n' +
+                           '• PIS 0,65% + COFINS 3%\n' +
+                           '• Equiparação Hospitalar: use a série separada!\n\n';
+            }
+            
+            alert('✅ Template carregado: ' + t.cidade + ' - ' + t.uf + '\n\n' +
+                  msgRegime +
+                  '⚠️ IMPORTANTE:\n' +
+                  '1. Preencha seu CPF/CNPJ\n' +
+                  '2. Preencha sua Senha do Web Service\n' +
+                  '3. Clique em "Salvar Prefeitura"');
+            
+            console.log('✅ Formulário preenchido com template:', templateId);
+        }
+        
+        // Função de compatibilidade (mantém botão antigo funcionando)
+        function importarPrefeituraPomerode() {
+            importarPrefeituraTemplate('pomerode-sc-simples');
+        }
+        
+        function atualizarURLPadrao() {
+            const sistema = document.getElementById('prefSistema').value;
+            const cidade = document.getElementById('prefCidade').value.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '');
+            
+            let url = '';
+            if (sistema === 'ipm' && cidade) {
+                url = `https://ws-${cidade}.atende.net:7443/?pg=rest&service=WNERestServiceNFSe`;
+            }
+            
+            if (url && !document.getElementById('prefURL').value) {
+                document.getElementById('prefURL').value = url;
+            }
+        }
+        
+        function toggleSenhaWS() {
+            const input = document.getElementById('prefSenha');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+        
+        function toggleCertificadoSection() {
+            const checked = document.getElementById('prefExigeCertificado').checked;
+            document.getElementById('certificadoSection').style.display = checked ? 'block' : 'none';
+        }
+        
+        async function carregarPrefeituras() {
+            const token = getToken();
+            if (!token) return;
+            
+            try {
+                const resp = await fetch(`${getApiUrl()}/api/prefeituras`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (resp.ok) {
+                    const data = await resp.json();
+                    renderizarListaPrefeituras(data.prefeituras || []);
+                } else {
+                    console.error('Erro ao carregar prefeituras:', resp.status);
+                    renderizarListaPrefeituras([]);
+                }
+            } catch (err) {
+                console.error('Erro ao carregar prefeituras:', err);
+                renderizarListaPrefeituras([]);
+            }
+        }
+        
+        function renderizarListaPrefeituras(prefeituras) {
+            const container = document.getElementById('listaPrefeiturasCadastradas');
+            
+            if (!prefeituras || prefeituras.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:3rem; color:#9ca3af;">
+                        <div style="font-size:4rem; margin-bottom:1rem;">🏛️</div>
+                        <p>Nenhuma prefeitura configurada ainda</p>
+                        <button onclick="mostrarTabPrefeitura('nova')" class="btn" style="background:#8b5cf6; color:white; margin-top:1rem;">
+                            ➕ Adicionar Primeira Prefeitura
+                        </button>
+                        <div style="margin-top:2rem; padding-top:2rem; border-top:1px solid #e5e7eb;">
+                            <p style="font-weight:600; margin-bottom:1rem;">🚀 Importar Configuração Pronta:</p>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.5rem;" id="templatesRapidos"></div>
+                        </div>
+                    </div>
+                `;
+                carregarBotoesTemplates();
+                return;
+            }
+            
+            let html = '<div style="display:flex; flex-direction:column; gap:1rem;">';
+            
+            prefeituras.forEach((pref, idx) => {
+                const statusColor = pref.ambiente === 'producao' ? '#22c55e' : '#f59e0b';
+                const statusText = pref.ambiente === 'producao' ? 'Produção' : 'Homologação';
+                
+                html += `
+                    <div style="background:white; border:1px solid #e5e7eb; border-radius:12px; padding:1.25rem; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="width:50px; height:50px; background:linear-gradient(135deg, #8b5cf6, #6366f1); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem;">
+                                🏛️
+                            </div>
+                            <div>
+                                <div style="font-weight:600; color:#1e293b; font-size:1.1rem;">${pref.cidade} - ${pref.uf}</div>
+                                <div style="color:#64748b; font-size:0.875rem;">
+                                    TOM: ${pref.codigo_tom || 'N/A'} | Sistema: ${(pref.sistema || 'IPM').toUpperCase()}
+                                </div>
+                                <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                                    <span style="background:${statusColor}20; color:${statusColor}; padding:0.125rem 0.5rem; border-radius:20px; font-size:0.75rem; font-weight:600;">
+                                        ${statusText}
+                                    </span>
+                                    ${pref.exige_certificado ? '<span style="background:#ef444420; color:#ef4444; padding:0.125rem 0.5rem; border-radius:20px; font-size:0.75rem;">🔐 Certificado</span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button onclick="usarPrefeituraParaEmissao(${pref.id}, '${pref.serie_nfse || '1'}', ${pref.ultimo_rps || 0}, ${pref.ultimo_rps_equiparacao || 0})" class="btn btn-sm" style="background:#10b981; color:white;">
+                                ✅ Usar
+                            </button>
+                            <button onclick="testarConexaoPrefeitura(${pref.id})" class="btn btn-sm" style="background:#f59e0b; color:white;">
+                                🔌 Testar
+                            </button>
+                            <button onclick="editarPrefeitura(${pref.id})" class="btn btn-sm" style="background:#3b82f6; color:white;">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="excluirPrefeitura(${pref.id})" class="btn btn-sm" style="background:#ef4444; color:white;">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <button onclick="mostrarTabPrefeitura('nova')" style="background:#f8fafc; border:2px dashed #cbd5e1; border-radius:12px; padding:1rem; color:#64748b; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                    ➕ Adicionar Nova Prefeitura
+                </button>
+                
+                <div style="margin-top:1rem; padding:1rem; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
+                    <p style="font-weight:600; color:#166534; margin-bottom:0.75rem;">🚀 Importar Configuração Pronta:</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.5rem;" id="templatesRapidos"></div>
+                </div>
+            </div>`;
+            
+            container.innerHTML = html;
+            carregarBotoesTemplates();
+        }
+        
+        // Carregar botões de templates disponíveis
+        function carregarBotoesTemplates() {
+            const container = document.getElementById('templatesRapidos');
+            if (!container) return;
+            
+            // Cidades disponíveis
+            const cidades = [
+                { id: 'pomerode-sc', cidade: 'Pomerode', uf: 'SC', iss_simples: '0%', iss_presumido: '3%' },
+                { id: 'sao-paulo-sp', cidade: 'São Paulo', uf: 'SP', iss_simples: '0%', iss_presumido: '2%' },
+                { id: 'blumenau-sc', cidade: 'Blumenau', uf: 'SC', iss_simples: '0%', iss_presumido: '3%' },
+                { id: 'joinville-sc', cidade: 'Joinville', uf: 'SC', iss_simples: '0%', iss_presumido: '3%' },
+                { id: 'florianopolis-sc', cidade: 'Florianópolis', uf: 'SC', iss_simples: '0%', iss_presumido: '3%' },
+                { id: 'curitiba-pr', cidade: 'Curitiba', uf: 'PR', iss_simples: '0%', iss_presumido: '2%' }
+            ];
+            
+            let html = '<div style="display:grid; grid-template-columns:130px 145px 200px; gap:0.35rem 0.5rem; align-items:center;">';
+            
+            cidades.forEach(c => {
+                html += `
+                    <span style="font-weight:600; color:#1e293b; font-size:0.8rem; white-space:nowrap;">🏛️ ${c.cidade}-${c.uf}</span>
+                    <button onclick="importarPrefeituraTemplate('${c.id}-simples')" class="btn btn-sm" 
+                            style="background:#22c55e; color:white; font-size:0.7rem; padding:0.25rem 0.5rem; border-radius:4px; text-align:center;">
+                        📗 Simples Nacional
+                    </button>
+                    <button onclick="importarPrefeituraTemplate('${c.id}-presumido')" class="btn btn-sm" 
+                            style="background:#3b82f6; color:white; font-size:0.7rem; padding:0.25rem 0.5rem; border-radius:4px; text-align:center;">
+                        📘 Lucro Presumido (ISS ${c.iss_presumido})
+                    </button>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        async function editarPrefeitura(id) {
+            const token = getToken();
+            if (!token) return;
+            
+            try {
+                const resp = await fetch(`${getApiUrl()}/api/prefeituras/${id}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!resp.ok) {
+                    alert('❌ Erro ao carregar prefeitura');
+                    return;
+                }
+                
+                const data = await resp.json();
+                const pref = data.prefeitura;
+                
+                document.getElementById('prefeituraEditId').value = id;
+                document.getElementById('prefCidade').value = pref.cidade || '';
+                document.getElementById('prefUF').value = pref.uf || '';
+                document.getElementById('prefCodigoTOM').value = pref.codigo_tom || '';
+                document.getElementById('prefSistema').value = pref.sistema || 'ipm';
+                document.getElementById('prefURL').value = pref.url_webservice || '';
+                document.getElementById('prefCPFCNPJ').value = pref.cpf_cnpj_prestador || '';
+                document.getElementById('prefSenha').value = ''; // Não mostra senha por segurança
+                document.getElementById('prefSerieNFSe').value = pref.serie_nfse || '1';
+                document.getElementById('prefUltimoRps').value = pref.ultimo_rps || '0';
+                document.getElementById('prefUltimoRpsEquiparacao').value = pref.ultimo_rps_equiparacao || '0';
+                atualizarSerieEquiparacao();
+                document.getElementById('prefAmbiente').value = pref.ambiente || 'producao';
+                document.getElementById('prefExigeCertificado').checked = pref.exige_certificado || false;
+                document.getElementById('certificadoSection').style.display = pref.exige_certificado ? 'block' : 'none';
+                document.getElementById('prefAliquotaISS').value = pref.aliquota_iss || '';
+                document.getElementById('prefCodigoServico').value = pref.codigo_servico || '';
+                document.getElementById('prefItemListaServico').value = pref.item_lista_servico || '4.12';
+                document.getElementById('prefCodigoTribNacional').value = pref.codigo_trib_nacional || '041201';
+                document.getElementById('prefCodigoNBS').value = pref.codigo_nbs || '';
+                document.getElementById('prefSituacaoTributaria').value = pref.situacao_tributaria || '1';
+                // IBS/CBS
+                document.getElementById('prefCSTIBSCBS').value = pref.cst_ibs_cbs || '200';
+                document.getElementById('prefClassTrib').value = pref.class_trib || '200029';
+                document.getElementById('prefFinNFSe').value = pref.fin_nfse || '0';
+                document.getElementById('prefIndFinal').value = pref.ind_final || '1';
+                document.getElementById('prefCIndOp').value = pref.c_ind_op || '030102';
+                document.getElementById('prefAliquotaIBSUF').value = pref.aliquota_ibs_uf || '0.1';
+                document.getElementById('prefAliquotaIBSMun').value = pref.aliquota_ibs_mun || '0';
+                document.getElementById('prefAliquotaCBS').value = pref.aliquota_cbs || '0.9';
+                document.getElementById('prefReducaoAliquota').value = pref.reducao_aliquota || '';
+                document.getElementById('prefRedutorGov').value = pref.redutor_gov || '';
+                // PIS/COFINS
+                document.getElementById('prefTipoRetencao').value = pref.tipo_retencao || '2';
+                document.getElementById('prefAliquotaPIS').value = pref.aliquota_pis || '';
+                document.getElementById('prefAliquotaCOFINS').value = pref.aliquota_cofins || '';
+                
+                mostrarTabPrefeitura('nova');
+                document.getElementById('tabNovaPrefeitura').textContent = '✏️ Editar Prefeitura';
+            } catch (err) {
+                console.error('Erro ao editar prefeitura:', err);
+                alert('❌ Erro ao carregar prefeitura');
+            }
+        }
+        
+        async function salvarPrefeitura() {
+            const token = getToken();
+            if (!token) {
+                alert('❌ Sessão expirada. Faça login novamente.');
+                return;
+            }
+            
+            const cidade = document.getElementById('prefCidade').value.trim();
+            const uf = document.getElementById('prefUF').value;
+            const url = document.getElementById('prefURL').value.trim();
+            const cpfcnpj = document.getElementById('prefCPFCNPJ').value.replace(/\D/g, '');
+            const senha = document.getElementById('prefSenha').value;
+            
+            if (!cidade || !uf || !url) {
+                alert('⚠️ Preencha Cidade, UF e URL do Web Service');
+                return;
+            }
+            
+            const prefeitura = {
+                cidade: cidade,
+                uf: uf,
+                codigo_tom: document.getElementById('prefCodigoTOM').value.trim(),
+                sistema: document.getElementById('prefSistema').value,
+                url_webservice: url,
+                cpf_cnpj_prestador: cpfcnpj,
+                senha_webservice: senha,
+                serie_nfse: document.getElementById('prefSerieNFSe').value || '1',
+                ultimo_rps: parseInt(document.getElementById('prefUltimoRps').value) || 0,
+                ultimo_rps_equiparacao: parseInt(document.getElementById('prefUltimoRpsEquiparacao').value) || 0,
+                ambiente: document.getElementById('prefAmbiente').value,
+                exige_certificado: document.getElementById('prefExigeCertificado').checked,
+                // Tributação
+                aliquota_iss: document.getElementById('prefAliquotaISS').value || null,
+                codigo_servico: document.getElementById('prefCodigoServico').value,
+                item_lista_servico: document.getElementById('prefItemListaServico').value,
+                codigo_trib_nacional: document.getElementById('prefCodigoTribNacional').value,
+                codigo_nbs: document.getElementById('prefCodigoNBS').value,
+                situacao_tributaria: document.getElementById('prefSituacaoTributaria').value,
+                // Reforma Tributária IBS/CBS (NT 122/2025)
+                cst_ibs_cbs: document.getElementById('prefCSTIBSCBS').value,
+                class_trib: document.getElementById('prefClassTrib').value,
+                fin_nfse: document.getElementById('prefFinNFSe').value,
+                ind_final: document.getElementById('prefIndFinal').value,
+                c_ind_op: document.getElementById('prefCIndOp').value,
+                aliquota_ibs_uf: document.getElementById('prefAliquotaIBSUF').value || null,
+                aliquota_ibs_mun: document.getElementById('prefAliquotaIBSMun').value || null,
+                aliquota_cbs: document.getElementById('prefAliquotaCBS').value || null,
+                reducao_aliquota: document.getElementById('prefReducaoAliquota').value || null,
+                redutor_gov: document.getElementById('prefRedutorGov').value || null,
+                // PIS/COFINS
+                tipo_retencao: document.getElementById('prefTipoRetencao').value,
+                aliquota_pis: document.getElementById('prefAliquotaPIS').value || null,
+                aliquota_cofins: document.getElementById('prefAliquotaCOFINS').value || null
+            };
+            
+            const editId = document.getElementById('prefeituraEditId').value;
+            const isEdit = editId !== '';
+            
+            try {
+                const resp = await fetch(`${getApiUrl()}/api/prefeituras${isEdit ? '/' + editId : ''}`, {
+                    method: isEdit ? 'PUT' : 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(prefeitura)
+                });
+                
+                const data = await resp.json();
+                
+                if (!resp.ok) {
+                    alert('❌ ' + (data.erro || 'Erro ao salvar prefeitura'));
+                    return;
+                }
+                
+                // Sucesso! Manter dados no formulário para o usuário ver o que salvou
+                if (!isEdit && data.prefeitura && data.prefeitura.id) {
+                    // Se era nova, setar o ID para próximas edições
+                    document.getElementById('prefeituraEditId').value = data.prefeitura.id;
+                }
+                
+                // Atualizar título para mostrar que está em modo edição
+                document.getElementById('tabNovaPrefeitura').textContent = '✏️ Editando: ' + cidade + '-' + uf;
+                
+                // Mostrar mensagem de sucesso sem sair do formulário
+                mostrarSucesso('Prefeitura salva com sucesso! Os dados permanecem carregados.');
+                
+                // Atualizar lista em background (sem mudar de aba)
+                carregarPrefeituras();
+            } catch (err) {
+                console.error('Erro ao salvar prefeitura:', err);
+                alert('❌ Erro ao salvar prefeitura. Verifique sua conexão.');
+            }
+        }
+        
+        async function excluirPrefeitura(id) {
+            if (!confirm('⚠️ Tem certeza que deseja excluir esta configuração de prefeitura?')) return;
+            
+            const token = getToken();
+            if (!token) {
+                alert('❌ Sessão expirada. Faça login novamente.');
+                return;
+            }
+            
+            try {
+                const resp = await fetch(`${getApiUrl()}/api/prefeituras/${id}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!resp.ok) {
+                    const data = await resp.json();
+                    alert('❌ ' + (data.erro || 'Erro ao excluir prefeitura'));
+                    return;
+                }
+                
+                alert('✅ Prefeitura excluída!');
+                carregarPrefeituras();
+            } catch (err) {
+                console.error('Erro ao excluir prefeitura:', err);
+                alert('❌ Erro ao excluir prefeitura.');
+            }
+        }
+        
+        async function testarConexaoPrefeitura(idOuVazio) {
+            const token = getToken();
+            if (!token) {
+                mostrarErro('Sessão expirada. Faça login novamente.');
+                return;
+            }
+            
+            let prefeitura;
+            
+            if (typeof idOuVazio === 'number' && idOuVazio > 0) {
+                // Testar prefeitura já salva (pelo ID)
+                try {
+                    const resp = await fetch(`${getApiUrl()}/api/prefeituras/${idOuVazio}`, {
+                        headers: { 
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        prefeitura = data.prefeitura;
+                    }
+                } catch (err) {
+                    console.error('Erro ao carregar prefeitura:', err);
+                }
+            }
+            
+            // Se não tem prefeitura salva, usar dados do formulário
+            if (!prefeitura) {
+                prefeitura = {
+                    url_webservice: document.getElementById('prefURL').value,
+                    cpf_cnpj_prestador: document.getElementById('prefCPFCNPJ').value.replace(/\D/g, ''),
+                    senha_webservice: document.getElementById('prefSenha').value,
+                    cidade: document.getElementById('prefCidade').value,
+                    codigo_tom: document.getElementById('prefCodigoTOM').value
+                };
+            }
+            
+            // Validar campos obrigatórios
+            if (!prefeitura.url_webservice) {
+                mostrarAviso('Configure a URL do Web Service antes de testar');
+                return;
+            }
+            if (!prefeitura.cpf_cnpj_prestador) {
+                mostrarAviso('Configure o CPF/CNPJ do prestador antes de testar');
+                return;
+            }
+            if (!prefeitura.senha_webservice) {
+                mostrarAviso('Configure a Senha do Web Service antes de testar');
+                return;
+            }
+            
+            // Mostrar loading
+            mostrarInfo('🔌 Testando conexão com o Web Service...');
+            
+            try {
+                const resp = await fetch(`${getApiUrl()}/api/nfse/testar-conexao`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url_webservice: prefeitura.url_webservice,
+                        cpf_cnpj_prestador: prefeitura.cpf_cnpj_prestador,
+                        senha_webservice: prefeitura.senha_webservice
+                    })
+                });
+                
+                const data = await resp.json();
+                
+                if (resp.ok && data.sucesso) {
+                    mostrarSucesso(
+                        '✅ Conexão estabelecida com sucesso!\n\n' +
+                        '• Prestador: ' + (data.prestador || prefeitura.cpf_cnpj_prestador) + '\n' +
+                        '• Servidor: ' + (data.servidor || 'IPM') + '\n' +
+                        (data.mensagem || '')
+                    );
+                } else {
+                    mostrarErro(
+                        '❌ Falha na conexão\n\n' +
+                        (data.erro || data.mensagem || 'Verifique os dados e tente novamente') + '\n\n' +
+                        '💡 Dicas:\n' +
+                        '• Verifique se o CPF/CNPJ está correto\n' +
+                        '• Verifique se a senha está correta\n' +
+                        '• Confirme se você tem acesso liberado no portal da prefeitura'
+                    );
+                }
+            } catch (err) {
+                console.error('Erro no teste de conexão:', err);
+                mostrarErro(
+                    '❌ Erro ao testar conexão\n\n' +
+                    'Não foi possível conectar ao servidor.\n\n' +
+                    'Verifique:\n' +
+                    '• Se o backend está rodando\n' +
+                    '• Se a URL do Web Service está correta\n' +
+                    '• Sua conexão com a internet'
+                );
+            }
+        }
+        
+        async function carregarHistoricoNotas() {
+            const container = document.getElementById('historicoNotasConteudo');
+            const notas = JSON.parse(localStorage.getItem('notasFiscaisDU') || '[]');
+            
+            if (!notas || notas.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:3rem; color:#9ca3af;">
+                        <div style="font-size:4rem; margin-bottom:1rem;">📭</div>
+                        <p>Nenhuma nota fiscal emitida ainda</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div style="display:flex; flex-direction:column; gap:0.75rem;">';
+            
+            notas.slice().reverse().forEach(nota => {
+                const statusColor = nota.status === 'emitida' ? '#22c55e' : 
+                                   nota.status === 'cancelada' ? '#ef4444' : '#f59e0b';
+                const statusText = nota.status === 'emitida' ? 'Emitida' : 
+                                   nota.status === 'cancelada' ? 'Cancelada' : 'Pendente';
+                
+                html += `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:1rem; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600; color:#1e293b;">${nota.numero || 'Sem número'}</div>
+                            <div style="color:#64748b; font-size:0.875rem;">${nota.descricao}</div>
+                            <div style="color:#94a3b8; font-size:0.75rem; margin-top:0.25rem;">
+                                ${new Date(nota.data).toLocaleDateString('pt-BR')} - ${new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(nota.valor)}
+                            </div>
+                        </div>
+                        <span style="background:${statusColor}20; color:${statusColor}; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.75rem; font-weight:600;">
+                            ${statusText}
+                        </span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Fechar modais ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'modalConfigPrefeituras') fecharConfigPrefeituras();
+            if (e.target.id === 'modalHistoricoNotas') fecharHistoricoNotas();
+        });
+        
+        window.addEventListener('DOMContentLoaded', carregarNotas);
+    </script>
+    <script src="js/orcamentos-modal.js"></script>
+</body>
+</html>

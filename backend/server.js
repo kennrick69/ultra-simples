@@ -6,6 +6,7 @@
 // ==============================================================================
 
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
@@ -36,6 +37,8 @@ app.use((req, res, next) => {
     console.log(`[${timestamp}] ${req.method} ${req.path}`);
     next();
 });
+
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ==============================================================================
 // POSTGRESQL CONNECTION
@@ -4983,7 +4986,7 @@ app.delete('/api/storage/files/:id', authMiddleware, async (req, res) => {
 // ROTAS UTILITÁRIAS
 // ==============================================================================
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     res.json({
         name: 'Dental Ultra API',
         version: '7.0.0',

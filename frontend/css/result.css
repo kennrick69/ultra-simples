@@ -1,0 +1,325 @@
+/* ==========================================
+   RESULT.CSS - Estilos da Página de Resultado
+   Sistema: Equiparação Hospitalar - DENTISTAS
+   ========================================== */
+
+/* ==================== RESULT PAGE ==================== */
+.result-page {
+    min-height: 100vh;
+    background: var(--bg-secondary);
+    padding: 2rem 0;
+}
+
+.result-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ==================== SCORE HERO ==================== */
+.score-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: var(--radius-2xl);
+    padding: 3rem;
+    margin-bottom: 2rem;
+    color: var(--text-white);
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+}
+
+.score-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    margin-bottom: 1.5rem;
+}
+
+.score-main {
+    margin-bottom: 2rem;
+}
+
+.score-number {
+    font-size: 6rem;
+    font-weight: var(--font-extrabold);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.score-level {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    margin-bottom: 1rem;
+}
+
+.score-description {
+    font-size: var(--text-lg);
+    opacity: 0.95;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ==================== COMPARISON CARDS ==================== */
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.regime-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-2xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 3px solid transparent;
+    transition: all var(--transition-base);
+}
+
+.regime-card.current {
+    border-color: var(--text-tertiary);
+}
+
+.regime-card.recommended {
+    border-color: var(--success);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.regime-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.regime-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+}
+
+.regime-badge {
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+}
+
+.regime-badge.current-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.regime-badge.recommended-badge {
+    background: var(--success-100);
+    color: var(--success);
+}
+
+.regime-value {
+    font-size: var(--text-4xl);
+    font-weight: var(--font-extrabold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.regime-label {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-bottom: 1.5rem;
+}
+
+.regime-details {
+    border-top: 1px solid var(--bg-quaternary);
+    padding-top: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.detail-label {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+}
+
+/* ==================== SAVINGS HIGHLIGHT ==================== */
+.savings-highlight {
+    background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+    border-radius: var(--radius-2xl);
+    padding: 3rem;
+    margin-bottom: 2rem;
+    color: var(--text-white);
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+}
+
+.savings-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.savings-amount {
+    font-size: var(--text-5xl);
+    font-weight: var(--font-extrabold);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.savings-period {
+    font-size: var(--text-xl);
+    opacity: 0.95;
+    margin-bottom: 1.5rem;
+}
+
+.savings-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.savings-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 1.5rem;
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(10px);
+}
+
+.savings-item-value {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    margin-bottom: 0.5rem;
+}
+
+.savings-item-label {
+    font-size: var(--text-sm);
+    opacity: 0.9;
+}
+
+/* ==================== NEXT STEPS ==================== */
+.next-steps {
+    background: var(--bg-primary);
+    border-radius: var(--radius-2xl);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+}
+
+.next-steps-title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.step-item-result {
+    display: flex;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.step-number-result {
+    width: 3rem;
+    height: 3rem;
+    background: var(--primary-100);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    flex-shrink: 0;
+}
+
+.step-content-result {
+    flex: 1;
+}
+
+.step-title-result {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.step-description-result {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ==================== CTA SECTION ==================== */
+.result-cta {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    border-radius: var(--radius-2xl);
+    padding: 3rem;
+    color: var(--text-white);
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    margin-bottom: 2rem;
+}
+
+.cta-title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    margin-bottom: 1rem;
+}
+
+.cta-text {
+    font-size: var(--text-lg);
+    opacity: 0.95;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ==================== RESPONSIVIDADE ==================== */
+@media (max-width: 768px) {
+    .score-number {
+        font-size: 4rem;
+    }
+    
+    .savings-amount {
+        font-size: var(--text-4xl);
+    }
+    
+    .comparison-grid,
+    .savings-breakdown {
+        grid-template-columns: 1fr;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prontuário Digital - Dentistas</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <style>
+        /* Estilos específicos do prontuário */
+        
+        /* Busca de Pacientes com Autocomplete */
+        .busca-paciente-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .busca-paciente-container input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .busca-paciente-container input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(45, 122, 95, 0.1);
+        }
+        
+        .dropdown-pacientes {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .dropdown-pacientes.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background: #f0f9f4;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-item-nome {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .dropdown-item-info {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        
+        .dropdown-empty {
+            padding: 16px;
+            text-align: center;
+            color: var(--text-light);
+        }
+        
+        .paciente-selecionado-info {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .paciente-selecionado-info .nome {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .paciente-selecionado-info .btn-trocar {
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .paciente-selecionado-info .btn-trocar:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .prontuario-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Odontograma */
+        .odontograma {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .arcada {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        
+        .arcada h4 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .dentes {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .dente {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.75rem;
+        }
+        
+        .dente:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+        
+        .dente.saudavel { background: #d1fae5; border-color: #10b981; }
+        .dente.carie { background: #fee2e2; border-color: #ef4444; }
+        .dente.obturado { background: #dbeafe; border-color: #3b82f6; }
+        .dente.extraido { background: #f3f4f6; border-color: #6b7280; }
+        .dente.implante { background: #fef3c7; border-color: #f59e0b; }
+        
+        .dente-numero {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dente-status {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+        }
+        
+        /* Upload de fotos */
+        .fotos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .foto-card {
+            border: 2px solid var(--border);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .foto-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .foto-card-info {
+            padding: 0.75rem;
+            background: white;
+        }
+        
+        .foto-card-info p {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .foto-delete {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* Histórico */
+        .evolucao-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .evolucao-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .evolucao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .evolucao-data {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .evolucao-texto {
+            line-height: 1.6;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="logo">🦷</div><h2>Dental Ultra</h2></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+            <a href="pacientes.html" class="nav-item"><span class="icon">👥</span><span>Pacientes</span></a>
+            <a href="agenda.html" class="nav-item">
+                <span class="icon">📅</span>
+                <span>Agenda</span>
+            </a>
+            <a href="plano-tratamento.html" class="nav-item"><span class="icon">📋</span><span>Plano de Tratamento</span></a>
+            <a href="agenda.html" class="nav-item">
+                <span class="icon">📅</span>
+                <span>Agenda</span>
+            </a>
+            <a href="nota-fiscal.html" class="nav-item"><span class="icon">📄</span><span>Notas Fiscais</span></a>
+            <a href="prontuario.html" class="nav-item active"><span class="icon">📝</span><span>Prontuário</span></a>
+            <a href="estoque.html" class="nav-item"><span class="icon">📦</span><span>Estoque</span></a>
+            <a href="financeiro.html" class="nav-item"><span class="icon">💰</span><span>Financeiro</span></a>
+            <a href="relatorios.html" class="nav-item"><span class="icon">📈</span><span>Relatórios</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info"><div class="user-avatar">👨‍⚕️</div><div class="user-details"><div class="user-name">...</div><div class="user-role">CRO: ...</div></div></div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="content-header">
+            <div>
+                <h1>Prontuário Digital</h1>
+                <p>Documentação completa e organizada</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">← Voltar</button>
+            </div>
+        </header>
+
+        <!-- Seleção de Paciente com Busca -->
+        <div class="section">
+            <div class="form-group">
+                <label for="buscaPaciente">🔍 Buscar Paciente</label>
+                <div class="busca-paciente-container">
+                    <input type="text" 
+                           id="buscaPaciente" 
+                           placeholder="Digite o nome, CPF ou telefone do paciente..."
+                           autocomplete="off"
+                           oninput="filtrarPacientes()"
+                           onfocus="mostrarListaPacientes()">
+                    <div id="listaPacientesDropdown" class="dropdown-pacientes"></div>
+                </div>
+                <input type="hidden" id="pacienteSelect" value="">
+                <div id="pacienteSelecionadoInfo" class="paciente-selecionado-info" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Prontuário -->
+        <div id="prontuarioContainer" style="display: none;">
+            <!-- Tabs -->
+            <div class="prontuario-tabs">
+                <button class="tab-btn active" onclick="switchTab('anamnese')">📋 Anamnese</button>
+                <button class="tab-btn" onclick="switchTab('odontograma')">🦷 Odontograma</button>
+                <button class="tab-btn" onclick="switchTab('fotos')">📸 Fotos</button>
+                <button class="tab-btn" onclick="switchTab('evolucao')">📝 Evolução</button>
+            </div>
+
+            <!-- Tab: Anamnese -->
+            <div id="tab-anamnese" class="tab-content active">
+                <div class="section">
+                    <h3>Ficha de Anamnese</h3>
+                    <form id="anamneseForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Queixa Principal</label>
+                                <textarea id="queixaPrincipal" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <h4>Histórico Médico</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label><input type="checkbox" id="diabetes"> Diabetes</label>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" id="hipertensao"> Hipertensão</label>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" id="cardiopatia"> Cardiopatia</label>
+                            </div>
+                            <div class="form-group">
+                                <label><input type="checkbox" id="alergia"> Alergias</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Medicamentos em Uso</label>
+                            <textarea id="medicamentos" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Observações Gerais</label>
+                            <textarea id="observacoesGerais" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" onclick="salvarAnamnese()">💾 Salvar Anamnese</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab: Odontograma -->
+            <div id="tab-odontograma" class="tab-content">
+                <div class="section">
+                    <h3>Odontograma Digital</h3>
+                    <p style="margin-bottom: 1rem;">Clique nos dentes para marcar seu status:</p>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm" style="background: #10b981;" onclick="setStatusDente('saudavel')">✓ Saudável</button>
+                        <button class="btn btn-sm" style="background: #ef4444;" onclick="setStatusDente('carie')">⚠ Cárie</button>
+                        <button class="btn btn-sm" style="background: #3b82f6;" onclick="setStatusDente('obturado')">🔧 Obturado</button>
+                        <button class="btn btn-sm" style="background: #6b7280;" onclick="setStatusDente('extraido')">✗ Extraído</button>
+                        <button class="btn btn-sm" style="background: #f59e0b;" onclick="setStatusDente('implante')">⭐ Implante</button>
+                    </div>
+                    
+                    <div class="odontograma">
+                        <div class="arcada">
+                            <h4>Arcada Superior</h4>
+                            <div class="dentes" id="arcada-superior"></div>
+                        </div>
+                        <div class="arcada">
+                            <h4>Arcada Inferior</h4>
+                            <div class="dentes" id="arcada-inferior"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="salvarOdontograma()">💾 Salvar Odontograma</button>
+                </div>
+            </div>
+
+            <!-- Tab: Fotos -->
+            <div id="tab-fotos" class="tab-content">
+                <div class="section">
+                    <h3>Fotos Clínicas</h3>
+                    
+                    <div class="upload-area" onclick="document.getElementById('fotoInput').click()">
+                        <input type="file" id="fotoInput" accept="image/*" onchange="adicionarFoto()" multiple>
+                        <p style="font-size: 2rem; margin-bottom: 0.5rem;">📸</p>
+                        <p><strong>Clique para adicionar fotos</strong></p>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">JPG, PNG ou JPEG</p>
+                    </div>
+                    
+                    <div class="fotos-grid" id="fotosGrid"></div>
+                </div>
+            </div>
+
+            <!-- Tab: Evolução -->
+            <div id="tab-evolucao" class="tab-content">
+                <div class="section">
+                    <h3>Evolução do Tratamento</h3>
+                    
+                    <div class="form-group">
+                        <label>Nova Evolução</label>
+                        <textarea id="evolucaoTexto" rows="4" placeholder="Descreva a consulta, procedimentos realizados, observações..."></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="adicionarEvolucao()">➕ Adicionar Evolução</button>
+                    
+                    <hr style="margin: 2rem 0;">
+                    
+                    <h4>Histórico de Evoluções</h4>
+                    <div class="evolucao-list" id="evolucaoList"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth-check.js"></script>
+    <script src="js/prontuario.js"></script>
+</body>
+</html>

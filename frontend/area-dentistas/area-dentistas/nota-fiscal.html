@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Notas Fiscais - Dentistas</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🦷</div>
+            <h2>Dental Ultra</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+            <a href="pacientes.html" class="nav-item"><span class="icon">👥</span><span>Pacientes</span></a>
+            <a href="agenda.html" class="nav-item">
+                <span class="icon">📅</span>
+                <span>Agenda</span>
+            </a>
+            <a href="plano-tratamento.html" class="nav-item"><span class="icon">📋</span><span>Plano de Tratamento</span></a>
+            <a href="agenda.html" class="nav-item">
+                <span class="icon">📅</span>
+                <span>Agenda</span>
+            </a>
+            <a href="nota-fiscal.html" class="nav-item active"><span class="icon">📄</span><span>Notas Fiscais</span></a>
+            <a href="prontuario.html" class="nav-item"><span class="icon">📝</span><span>Prontuário</span></a>
+            <a href="estoque.html" class="nav-item"><span class="icon">📦</span><span>Estoque</span></a>
+            <a href="financeiro.html" class="nav-item"><span class="icon">💰</span><span>Financeiro</span></a>
+            <a href="relatorios.html" class="nav-item"><span class="icon">📈</span><span>Relatórios</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info"><div class="user-avatar">👨‍⚕️</div><div class="user-details"><div class="user-name">...</div><div class="user-role">CRO: ...</div></div></div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div><h1>Gerador de Notas Fiscais</h1><p>Emita notas com descrição correta dos procedimentos</p></div>
+        </header>
+
+        <div class="section">
+            <div class="form-section">
+                <h3>👤 Dados do Paciente/Tomador</h3>
+                <div class="alert alert-info">
+                    <strong>📋 ATENÇÃO:</strong> Selecione o paciente para preencher automaticamente os dados da nota fiscal.
+                </div>
+                
+                <!-- BUSCA DE PACIENTE -->
+                <div class="form-group">
+                    <label>Buscar Paciente *</label>
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="buscaPaciente" 
+                            placeholder="🔍 Digite o nome, CPF ou telefone do paciente..."
+                            oninput="buscarPacienteNota()"
+                            autocomplete="off"
+                            style="width: 100%; padding-right: 100px;"
+                        >
+                        <button 
+                            type="button" 
+                            class="btn btn-sm btn-primary" 
+                            onclick="abrirCadastroRapido()"
+                            style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);"
+                        >
+                            + Novo
+                        </button>
+                    </div>
+                    
+                    <!-- RESULTADOS DA BUSCA -->
+                    <div id="resultadosBusca" style="display: none; position: relative; background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; margin-top: 0.5rem; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+                </div>
+                
+                <!-- PACIENTE SELECIONADO -->
+                <div id="pacienteSelecionado" style="display: none; background: #ecfdf5; border: 2px solid #10b981; border-radius: 0.75rem; padding: 1.5rem; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <div style="font-size: 1.25rem; font-weight: 600; color: #065f46; margin-bottom: 0.5rem;" id="pacienteNomeSel"></div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">CPF</div>
+                                    <div style="color: #065f46;" id="pacienteCPFSel"></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">Telefone</div>
+                                    <div style="color: #065f46;" id="pacienteTelSel"></div>
+                                </div>
+                                <div id="pacienteEmailDiv" style="display: none;">
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">Email</div>
+                                    <div style="color: #065f46;" id="pacienteEmailSel"></div>
+                                </div>
+                                <div id="pacienteCidadeDiv" style="display: none;">
+                                    <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">Cidade</div>
+                                    <div style="color: #065f46;" id="pacienteCidadeSel"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm" style="background: #ef4444; color: white;" onclick="limparPacienteSelecionado()">
+                            ✕ Trocar
+                        </button>
+                    </div>
+                    
+                    <!-- SEÇÃO RESPONSÁVEL (MENOR DE IDADE) -->
+                    <div id="responsavelSection" style="display: none; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <span style="font-size: 1.25rem;">👶</span>
+                            <strong style="color: #92400e;">Paciente Menor de Idade / Incapaz</strong>
+                        </div>
+                        <div style="background: #fffbeb; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.75rem;">
+                            <p style="margin: 0; color: #78350f; font-size: 0.875rem;">
+                                <strong>⚠️ IMPORTANTE:</strong> A nota fiscal será emitida no CPF do responsável legal para fins de dedução no Imposto de Renda.
+                            </p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">Nome do Responsável</div>
+                                <div style="color: #78350f; font-weight: 500;" id="responsavelNomeSel"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">CPF do Responsável</div>
+                                <div style="color: #78350f; font-weight: 500;" id="responsavelCPFSel"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">Parentesco</div>
+                                <div style="color: #78350f; font-weight: 500;" id="responsavelParentescoSel"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="pacienteId">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="form-section">
+                <h3>📄 Descrição da Nota Fiscal</h3>
+                <div class="alert alert-info">
+                    <strong>⚠️ IMPORTANTE:</strong> Para Equiparação Hospitalar, a nota fiscal DEVE conter descrição DETALHADA do procedimento, não apenas "Serviços Odontológicos".
+                </div>
+                
+                <div class="form-group">
+                    <label>Procedimentos Realizados *</label>
+                    <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="implante" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">✅ Implante Dentário (ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="enxerto" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">✅ Enxerto Ósseo (ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="cirurgia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">✅ Cirurgia Bucomaxilofacial (ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="extracao" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">✅ Extração Cirúrgica (ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="periodontia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">✅ Cirurgia Periodontal (ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="endodontia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">⚠️ Endodontia Complexa (DEPENDE)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="protese" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">⚠️ Prótese sobre Implante (DISCUTÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="ortodontia" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">❌ Ortodontia (NÃO ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="limpeza" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">❌ Limpeza Dental (NÃO ELEGÍVEL)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='transparent'">
+                                <input type="checkbox" name="procedimento" value="outro" onchange="updateDescricaoMultipla()" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span style="margin-left: 0.75rem; font-size: 0.95rem;">Outro Procedimento</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                        <small style="color: #6b7280;">✨ Selecione um ou mais procedimentos realizados na mesma sessão</small>
+                        <button type="button" class="btn btn-sm" style="background: #6b7280; color: white; padding: 0.375rem 0.75rem; font-size: 0.875rem;" onclick="limparSelecao()">🔄 Limpar</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Elemento(s) Dentário(s)</label>
+                    <input type="text" id="elemento" placeholder="Ex: 46, 47">
+                </div>
+                
+                <div class="form-group">
+                    <label>Descrição Completa para a Nota *</label>
+                    <textarea id="descricao" rows="4" placeholder="A descrição será gerada automaticamente ao selecionar o procedimento"></textarea>
+                    <small style="color: #10b981;">✓ Esta descrição está correta para Equiparação Hospitalar</small>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Valor (R$) *</label>
+                        <input type="number" id="valor" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Serviço *</label>
+                        <input type="date" id="dataServico" required>
+                    </div>
+                </div>
+                
+                <!-- MODO TESTE -->
+                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 0.5rem; padding: 1rem; margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="modo-teste" style="margin-right: 0.75rem; width: 20px; height: 20px; cursor: pointer;">
+                        <div>
+                            <strong style="color: #92400e; font-size: 1rem;">🧪 Modo Teste (Homologação)</strong>
+                            <p style="margin: 0.25rem 0 0 0; color: #78350f; font-size: 0.875rem;">
+                                Ativa esta opção para validar o XML sem emitir a nota fiscal real. Ideal para testes de integração.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-success" onclick="salvarNota()">💾 Salvar Nota</button>
+                <button class="btn btn-primary" onclick="baixarModeloPDF()">📥 Baixar Modelo PDF</button>
+                <button class="btn" style="background: #10b981; color: white;" onclick="emitirNotaAutomatica()">⚡ Emitir Nota Agora</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Notas Fiscais Emitidas</h2>
+            <div id="listaNotas">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Nenhuma nota registrada ainda</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/auth-check.js"></script>
+    <script src="js/pacientes.js"></script>
+    <script src="js/modal-paciente.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/pdf-generator.js"></script>
+    <!-- Integração NFSe -->
+    <script src="js/nfse-integration.js"></script>
+    <script>
+        function updateDescricaoMultipla() {
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]:checked');
+            const elem = document.getElementById('elemento').value;
+            
+            if (checkboxes.length === 0) {
+                document.getElementById('descricao').value = '';
+                return;
+            }
+            
+            let descricoes = [];
+            
+            checkboxes.forEach(checkbox => {
+                const proc = checkbox.value;
+                let desc = '';
+                
+                switch(proc) {
+                    case 'implante':
+                        desc = `Implante dentário osseointegrado - Sistema ${elem ? 'Elemento ' + elem : '[Elemento]'}, marca [Sistema], com planejamento cirúrgico digital, confecção de guia cirúrgico, instalação de implante de titânio grau IV, com superfície tratada por jateamento e ataque ácido, comprimento [XX]mm e diâmetro [X]mm, incluindo material de enxertia óssea e membrana reabsorvível quando necessário`;
+                        break;
+                    case 'enxerto':
+                        desc = `Enxerto ósseo ${elem ? 'na região do elemento ' + elem : 'em área edêntula'} - Preparação para implante com utilização de biomaterial ósseo particulado, fixação com membrana de colágeno reabsorvível, técnica de regeneração óssea guiada (ROG), com elevação de seio maxilar quando indicado`;
+                        break;
+                    case 'cirurgia':
+                        desc = `Cirurgia bucomaxilofacial - ${elem ? 'Elemento ' + elem : '[Descrição do procedimento]'} com anestesia local, incisão, descolamento de retalho mucoperiosteal, osteotomia quando necessária, curetagem, irrigação abundante, sutura com fio reabsorvível`;
+                        break;
+                    case 'extracao':
+                        desc = `Extração cirúrgica ${elem ? 'do elemento ' + elem : '[Elemento]'} - Odontossecção com alta rotação, remoção de osso pericoronário, regularização óssea, curetagem alveolar, compressão das corticais, sutura`;
+                        break;
+                    case 'periodontia':
+                        desc = `Cirurgia periodontal ${elem ? '- Elementos ' + elem : '- Retalho de acesso'} com raspagem e alisamento radicular, debridamento de bolsas periodontais, enxerto gengival livre quando indicado, reposicionamento de retalho, sutura`;
+                        break;
+                    case 'endodontia':
+                        desc = `Retratamento endodôntico ${elem ? 'do elemento ' + elem : '[Elemento]'} - Alta complexidade com remoção de material obturador prévio, desobstrução de canais calcificados, preparo químico-mecânico, obturação tridimensional com cimento endodôntico biocompatível`;
+                        break;
+                    case 'protese':
+                        desc = `Prótese unitária sobre implante ${elem ? '- Elemento ' + elem : '[Elemento]'} com confecção de coroa cerâmica, moldagem de transferência, seleção de cor, prova e instalação`;
+                        break;
+                    case 'ortodontia':
+                        desc = `Tratamento ortodôntico ${elem ? 'envolvendo elemento ' + elem : ''} - Instalação/manutenção de aparelho ortodôntico fixo`;
+                        break;
+                    case 'limpeza':
+                        desc = `Profilaxia dentária com remoção de biofilme e cálculo dentário, polimento coronário, aplicação tópica de flúor`;
+                        break;
+                    case 'outro':
+                        desc = 'Descreva detalhadamente o procedimento realizado';
+                        break;
+                    default:
+                        desc = '';
+                }
+                
+                if (desc) {
+                    descricoes.push(desc);
+                }
+            });
+            
+            // Juntar todas as descrições com ponto e vírgula
+            let descricaoCompleta = descricoes.join('; ') + '.';
+            
+            // Se for menor de idade, adicionar dados do paciente na descrição
+            if (typeof pacienteSelecionadoAtual !== 'undefined' && pacienteSelecionadoAtual && pacienteSelecionadoAtual.menorIdade) {
+                descricaoCompleta += '\n\n--- DADOS DO PACIENTE (MENOR/INCAPAZ) ---';
+                descricaoCompleta += '\nPaciente: ' + pacienteSelecionadoAtual.nome;
+                if (pacienteSelecionadoAtual.cpf) {
+                    descricaoCompleta += '\nCPF: ' + pacienteSelecionadoAtual.cpf;
+                }
+                if (pacienteSelecionadoAtual.dataNascimento) {
+                    const dn = pacienteSelecionadoAtual.dataNascimento.split('T')[0].split('-');
+                    descricaoCompleta += '\nData de Nascimento: ' + dn[2] + '/' + dn[1] + '/' + dn[0];
+                }
+                descricaoCompleta += '\n\nResponsável Legal: ' + (pacienteSelecionadoAtual.responsavelNome || 'Não informado');
+                if (pacienteSelecionadoAtual.responsavelParentesco) {
+                    descricaoCompleta += ' (' + pacienteSelecionadoAtual.responsavelParentesco + ')';
+                }
+            }
+            
+            document.getElementById('descricao').value = descricaoCompleta;
+        }
+        
+        function limparSelecao() {
+            // Desmarcar todos os checkboxes
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            // Limpar descrição
+            document.getElementById('descricao').value = '';
+            
+            // Feedback visual
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Limpo!';
+            btn.style.background = '#10b981';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '#6b7280';
+            }, 1500);
+        }
+        
+        // Também atualizar quando mudar o elemento
+        document.getElementById('elemento').addEventListener('input', function() {
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]:checked');
+            if (checkboxes.length > 0) {
+                updateDescricaoMultipla();
+            }
+        });
+        
+        function updateDescricao() {
+            // Mantém compatibilidade com código antigo
+            updateDescricaoMultipla();
+        }
+        
+        function salvarNota() {
+            const checkboxes = document.querySelectorAll('input[name="procedimento"]:checked');
+            const procedimentos = Array.from(checkboxes).map(cb => cb.value);
+            
+            const nota = {
+                id: Date.now(),
+                descricao: document.getElementById('descricao').value,
+                valor: parseFloat(document.getElementById('valor').value),
+                data: document.getElementById('dataServico').value,
+                procedimentos: procedimentos // Array de procedimentos
+            };
+            
+            const user = getCurrentUser();
+            const key = `notas_${user.id}`;
+            const notas = JSON.parse(localStorage.getItem(key) || '[]');
+            notas.push(nota);
+            localStorage.setItem(key, JSON.stringify(notas));
+            
+            alert('✅ Nota salva com sucesso!');
+            carregarNotas();
+        }
+        
+        function carregarNotas() {
+            const user = getCurrentUser();
+            const key = `notas_${user.id}`;
+            const notas = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            const lista = document.getElementById('listaNotas');
+            if (notas.length === 0) {
+                lista.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>Nenhuma nota registrada</p></div>';
+                return;
+            }
+            
+            lista.innerHTML = notas.reverse().map(n => {
+                const status = n.status || 'ativa';
+                const isCancelada = status === 'cancelada';
+                const numeroNota = n.numero || n.numero_nota;
+                const emitidaAuto = n.emitida_automaticamente;
+                
+                // Badge de status
+                const statusBadge = isCancelada 
+                    ? '<span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">❌ CANCELADA</span>'
+                    : '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">✅ ATIVA</span>';
+                
+                // Informações extras
+                let extraInfo = '';
+                if (emitidaAuto && numeroNota) {
+                    extraInfo = `<div style="font-size: 0.875rem; color: #059669; margin-top: 0.25rem;">📋 Nota Nº ${numeroNota}</div>`;
+                }
+                if (isCancelada && n.motivo_cancelamento) {
+                    extraInfo += `<div style="font-size: 0.875rem; color: #dc2626; margin-top: 0.25rem;">Motivo: ${n.motivo_cancelamento}</div>`;
+                }
+                
+                // Botão de cancelar (só para notas ativas e emitidas automaticamente)
+                const btnCancelar = (!isCancelada && emitidaAuto && numeroNota)
+                    ? `<button class="btn btn-sm" style="background: #dc2626; margin-left: 0.5rem;" onclick="event.stopPropagation(); mostrarModalCancelamento('${numeroNota}')">🗑️ Cancelar</button>`
+                    : '';
+                
+                return `
+                <div class="activity-item" style="opacity: ${isCancelada ? '0.6' : '1'};">
+                    <div class="activity-icon">${isCancelada ? '❌' : '📄'}</div>
+                    <div class="activity-details" style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div class="activity-title">${n.descricao}</div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                ${statusBadge}
+                                ${btnCancelar}
+                            </div>
+                        </div>
+                        <div class="activity-time">${new Date(n.data).toLocaleDateString('pt-BR')} - ${new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(n.valor)}</div>
+                        ${extraInfo}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+        
+        function baixarModeloPDF() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const data = document.getElementById('dataServico').value;
+            const procedimento = document.getElementById('procedimento').value;
+            
+            if (!descricao || !valor || !data) {
+                alert('⚠️ Preencha todos os campos antes de gerar o PDF');
+                return;
+            }
+            
+            const nota = {
+                descricao,
+                valor,
+                data,
+                procedimento
+            };
+            
+            const user = getCurrentUser();
+            gerarPDFNotaFiscal(nota, user);
+        }
+        
+        function gerarModelo() {
+            alert('📄 Use o botão "Baixar Modelo PDF" para gerar o modelo em PDF!\n\nO PDF pode ser usado como referência ao emitir a nota fiscal no sistema da prefeitura.');
+        }
+        
+        window.addEventListener('DOMContentLoaded', carregarNotas);
+    </script>
+</body>
+</html>

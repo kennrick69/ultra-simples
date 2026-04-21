@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dental Ultra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ========== UI KIT DENTAL ULTRA ========== */
+        :root {
+            /* CORES */
+            --color-primary: #1FA2FF;
+            --color-primary-dark: #0B3C78;
+            --color-primary-glow: #6FE7FF;
+            --color-primary-hover: #1693E6;
+            --color-primary-pressed: #0F7FCC;
+            
+            --color-success: #22C55E;
+            --color-warning: #F59E0B;
+            --color-error: #EF4444;
+            --color-info: #3B82F6;
+            
+            --color-bg-main: #FFFFFF;
+            --color-bg-soft: #F4F7FB;
+            --color-bg-dark: #0A1424;
+            
+            --color-text-main: #0A1424;
+            --color-text-secondary: #6B7280;
+            --color-border: #E5EAF0;
+            
+            /* TIPOGRAFIA */
+            --font-family-base: "Inter", system-ui, sans-serif;
+            
+            /* ESPAÇAMENTOS */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            /* SOMBRAS */
+            --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 6px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-bg-dark) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--color-bg-main);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--color-primary-dark);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--color-text-secondary);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--color-text-main);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--color-text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: var(--font-family-base);
+            transition: all 0.3s;
+            background: var(--color-bg-main);
+            color: var(--color-text-main);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(31, 162, 255, 0.15);
+        }
+
+        input::placeholder {
+            color: var(--color-text-secondary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: var(--font-family-base);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--color-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(31, 162, 255, 0.35);
+        }
+
+        .btn:active {
+            background: var(--color-primary-pressed);
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #BFDFFF;
+            color: rgba(255,255,255,0.6);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .toggle-form a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-home a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-home a:hover {
+            text-decoration: underline;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .logo img {
+                width: 64px;
+                height: 64px;
+            }
+        }
+
+        .required {
+            color: var(--color-error);
+        }
+
+        small {
+            color: var(--color-text-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"><img src="img/logo.png" alt="Dental Ultra"></div>
+        <h1>Dental Ultra</h1>
+        <p class="subtitle">Sistema de Gestão Odontológica</p>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="form-container active">
+            <h2>Fazer Login</h2>
+            
+            <div class="form-group">
+                <label for="loginEmail">Email <span class="required">*</span></label>
+                <input type="email" id="loginEmail" required placeholder="seu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="loginPassword">Senha <span class="required">*</span></label>
+                <input type="password" id="loginPassword" required placeholder="Sua senha">
+            </div>
+
+            <button type="submit" class="btn">Entrar</button>
+
+            <div class="toggle-form">
+                Não tem conta? <a href="javascript:void(0)" onclick="showRegister()">Cadastre-se aqui</a>
+            </div>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="registerForm" class="form-container">
+            <h2>Criar Conta</h2>
+            
+            <div class="form-group">
+                <label for="regName">Nome Completo <span class="required">*</span></label>
+                <input type="text" id="regName" required placeholder="Dr(a). João Silva">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="regCRO">CRO <span class="required">*</span></label>
+                    <input type="text" id="regCRO" required placeholder="12345">
+                </div>
+
+                <div class="form-group">
+                    <label for="regSpecialty">Especialidade</label>
+                    <select id="regSpecialty">
+                        <option value="">Selecione...</option>
+                        <option value="Geral">Clínico Geral</option>
+                        <option value="Ortodontia">Ortodontia</option>
+                        <option value="Endodontia">Endodontia</option>
+                        <option value="Periodontia">Periodontia</option>
+                        <option value="Implantodontia">Implantodontia</option>
+                        <option value="Prótese">Prótese</option>
+                        <option value="Cirurgia">Cirurgia</option>
+                        <option value="Estética">Odontologia Estética</option>
+                        <option value="Pediátrica">Odontopediatria</option>
+                        <option value="Outra">Outra</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="regClinic">Nome da Clínica</label>
+                <input type="text" id="regClinic" placeholder="Clínica Odontológica">
+            </div>
+
+            <div class="form-group">
+                <label for="regEmail">Email <span class="required">*</span></label>
+                <input type="email" id="regEmail" required placeholder="seu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="regPassword">Senha <span class="required">*</span></label>
+                <input type="password" id="regPassword" required placeholder="Mínimo 6 caracteres">
+                <small>Mínimo 6 caracteres</small>
+            </div>
+
+            <button type="submit" class="btn">Cadastrar</button>
+
+            <div class="toggle-form">
+                Já tem conta? <a href="javascript:void(0)" onclick="showLogin()">Fazer login</a>
+            </div>
+        </form>
+
+        <div class="back-home">
+            <a href="/">← Voltar para página inicial</a>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

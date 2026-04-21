@@ -1,0 +1,87 @@
+/* ========================================
+   DENTAL ULTRA - DESIGN TOKENS v1.0
+   Sistema de Gestão Odontológica
+   ======================================== */
+
+:root {
+  /* ===== BRAND ===== */
+  --du-primary: #1FA2FF;
+  --du-primary-dark: #0B3C78;
+  --du-primary-glow: #6FE7FF;
+  --du-primary-hover: #1693E6;
+  --du-primary-pressed: #0F7FCC;
+
+  /* ===== STATUS ===== */
+  --du-success: #22C55E;
+  --du-warning: #F59E0B;
+  --du-error: #EF4444;
+  --du-info: #3B82F6;
+
+  /* ===== SURFACES ===== */
+  --du-bg: #FFFFFF;
+  --du-surface: #FFFFFF;
+  --du-surface-2: #F4F7FB;
+  --du-dark: #0A1424;
+
+  /* ===== TEXT ===== */
+  --du-text: #0A1424;
+  --du-text-2: #6B7280;
+  --du-text-muted: #9CA3AF;
+
+  /* ===== BORDER ===== */
+  --du-border: #E5EAF0;
+  --du-border-focus: rgba(31,162,255,.9);
+
+  /* ===== RADIUS ===== */
+  --du-r-sm: 6px;
+  --du-r-md: 10px;
+  --du-r-lg: 16px;
+  --du-r-xl: 24px;
+  --du-r-full: 999px;
+
+  /* ===== SHADOW ===== */
+  --du-sh-sm: 0 2px 6px rgba(0,0,0,.06);
+  --du-sh-md: 0 8px 24px rgba(0,0,0,.10);
+  --du-sh-lg: 0 16px 48px rgba(0,0,0,.14);
+  --du-sh-glow: 0 0 20px rgba(31,162,255,.25);
+
+  /* ===== SPACING (8pt grid) ===== */
+  --du-1: 4px;
+  --du-2: 8px;
+  --du-3: 12px;
+  --du-4: 16px;
+  --du-5: 24px;
+  --du-6: 32px;
+  --du-7: 48px;
+  --du-8: 64px;
+
+  /* ===== TYPOGRAPHY ===== */
+  --du-font: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --du-h1: 48px;
+  --du-h2: 36px;
+  --du-h3: 24px;
+  --du-h4: 20px;
+  --du-body: 16px;
+  --du-small: 14px;
+  --du-xs: 12px;
+
+  /* ===== FOCUS ===== */
+  --du-focus: 0 0 0 3px rgba(31,162,255,.25);
+  --du-focus-error: 0 0 0 3px rgba(239,68,68,.15);
+
+  /* ===== TRANSITIONS ===== */
+  --du-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --du-duration: 150ms;
+}
+
+/* ===== DARK MODE (opcional) ===== */
+/* Ativar com: <html data-theme="dark"> */
+html[data-theme="dark"] {
+  --du-bg: #0A1424;
+  --du-surface: #0F1D34;
+  --du-surface-2: #162544;
+  --du-text: #FFFFFF;
+  --du-text-2: rgba(255,255,255,.72);
+  --du-text-muted: rgba(255,255,255,.5);
+  --du-border: rgba(255,255,255,.12);
+}

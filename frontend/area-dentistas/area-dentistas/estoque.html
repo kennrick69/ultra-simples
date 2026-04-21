@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque - Dental Ultra</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .page-header h1 { margin: 0; display: flex; align-items: center; gap: 12px; }
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; }
+        .btn-primary:hover { box-shadow: 0 4px 12px rgba(45,122,95,0.4); }
+        .btn-secondary { background: #f3f4f6; color: #374151; border: 2px solid #e5e7eb; }
+        .btn-secondary:hover { border-color: #2d7a5f; color: #2d7a5f; }
+        .btn-secondary.active { background: #2d7a5f; color: #fff; border-color: #2d7a5f; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 0; margin-bottom: 20px; background: #f3f4f6; border-radius: 12px; padding: 4px; width: fit-content; }
+        .tab-btn { padding: 12px 24px; border: none; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 10px; color: #6b7280; transition: all 0.2s; }
+        .tab-btn.active { background: #fff; color: #2d7a5f; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab-btn:hover:not(.active) { color: #374151; }
+        
+        /* Alerta de estoque baixo */
+        .alert-box { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .alert-box.hidden { display: none; }
+        .alert-icon { font-size: 24px; }
+        .alert-text { flex: 1; }
+        .alert-text strong { color: #92400e; }
+        .alert-text p { margin: 0; font-size: 14px; color: #78350f; }
+        .alert-btn { padding: 8px 16px; background: #f59e0b; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .alert-btn:hover { background: #d97706; }
+        
+        /* Barra de busca */
+        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+        .search-bar input { flex: 1; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; }
+        .search-bar input:focus { outline: none; border-color: #2d7a5f; }
+        
+        /* Tabela de estoque */
+        .estoque-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+        .estoque-header { display: grid; grid-template-columns: 1fr 100px 150px 120px; padding: 16px 20px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; font-weight: 600; font-size: 13px; color: #6b7280; text-transform: uppercase; }
+        .estoque-list { max-height: calc(100vh - 380px); overflow-y: auto; }
+        
+        .estoque-item { display: grid; grid-template-columns: 1fr 100px 150px 120px; padding: 16px 20px; border-bottom: 1px solid #f3f4f6; align-items: center; transition: all 0.2s; }
+        .estoque-item:hover { background: #f9fafb; }
+        .estoque-item:last-child { border-bottom: none; }
+        
+        .produto-nome { font-weight: 600; color: #1f2937; font-size: 15px; }
+        .produto-nome small { display: block; font-weight: 400; color: #9ca3af; font-size: 12px; margin-top: 2px; }
+        
+        .quantidade { font-weight: 700; font-size: 18px; text-align: center; }
+        .quantidade.baixo { color: #dc2626; }
+        .quantidade.medio { color: #f59e0b; }
+        .quantidade.ok { color: #16a34a; }
+        
+        .btn-retirada { padding: 8px 16px; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-retirada:hover { background: #dc2626; color: #fff; }
+        
+        .produto-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s; }
+        .btn-icon.edit { background: #dbeafe; color: #2563eb; }
+        .btn-icon.edit:hover { background: #2563eb; color: #fff; }
+        .btn-icon.delete { background: #fee2e2; color: #dc2626; }
+        .btn-icon.delete:hover { background: #dc2626; color: #fff; }
+        .btn-icon.menu { background: #f3f4f6; color: #6b7280; }
+        .btn-icon.menu:hover { background: #e5e7eb; }
+        
+        /* Histórico de retiradas */
+        .historico-header { display: grid; grid-template-columns: 1fr 80px 150px 150px 120px; padding: 16px 20px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; font-weight: 600; font-size: 13px; color: #6b7280; text-transform: uppercase; }
+        .historico-item { display: grid; grid-template-columns: 1fr 80px 150px 150px 120px; padding: 16px 20px; border-bottom: 1px solid #f3f4f6; align-items: center; }
+        .historico-item:hover { background: #f9fafb; }
+        
+        /* Empty state */
+        .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+        .empty-state-icon { font-size: 64px; margin-bottom: 16px; }
+        .empty-state h3 { color: #374151; margin: 0 0 8px 0; }
+        .empty-state p { margin: 0 0 20px 0; }
+        
+        /* Modais */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        
+        .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        .modal-close { background: none; border: none; font-size: 28px; color: #9ca3af; cursor: pointer; }
+        .modal-close:hover { color: #374151; }
+        
+        .modal-body { padding: 24px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #374151; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #2d7a5f; }
+        .form-group small { display: block; margin-top: 6px; font-size: 12px; color: #9ca3af; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        
+        /* Opções de tipo de entrada */
+        .tipo-entrada { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .tipo-card { padding: 20px; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .tipo-card:hover { border-color: #2d7a5f; background: #f0fdf4; }
+        .tipo-card.selected { border-color: #2d7a5f; background: #dcfce7; }
+        .tipo-card-icon { font-size: 32px; margin-bottom: 8px; }
+        .tipo-card h4 { margin: 0 0 4px 0; font-size: 14px; color: #1f2937; }
+        .tipo-card p { margin: 0; font-size: 12px; color: #6b7280; }
+        
+        .modal-footer { padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end; }
+        .modal-footer .btn { min-width: 120px; justify-content: center; }
+        
+        /* Info do produto na retirada */
+        .produto-info-box { background: #f3f4f6; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
+        .produto-info-box h4 { margin: 0 0 4px 0; font-size: 16px; color: #1f2937; }
+        .produto-info-box p { margin: 0; font-size: 14px; color: #6b7280; }
+        
+        /* Stats */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .stat-card-value { font-size: 32px; font-weight: 700; color: #2d7a5f; }
+        .stat-card-label { font-size: 14px; color: #6b7280; margin-top: 4px; }
+        .stat-card.warning .stat-card-value { color: #f59e0b; }
+        .stat-card.danger .stat-card-value { color: #dc2626; }
+        
+        @media (max-width: 768px) {
+            .estoque-header, .estoque-item { grid-template-columns: 1fr 80px 100px; }
+            .estoque-header > *:nth-child(4), .estoque-item > *:nth-child(4) { display: none; }
+            .historico-header, .historico-item { grid-template-columns: 1fr 60px 100px 100px; }
+            .historico-header > *:nth-child(4), .historico-item > *:nth-child(4) { display: none; }
+        }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🦷</div>
+            <h2>Dental Ultra</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+            <a href="pacientes.html" class="nav-item"><span class="icon">👥</span><span>Pacientes</span></a>
+            <a href="agenda.html" class="nav-item"><span class="icon">📅</span><span>Agenda</span></a>
+            <a href="prontuario.html" class="nav-item"><span class="icon">📋</span><span>Prontuário</span></a>
+            <a href="plano-tratamento.html" class="nav-item"><span class="icon">💰</span><span>Orçamentos</span></a>
+            <a href="estoque.html" class="nav-item active"><span class="icon">📦</span><span>Estoque</span></a>
+            <a href="nota-fiscal.html" class="nav-item"><span class="icon">📄</span><span>Notas Fiscais</span></a>
+            <a href="financeiro.html" class="nav-item"><span class="icon">💵</span><span>Financeiro</span></a>
+            <a href="relatorios.html" class="nav-item"><span class="icon">📈</span><span>Relatórios</span></a>
+            <a href="configuracoes.html" class="nav-item"><span class="icon">⚙️</span><span>Configurações</span></a>
+        </nav>
+        <div class="user-info">
+            <div class="user-avatar">👨‍⚕️</div>
+            <div class="user-details">
+                <span class="user-name" id="userName">Carregando...</span>
+                <span class="user-role" id="userCRO">CRO: -----</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Header -->
+        <div class="page-header">
+            <div>
+                <h1>📦 Estoque</h1>
+                <p>Gerencie os produtos e materiais da sua clínica</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="abrirModalEntrada()">
+                    ➕ Fazer Entrada no Estoque
+                </button>
+            </div>
+        </div>
+
+        <!-- Alerta de estoque baixo -->
+        <div class="alert-box hidden" id="alertaEstoqueBaixo">
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-text">
+                <strong>Atenção!</strong>
+                <p>Você possui <span id="qtdProdutosBaixos">0</span> produtos com nível crítico no estoque, confira e compre para não ficar sem.</p>
+            </div>
+            <button class="alert-btn" onclick="filtrarBaixoEstoque()">VER</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-value" id="totalProdutos">0</div>
+                <div class="stat-card-label">Total de Produtos</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-card-value" id="produtosBaixos">0</div>
+                <div class="stat-card-label">Estoque Baixo</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-card-value" id="produtosZerados">0</div>
+                <div class="stat-card-label">Sem Estoque</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-value" id="totalRetiradas">0</div>
+                <div class="stat-card-label">Retiradas (mês)</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="estoque" onclick="trocarTab('estoque')">📦 FAZER ENTRADA NO ESTOQUE</button>
+            <button class="tab-btn" data-tab="historico" onclick="trocarTab('historico')">📋 HISTÓRICO DE RETIRADAS</button>
+        </div>
+
+        <!-- Busca -->
+        <div class="search-bar">
+            <input type="text" id="buscaProduto" placeholder="O que você está buscando?" oninput="filtrarProdutos()">
+        </div>
+
+        <!-- Tab: Estoque -->
+        <div class="tab-content" id="tabEstoque">
+            <div class="estoque-card">
+                <div class="estoque-header">
+                    <span>Produto</span>
+                    <span style="text-align:center;">Estoque</span>
+                    <span style="text-align:center;">Ação</span>
+                    <span style="text-align:right;">Opções</span>
+                </div>
+                <div class="estoque-list" id="listaProdutos">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <h3>Nenhum produto cadastrado</h3>
+                        <p>Clique em "Fazer Entrada no Estoque" para adicionar produtos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Histórico -->
+        <div class="tab-content" id="tabHistorico" style="display:none;">
+            <div class="estoque-card">
+                <div class="historico-header">
+                    <span>Produto</span>
+                    <span style="text-align:center;">Qtd</span>
+                    <span>Retirado por</span>
+                    <span>Autorizado por</span>
+                    <span style="text-align:right;">Data</span>
+                </div>
+                <div class="estoque-list" id="listaHistorico">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>Nenhuma retirada registrada</h3>
+                        <p>O histórico de retiradas aparecerá aqui</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Entrada no Estoque -->
+    <div class="modal-overlay" id="modalEntrada">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📦 Você está fazendo uma nova entrada no estoque</h2>
+                <button class="modal-close" onclick="fecharModal('modalEntrada')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Tipo de entrada -->
+                <div class="tipo-entrada" id="tipoEntradaContainer">
+                    <div class="tipo-card" data-tipo="novo" onclick="selecionarTipoEntrada('novo')">
+                        <div class="tipo-card-icon">🛒</div>
+                        <h4>É UM PRODUTO QUE EU NÃO TENHO CADASTRADO</h4>
+                        <p>Eu ainda não tenho esse produto cadastrado no meu estoque</p>
+                    </div>
+                    <div class="tipo-card" data-tipo="existente" onclick="selecionarTipoEntrada('existente')">
+                        <div class="tipo-card-icon">🏠</div>
+                        <h4>É UM PRODUTO QUE EU JÁ TENHO CADASTRADO</h4>
+                        <p>Eu preciso aumentar a quantidade desse produto no meu estoque</p>
+                    </div>
+                </div>
+
+                <!-- Formulário de entrada -->
+                <div id="formEntrada" style="display:none;">
+                    <h3 style="margin: 0 0 20px 0; font-size: 16px; color: #374151;">Adicionando produto ao estoque</h3>
+                    
+                    <div class="form-group" id="grupoProdutoExistente" style="display:none;">
+                        <label>Selecione o produto *</label>
+                        <select id="selectProdutoExistente">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="grupoNomeProduto">
+                        <label>Nome do produto *</label>
+                        <input type="text" id="nomeProduto" placeholder="Ex: Água oxigenada 20">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantidade *</label>
+                            <input type="number" id="quantidadeEntrada" min="1" value="1" placeholder="Quantidade">
+                        </div>
+                        <div class="form-group">
+                            <label>Qtd ideal *</label>
+                            <input type="number" id="quantidadeIdeal" min="1" value="10" placeholder="Quantidade ideal">
+                            <small>Alerta quando abaixo deste valor</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="categoriaProduto">
+                            <option value="">Selecione uma categoria...</option>
+                            <option value="Materiais de consumo">Materiais de consumo</option>
+                            <option value="Medicamentos">Medicamentos</option>
+                            <option value="Instrumentais">Instrumentais</option>
+                            <option value="EPI">EPI</option>
+                            <option value="Limpeza">Limpeza</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal('modalEntrada')">CANCELAR</button>
+                <button class="btn btn-primary" id="btnAdicionarEstoque" onclick="adicionarAoEstoque()" disabled>ADICIONAR AO ESTOQUE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Retirada -->
+    <div class="modal-overlay" id="modalRetirada">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>📤 Retirar produto do estoque</h2>
+                <button class="modal-close" onclick="fecharModal('modalRetirada')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="produto-info-box">
+                    <h4 id="retiradaProdutoNome">-</h4>
+                    <p>Posição do estoque atual: <strong id="retiradaEstoqueAtual">0</strong></p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantidade de retirada *</label>
+                        <input type="number" id="quantidadeRetirada" min="1" value="1" placeholder="Quantidade">
+                    </div>
+                    <div class="form-group">
+                        <label>Profissional *</label>
+                        <select id="profissionalRetirada">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal('modalRetirada')">CANCELAR</button>
+                <button class="btn btn-primary" onclick="confirmarRetirada()">RETIRAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Produto -->
+    <div class="modal-overlay" id="modalEditar">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>✏️ Editando produto do estoque</h2>
+                <button class="modal-close" onclick="fecharModal('modalEditar')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editarProdutoId">
+                
+                <div class="form-group">
+                    <label>Nome do produto *</label>
+                    <input type="text" id="editarNomeProduto" placeholder="Nome do produto">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantidade atual</label>
+                        <input type="number" id="editarQuantidade" min="0" readonly style="background:#f3f4f6;">
+                    </div>
+                    <div class="form-group">
+                        <label>Qtd ideal *</label>
+                        <input type="number" id="editarQuantidadeIdeal" min="1" placeholder="Quantidade ideal">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="editarCategoria">
+                        <option value="">Selecione uma categoria...</option>
+                        <option value="Materiais de consumo">Materiais de consumo</option>
+                        <option value="Medicamentos">Medicamentos</option>
+                        <option value="Instrumentais">Instrumentais</option>
+                        <option value="EPI">EPI</option>
+                        <option value="Limpeza">Limpeza</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal('modalEditar')">CANCELAR</button>
+                <button class="btn btn-primary" onclick="salvarEdicao()">SALVAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Excluir Produto -->
+    <div class="modal-overlay" id="modalExcluir">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 style="color: #dc2626;">⚠️ Excluir produto</h2>
+                <button class="modal-close" onclick="fecharModal('modalExcluir')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>O produto <strong id="excluirProdutoNome">-</strong>, e todo o histórico dele, será excluído permanentemente da sua clínica.</p>
+                <input type="hidden" id="excluirProdutoId">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal('modalExcluir')">CANCELAR</button>
+                <button class="btn" style="background:#dc2626;color:#fff;" onclick="confirmarExclusao()">EXCLUIR PRODUTO</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth-check.js"></script>
+    <script src="js/estoque.js"></script>
+    <script src="js/onboarding.js"></script>
+</body>
+</html>

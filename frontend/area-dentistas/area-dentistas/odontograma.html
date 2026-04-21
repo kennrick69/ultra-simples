@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odontograma - Dental Ultra</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        /* === ODONTOGRAMA STYLES === */
+        .odontograma-container {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        .odontograma-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .odontograma-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .odontograma-toggle {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 4px;
+        }
+        
+        .odontograma-toggle button {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .odontograma-toggle button.active {
+            background: #1a6b4b;
+            color: #fff;
+        }
+        
+        /* Arcadas */
+        .arcada {
+            margin-bottom: 8px;
+        }
+        
+        .arcada-label {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .arcada-dentes {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .divisor-central {
+            width: 2px;
+            background: linear-gradient(to bottom, #1a6b4b, #2d8f6f);
+            margin: 0 8px;
+            border-radius: 2px;
+        }
+        
+        .quadrante {
+            display: flex;
+            gap: 4px;
+        }
+        
+        /* Dente individual */
+        .dente {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .dente:hover {
+            transform: scale(1.05);
+        }
+        
+        .dente-numero {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        
+        .dente-svg {
+            width: 44px;
+            height: 44px;
+            position: relative;
+        }
+        
+        /* SVG do dente - 5 faces */
+        .dente-svg svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .face {
+            fill: #f8f8f6;
+            stroke: #ccc;
+            stroke-width: 1;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .face:hover {
+            fill: #e8f5e9;
+            stroke: #1a6b4b;
+            stroke-width: 2;
+        }
+        
+        /* Estados das faces */
+        .face.saudavel { fill: #f8f8f6; }
+        .face.restauracao-amalgama { fill: #808080; }
+        .face.restauracao-resina { fill: #e8e4d9; stroke: #999; }
+        .face.carie { fill: #8B4513; }
+        .face.selante { fill: #87CEEB; }
+        .face.fratura { fill: #ff6b6b; }
+        
+        /* Estados do dente inteiro */
+        .dente.ausente .face { fill: #ffcdd2; stroke: #e57373; }
+        .dente.implante .face { fill: #90caf9; stroke: #42a5f5; }
+        .dente.coroa .face { fill: #fff59d; stroke: #fbc02d; }
+        .dente.pivot .face { fill: #ce93d8; stroke: #ab47bc; }
+        .dente.canal .face { fill: #b39ddb; stroke: #7e57c2; }
+        .dente.extracao .face { fill: #ffcdd2; stroke: #f44336; stroke-width: 2; }
+        
+        /* Marcador X para extração/ausente */
+        .dente.extracao::after,
+        .dente.ausente::after {
+            content: '✕';
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .dente.extracao::after { color: #f44336; }
+        .dente.ausente::after { color: #e57373; }
+        
+        /* Legenda */
+        .odontograma-legenda {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            justify-content: center;
+        }
+        
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: #555;
+        }
+        
+        .legenda-cor {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        
+        /* Menu de procedimentos */
+        .menu-procedimentos {
+            position: fixed;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            z-index: 1000;
+            min-width: 220px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+            animation: fadeIn 0.15s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .menu-procedimentos.show { display: block; }
+        
+        .menu-header {
+            padding: 12px 16px;
+            font-weight: 700;
+            color: #1a6b4b;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .menu-section {
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .menu-section:last-child { border-bottom: none; }
+        
+        .menu-section-title {
+            padding: 6px 16px;
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.85rem;
+        }
+        
+        .menu-item:hover { background: #f5f5f5; }
+        
+        .menu-item-cor {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        
+        /* Overlay para fechar menu */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 999;
+            display: none;
+        }
+        
+        .menu-overlay.show { display: block; }
+        
+        /* Histórico/Lista de procedimentos */
+        .odontograma-historico {
+            margin-top: 24px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+        
+        .historico-titulo {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .historico-badge {
+            background: #1a6b4b;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .historico-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .historico-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 8px;
+            border-left: 4px solid #1a6b4b;
+        }
+        
+        .historico-dente {
+            font-weight: 700;
+            color: #1a6b4b;
+            min-width: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .historico-proc { flex: 1; }
+        
+        .historico-proc strong { color: #333; }
+        
+        .historico-face {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .historico-remover {
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .historico-remover:hover {
+            background: #f44336;
+            color: #fff;
+        }
+        
+        .historico-vazio {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+        }
+        
+        /* Botões de ação */
+        .odontograma-acoes {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-odonto {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-odonto.primary {
+            background: linear-gradient(135deg, #1a6b4b, #2d8f6f);
+            color: #fff;
+        }
+        
+        .btn-odonto.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26,107,75,0.3);
+        }
+        
+        .btn-odonto.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-odonto.danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        /* Info do paciente */
+        .paciente-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .paciente-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1a6b4b;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .paciente-dados h3 { margin: 0; color: #1a1a2e; }
+        .paciente-dados p { margin: 4px 0 0; color: #666; font-size: 0.9rem; }
+        
+        /* Decíduos */
+        .dentes-deciduos .dente-svg { width: 38px; height: 38px; }
+        .dentes-deciduos .dente-numero { color: #ff9800; }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .dente-svg { width: 36px; height: 36px; }
+            .dente-numero { font-size: 0.6rem; }
+            .quadrante { gap: 2px; }
+            .divisor-central { margin: 0 4px; }
+        }
+        
+        @media print {
+            .sidebar, .page-header, .odontograma-acoes, .historico-remover { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">🦷</div>
+            <span class="logo-text">Dental Ultra</span>
+        </div>
+        
+        <ul class="nav-menu">
+            <li><a href="dashboard.html" class="nav-link"><span>📊</span> Dashboard</a></li>
+            <li><a href="pacientes.html" class="nav-link"><span>👥</span> Pacientes</a></li>
+            <li><a href="agenda.html" class="nav-link"><span>📅</span> Agenda</a></li>
+            <li><a href="prontuario.html" class="nav-link"><span>📋</span> Prontuário</a></li>
+            <li><a href="odontograma.html" class="nav-link active"><span>🦷</span> Odontograma</a></li>
+            <li><a href="estoque.html" class="nav-link"><span>📦</span> Estoque</a></li>
+            <li><a href="financeiro.html" class="nav-link"><span>💰</span> Financeiro</a></li>
+            <li><a href="relatorios.html" class="nav-link"><span>📈</span> Relatórios</a></li>
+            <li><a href="configuracoes.html" class="nav-link"><span>⚙️</span> Configurações</a></li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span class="user-avatar">👤</span>
+                <div>
+                    <span class="user-name">Usuário</span>
+                    <span class="user-role">CRO: 12344</span>
+                </div>
+            </div>
+            <a href="login.html" class="logout-btn">Sair</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="page-header">
+            <div>
+                <h1>🦷 Odontograma</h1>
+                <p>Mapeamento dental do paciente</p>
+            </div>
+        </header>
+
+        <div style="padding: 20px;">
+            <!-- Info do Paciente -->
+            <div class="paciente-info" id="pacienteInfo">
+                <div class="paciente-avatar" id="pacienteAvatar">--</div>
+                <div class="paciente-dados">
+                    <h3 id="pacienteNome">Selecione um paciente</h3>
+                    <p id="pacienteDetalhe">Acesse via ficha do paciente ou prontuário</p>
+                </div>
+                <select id="seletorPaciente" style="margin-left:auto; padding:8px 12px; border-radius:8px; border:1px solid #ddd;">
+                    <option value="">-- Selecionar Paciente --</option>
+                </select>
+            </div>
+
+            <!-- Odontograma -->
+            <div class="odontograma-container">
+                <div class="odontograma-header">
+                    <div class="odontograma-title">🦷 Odontograma Digital</div>
+                    <div class="odontograma-toggle">
+                        <button class="active" onclick="mostrarPermanentes()" id="btnPermanentes">Permanentes</button>
+                        <button onclick="mostrarDeciduos()" id="btnDeciduos">Decíduos</button>
+                    </div>
+                </div>
+
+                <!-- Dentes Permanentes (32 dentes) -->
+                <div id="dentesPermanentes">
+                    <div class="arcada">
+                        <div class="arcada-label">ARCADA SUPERIOR</div>
+                        <div class="arcada-dentes">
+                            <div class="quadrante" id="quadrante1"></div>
+                            <div class="divisor-central"></div>
+                            <div class="quadrante" id="quadrante2"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="arcada" style="margin-top: 16px;">
+                        <div class="arcada-dentes">
+                            <div class="quadrante" id="quadrante4"></div>
+                            <div class="divisor-central"></div>
+                            <div class="quadrante" id="quadrante3"></div>
+                        </div>
+                        <div class="arcada-label" style="margin-top: 8px;">ARCADA INFERIOR</div>
+                    </div>
+                </div>
+
+                <!-- Dentes Decíduos (20 dentes) -->
+                <div id="dentesDeciduos" class="dentes-deciduos" style="display: none;">
+                    <div class="arcada">
+                        <div class="arcada-label">ARCADA SUPERIOR (DECÍDUOS)</div>
+                        <div class="arcada-dentes">
+                            <div class="quadrante" id="quadranteD1"></div>
+                            <div class="divisor-central"></div>
+                            <div class="quadrante" id="quadranteD2"></div>
+                        </div>
+                    </div>
+                    <div class="arcada" style="margin-top: 16px;">
+                        <div class="arcada-dentes">
+                            <div class="quadrante" id="quadranteD4"></div>
+                            <div class="divisor-central"></div>
+                            <div class="quadrante" id="quadranteD3"></div>
+                        </div>
+                        <div class="arcada-label" style="margin-top: 8px;">ARCADA INFERIOR (DECÍDUOS)</div>
+                    </div>
+                </div>
+
+                <!-- Legenda -->
+                <div class="odontograma-legenda">
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#f8f8f6;"></div>Saudável</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#808080;"></div>Amálgama</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#e8e4d9;"></div>Resina</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#8B4513;"></div>Cárie</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#87CEEB;"></div>Selante</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#ffcdd2;"></div>Ausente</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#b39ddb;"></div>Canal</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#fff59d;"></div>Coroa</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background:#90caf9;"></div>Implante</div>
+                </div>
+            </div>
+
+            <!-- Histórico de Procedimentos -->
+            <div class="odontograma-historico">
+                <div class="historico-titulo">
+                    📝 Procedimentos Registrados
+                    <span class="historico-badge" id="contadorProcs">0</span>
+                </div>
+                <div class="historico-lista" id="historicoLista">
+                    <div class="historico-vazio">
+                        Nenhum procedimento registrado ainda.<br>
+                        Clique em uma face do dente para adicionar.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="odontograma-acoes">
+                <button class="btn-odonto primary" onclick="salvarOdontograma()">💾 Salvar Odontograma</button>
+                <button class="btn-odonto secondary" onclick="window.print()">🖨️ Imprimir</button>
+                <button class="btn-odonto danger" onclick="limparOdontograma()">🗑️ Limpar Tudo</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Menu de Procedimentos (popup) -->
+    <div class="menu-overlay" id="menuOverlay" onclick="fecharMenu()"></div>
+    <div class="menu-procedimentos" id="menuProcedimentos">
+        <div class="menu-header">
+            <span>Dente <strong id="menuDenteNum">--</strong> - <span id="menuFaceNome">--</span></span>
+            <button class="menu-close" onclick="fecharMenu()">×</button>
+        </div>
+        
+        <div class="menu-section">
+            <div class="menu-section-title">Procedimentos na Face</div>
+            <div class="menu-item" onclick="aplicarProcedimento('saudavel')">
+                <div class="menu-item-cor" style="background:#f8f8f6;"></div>
+                <span>Saudável (limpar)</span>
+            </div>
+            <div class="menu-item" onclick="aplicarProcedimento('restauracao-amalgama')">
+                <div class="menu-item-cor" style="background:#808080;"></div>
+                <span>Restauração Amálgama</span>
+            </div>
+            <div class="menu-item" onclick="aplicarProcedimento('restauracao-resina')">
+                <div class="menu-item-cor" style="background:#e8e4d9;"></div>
+                <span>Restauração Resina</span>
+            </div>
+            <div class="menu-item" onclick="aplicarProcedimento('carie')">
+                <div class="menu-item-cor" style="background:#8B4513;"></div>
+                <span>Cárie</span>
+            </div>
+            <div class="menu-item" onclick="aplicarProcedimento('selante')">
+                <div class="menu-item-cor" style="background:#87CEEB;"></div>
+                <span>Selante</span>
+            </div>
+            <div class="menu-item" onclick="aplicarProcedimento('fratura')">
+                <div class="menu-item-cor" style="background:#ff6b6b;"></div>
+                <span>Fratura</span>
+            </div>
+        </div>
+        
+        <div class="menu-section">
+            <div class="menu-section-title">Estado do Dente (inteiro)</div>
+            <div class="menu-item" onclick="aplicarEstadoDente('normal')">
+                <div class="menu-item-cor" style="background:#f8f8f6;"></div>
+                <span>Normal</span>
+            </div>
+            <div class="menu-item" onclick="aplicarEstadoDente('ausente')">
+                <div class="menu-item-cor" style="background:#ffcdd2;"></div>
+                <span>Ausente</span>
+            </div>
+            <div class="menu-item" onclick="aplicarEstadoDente('extracao')">
+                <div class="menu-item-cor" style="background:#ffcdd2;border:2px solid #f44336;"></div>
+                <span>Indicado p/ Extração</span>
+            </div>
+            <div class="menu-item" onclick="aplicarEstadoDente('canal')">
+                <div class="menu-item-cor" style="background:#b39ddb;"></div>
+                <span>Tratamento de Canal</span>
+            </div>
+            <div class="menu-item" onclick="aplicarEstadoDente('coroa')">
+                <div class="menu-item-cor" style="background:#fff59d;"></div>
+                <span>Coroa</span>
+            </div>
+            <div class="menu-item" onclick="aplicarEstadoDente('implante')">
+                <div class="menu-item-cor" style="background:#90caf9;"></div>
+                <span>Implante</span>
+            </div>
+            <div class="menu-item" onclick="aplicarEstadoDente('pivot')">
+                <div class="menu-item-cor" style="background:#ce93d8;"></div>
+                <span>Pivô</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+    <script>
+        // =====================================================
+        // ODONTOGRAMA DIGITAL - DENTAL ULTRA
+        // =====================================================
+        
+        var odontogramaData = { pacienteId: null, dentes: {}, procedimentos: [] };
+        var denteAtual = null;
+        var faceAtual = null;
+        
+        var nomesFaces = {
+            'V': 'Vestibular',
+            'M': 'Mesial',
+            'O': 'Oclusal',
+            'D': 'Distal',
+            'L': 'Lingual'
+        };
+        
+        var nomesProcedimentos = {
+            'restauracao-amalgama': 'Restauração (Amálgama)',
+            'restauracao-resina': 'Restauração (Resina)',
+            'carie': 'Cárie',
+            'selante': 'Selante',
+            'fratura': 'Fratura',
+            'ausente': 'Ausente',
+            'extracao': 'Indicado p/ Extração',
+            'canal': 'Tratamento de Canal',
+            'coroa': 'Coroa',
+            'implante': 'Implante',
+            'pivot': 'Pivô'
+        };
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            gerarDentes();
+            carregarPacientes();
+            
+            // Verificar se veio paciente na URL
+            var params = new URLSearchParams(window.location.search);
+            var pacienteId = params.get('paciente');
+            if (pacienteId) {
+                document.getElementById('seletorPaciente').value = pacienteId;
+                selecionarPaciente(pacienteId);
+            }
+        });
+        
+        // Gerar SVG do dente (5 faces)
+        function gerarSVGDente(numero) {
+            return '<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">' +
+                '<path class="face" data-face="V" d="M12,2 L32,2 L32,12 L12,12 Z" onclick="selecionarFace(' + numero + ', \'V\', event)"/>' +
+                '<path class="face" data-face="M" d="M2,12 L12,12 L12,32 L2,32 Z" onclick="selecionarFace(' + numero + ', \'M\', event)"/>' +
+                '<path class="face" data-face="O" d="M12,12 L32,12 L32,32 L12,32 Z" onclick="selecionarFace(' + numero + ', \'O\', event)"/>' +
+                '<path class="face" data-face="D" d="M32,12 L42,12 L42,32 L32,32 Z" onclick="selecionarFace(' + numero + ', \'D\', event)"/>' +
+                '<path class="face" data-face="L" d="M12,32 L32,32 L32,42 L12,42 Z" onclick="selecionarFace(' + numero + ', \'L\', event)"/>' +
+            '</svg>';
+        }
+        
+        // Gerar todos os dentes
+        function gerarDentes() {
+            var q1 = document.getElementById('quadrante1');
+            var q2 = document.getElementById('quadrante2');
+            var q3 = document.getElementById('quadrante3');
+            var q4 = document.getElementById('quadrante4');
+            
+            // Superior Direito (18-11)
+            for (var i = 18; i >= 11; i--) q1.innerHTML += criarDenteHTML(i);
+            // Superior Esquerdo (21-28)
+            for (var i = 21; i <= 28; i++) q2.innerHTML += criarDenteHTML(i);
+            // Inferior Direito (48-41)
+            for (var i = 48; i >= 41; i--) q4.innerHTML += criarDenteHTML(i);
+            // Inferior Esquerdo (31-38)
+            for (var i = 31; i <= 38; i++) q3.innerHTML += criarDenteHTML(i);
+            
+            // Decíduos
+            var qd1 = document.getElementById('quadranteD1');
+            var qd2 = document.getElementById('quadranteD2');
+            var qd3 = document.getElementById('quadranteD3');
+            var qd4 = document.getElementById('quadranteD4');
+            
+            for (var i = 55; i >= 51; i--) qd1.innerHTML += criarDenteHTML(i);
+            for (var i = 61; i <= 65; i++) qd2.innerHTML += criarDenteHTML(i);
+            for (var i = 85; i >= 81; i--) qd4.innerHTML += criarDenteHTML(i);
+            for (var i = 71; i <= 75; i++) qd3.innerHTML += criarDenteHTML(i);
+        }
+        
+        function criarDenteHTML(numero) {
+            return '<div class="dente" id="dente' + numero + '" data-numero="' + numero + '">' +
+                '<div class="dente-numero">' + numero + '</div>' +
+                '<div class="dente-svg">' + gerarSVGDente(numero) + '</div>' +
+            '</div>';
+        }
+        
+        // Selecionar face do dente
+        function selecionarFace(numero, face, event) {
+            event.stopPropagation();
+            denteAtual = numero;
+            faceAtual = face;
+            
+            document.getElementById('menuDenteNum').textContent = numero;
+            document.getElementById('menuFaceNome').textContent = nomesFaces[face];
+            
+            var menu = document.getElementById('menuProcedimentos');
+            var overlay = document.getElementById('menuOverlay');
+            
+            menu.style.left = Math.min(event.clientX, window.innerWidth - 240) + 'px';
+            menu.style.top = Math.min(event.clientY, window.innerHeight - 400) + 'px';
+            
+            menu.classList.add('show');
+            overlay.classList.add('show');
+        }
+        
+        function fecharMenu() {
+            document.getElementById('menuProcedimentos').classList.remove('show');
+            document.getElementById('menuOverlay').classList.remove('show');
+        }
+        
+        // Aplicar procedimento na face
+        function aplicarProcedimento(tipo) {
+            if (!denteAtual || !faceAtual) return;
+            
+            var dente = document.getElementById('dente' + denteAtual);
+            var face = dente.querySelector('[data-face="' + faceAtual + '"]');
+            
+            face.classList.remove('saudavel', 'restauracao-amalgama', 'restauracao-resina', 'carie', 'selante', 'fratura');
+            
+            if (tipo !== 'saudavel') {
+                face.classList.add(tipo);
+                adicionarHistorico(denteAtual, faceAtual, tipo);
+            } else {
+                removerHistoricoPorDenteFace(denteAtual, faceAtual);
+            }
+            
+            if (!odontogramaData.dentes[denteAtual]) {
+                odontogramaData.dentes[denteAtual] = { faces: {}, estado: 'normal' };
+            }
+            odontogramaData.dentes[denteAtual].faces[faceAtual] = tipo;
+            
+            fecharMenu();
+            atualizarContador();
+        }
+        
+        // Aplicar estado ao dente inteiro
+        function aplicarEstadoDente(estado) {
+            if (!denteAtual) return;
+            
+            var dente = document.getElementById('dente' + denteAtual);
+            dente.classList.remove('ausente', 'extracao', 'canal', 'coroa', 'implante', 'pivot');
+            
+            if (estado !== 'normal') {
+                dente.classList.add(estado);
+                adicionarHistorico(denteAtual, 'DENTE', estado);
+            } else {
+                removerHistoricoPorDenteFace(denteAtual, 'DENTE');
+            }
+            
+            if (!odontogramaData.dentes[denteAtual]) {
+                odontogramaData.dentes[denteAtual] = { faces: {}, estado: 'normal' };
+            }
+            odontogramaData.dentes[denteAtual].estado = estado;
+            
+            fecharMenu();
+            atualizarContador();
+        }
+        
+        function adicionarHistorico(dente, face, procedimento) {
+            var existe = odontogramaData.procedimentos.find(function(p) {
+                return p.dente == dente && p.face == face;
+            });
+            
+            if (existe) {
+                existe.procedimento = procedimento;
+                existe.data = new Date().toISOString();
+            } else {
+                odontogramaData.procedimentos.push({
+                    id: Date.now(),
+                    dente: dente,
+                    face: face,
+                    procedimento: procedimento,
+                    data: new Date().toISOString()
+                });
+            }
+            renderizarHistorico();
+        }
+        
+        function removerHistoricoPorDenteFace(dente, face) {
+            odontogramaData.procedimentos = odontogramaData.procedimentos.filter(function(p) {
+                return !(p.dente == dente && p.face == face);
+            });
+            renderizarHistorico();
+        }
+        
+        function removerProcedimento(id) {
+            var proc = odontogramaData.procedimentos.find(function(p) { return p.id == id; });
+            if (!proc) return;
+            
+            if (proc.face === 'DENTE') {
+                var dente = document.getElementById('dente' + proc.dente);
+                dente.classList.remove(proc.procedimento);
+                if (odontogramaData.dentes[proc.dente]) odontogramaData.dentes[proc.dente].estado = 'normal';
+            } else {
+                var dente = document.getElementById('dente' + proc.dente);
+                var face = dente.querySelector('[data-face="' + proc.face + '"]');
+                if (face) face.classList.remove(proc.procedimento);
+                if (odontogramaData.dentes[proc.dente] && odontogramaData.dentes[proc.dente].faces) {
+                    delete odontogramaData.dentes[proc.dente].faces[proc.face];
+                }
+            }
+            
+            odontogramaData.procedimentos = odontogramaData.procedimentos.filter(function(p) { return p.id != id; });
+            renderizarHistorico();
+            atualizarContador();
+        }
+        
+        function renderizarHistorico() {
+            var lista = document.getElementById('historicoLista');
+            
+            if (odontogramaData.procedimentos.length === 0) {
+                lista.innerHTML = '<div class="historico-vazio">Nenhum procedimento registrado.<br>Clique em uma face do dente para adicionar.</div>';
+                return;
+            }
+            
+            var html = '';
+            odontogramaData.procedimentos.forEach(function(p) {
+                var nomeFace = p.face === 'DENTE' ? 'Dente inteiro' : 'Face ' + nomesFaces[p.face];
+                var nomeProc = nomesProcedimentos[p.procedimento] || p.procedimento;
+                
+                html += '<div class="historico-item">' +
+                    '<div class="historico-dente">' + p.dente + '</div>' +
+                    '<div class="historico-proc"><strong>' + nomeProc + '</strong><div class="historico-face">' + nomeFace + '</div></div>' +
+                    '<button class="historico-remover" onclick="removerProcedimento(' + p.id + ')" title="Remover">×</button>' +
+                '</div>';
+            });
+            
+            lista.innerHTML = html;
+        }
+        
+        function atualizarContador() {
+            document.getElementById('contadorProcs').textContent = odontogramaData.procedimentos.length;
+        }
+        
+        // Toggle Permanentes/Decíduos
+        function mostrarPermanentes() {
+            document.getElementById('dentesPermanentes').style.display = 'block';
+            document.getElementById('dentesDeciduos').style.display = 'none';
+            document.getElementById('btnPermanentes').classList.add('active');
+            document.getElementById('btnDeciduos').classList.remove('active');
+        }
+        
+        function mostrarDeciduos() {
+            document.getElementById('dentesPermanentes').style.display = 'none';
+            document.getElementById('dentesDeciduos').style.display = 'block';
+            document.getElementById('btnPermanentes').classList.remove('active');
+            document.getElementById('btnDeciduos').classList.add('active');
+        }
+        
+        // Carregar pacientes no seletor
+        function carregarPacientes() {
+            var select = document.getElementById('seletorPaciente');
+            var pacientes = JSON.parse(localStorage.getItem('pacientes') || '[]');
+            
+            pacientes.forEach(function(p) {
+                var opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.nome;
+                select.appendChild(opt);
+            });
+            
+            select.addEventListener('change', function() {
+                if (this.value) selecionarPaciente(this.value);
+            });
+        }
+        
+        function selecionarPaciente(pacienteId) {
+            odontogramaData.pacienteId = pacienteId;
+            
+            var pacientes = JSON.parse(localStorage.getItem('pacientes') || '[]');
+            var paciente = pacientes.find(function(p) { return p.id == pacienteId; });
+            
+            if (paciente) {
+                document.getElementById('pacienteNome').textContent = paciente.nome;
+                document.getElementById('pacienteDetalhe').textContent = 'CPF: ' + (paciente.cpf || 'Não informado');
+                var iniciais = paciente.nome.split(' ').map(function(n) { return n[0]; }).join('').substring(0,2).toUpperCase();
+                document.getElementById('pacienteAvatar').textContent = iniciais;
+            }
+            
+            carregarOdontograma();
+        }
+        
+        function carregarOdontograma() {
+            if (!odontogramaData.pacienteId) return;
+            
+            // Limpar visual atual
+            document.querySelectorAll('.dente').forEach(function(d) {
+                d.classList.remove('ausente', 'extracao', 'canal', 'coroa', 'implante', 'pivot');
+                d.querySelectorAll('.face').forEach(function(f) {
+                    f.classList.remove('restauracao-amalgama', 'restauracao-resina', 'carie', 'selante', 'fratura');
+                });
+            });
+            
+            var chave = 'odontograma_' + odontogramaData.pacienteId;
+            var salvo = localStorage.getItem(chave);
+            
+            if (salvo) {
+                var dados = JSON.parse(salvo);
+                odontogramaData.dentes = dados.dentes || {};
+                odontogramaData.procedimentos = dados.procedimentos || [];
+                
+                // Aplicar visual
+                Object.keys(dados.dentes).forEach(function(numDente) {
+                    var denteData = dados.dentes[numDente];
+                    var denteEl = document.getElementById('dente' + numDente);
+                    if (!denteEl) return;
+                    
+                    if (denteData.estado && denteData.estado !== 'normal') {
+                        denteEl.classList.add(denteData.estado);
+                    }
+                    
+                    if (denteData.faces) {
+                        Object.keys(denteData.faces).forEach(function(face) {
+                            var faceEl = denteEl.querySelector('[data-face="' + face + '"]');
+                            if (faceEl && denteData.faces[face] !== 'saudavel') {
+                                faceEl.classList.add(denteData.faces[face]);
+                            }
+                        });
+                    }
+                });
+                
+                renderizarHistorico();
+                atualizarContador();
+            } else {
+                odontogramaData.dentes = {};
+                odontogramaData.procedimentos = [];
+                renderizarHistorico();
+                atualizarContador();
+            }
+        }
+        
+        function salvarOdontograma() {
+            if (!odontogramaData.pacienteId) {
+                alert('Selecione um paciente primeiro!');
+                return;
+            }
+            
+            var chave = 'odontograma_' + odontogramaData.pacienteId;
+            localStorage.setItem(chave, JSON.stringify({
+                dentes: odontogramaData.dentes,
+                procedimentos: odontogramaData.procedimentos,
+                ultimaAtualizacao: new Date().toISOString()
+            }));
+            
+            if (typeof mostrarSucesso === 'function') {
+                mostrarSucesso('Odontograma salvo com sucesso!');
+            } else {
+                alert('Odontograma salvo com sucesso!');
+            }
+        }
+        
+        function limparOdontograma() {
+            if (!confirm('Limpar todo o odontograma?')) return;
+            
+            document.querySelectorAll('.dente').forEach(function(d) {
+                d.classList.remove('ausente', 'extracao', 'canal', 'coroa', 'implante', 'pivot');
+                d.querySelectorAll('.face').forEach(function(f) {
+                    f.classList.remove('restauracao-amalgama', 'restauracao-resina', 'carie', 'selante', 'fratura');
+                });
+            });
+            
+            odontogramaData.dentes = {};
+            odontogramaData.procedimentos = [];
+            renderizarHistorico();
+            atualizarContador();
+            
+            if (odontogramaData.pacienteId) {
+                localStorage.removeItem('odontograma_' + odontogramaData.pacienteId);
+            }
+        }
+        
+        // ESC fecha menu
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') fecharMenu();
+        });
+    </script>
+</body>
+</html>

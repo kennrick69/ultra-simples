@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha do Paciente - Dental Ultra</title>
+        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .page-header { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; padding: 24px; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); flex-wrap: wrap; }
+        .btn-voltar { width: 44px; height: 44px; border-radius: 12px; background: #f3f4f6; border: none; font-size: 20px; cursor: pointer; }
+        .btn-voltar:hover { background: #e5e7eb; }
+        .paciente-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #2d7a5f, #3d9970); display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff; font-weight: 600; }
+        .paciente-avatar.estrangeiro { background: linear-gradient(135deg, #2196f3, #1976d2); }
+        .paciente-avatar.menor { background: linear-gradient(135deg, #ff9800, #f57c00); }
+        .paciente-info { flex: 1; min-width: 200px; }
+        .paciente-info h1 { margin: 0 0 6px 0; font-size: 22px; color: #1f2937; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .paciente-info p { margin: 0; color: #6b7280; font-size: 13px; }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+        .badge-menor { background: #fff3e0; color: #e65100; }
+        .badge-estrangeiro { background: #e3f2fd; color: #1565c0; }
+        .paciente-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-action { padding: 8px 14px; border-radius: 8px; border: 2px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .btn-action:hover { border-color: #2d7a5f; color: #2d7a5f; }
+        .btn-action.whatsapp { border-color: #25D366; color: #25D366; }
+        .btn-action.whatsapp:hover { background: #25D366; color: #fff; }
+        .btn-action.primary { background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; border: none; }
+        
+        .tabs-container { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+        .tabs-header { display: flex; border-bottom: 2px solid #e5e7eb; background: #f9fafb; overflow-x: auto; }
+        .tab-btn { flex: 1; min-width: 90px; padding: 14px 12px; border: none; background: none; font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; text-align: center; }
+        .tab-btn:hover { color: #2d7a5f; background: #f0fdf4; }
+        .tab-btn.active { color: #2d7a5f; border-bottom-color: #2d7a5f; background: #fff; }
+        .tab-btn .tab-count { background: #e5e7eb; padding: 2px 6px; border-radius: 8px; font-size: 10px; margin-left: 4px; }
+        .tab-btn.active .tab-count { background: #dcfce7; color: #166534; }
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .info-card { background: #f9fafb; border-radius: 12px; padding: 16px; }
+        .info-card h3 { margin: 0 0 12px 0; font-size: 12px; text-transform: uppercase; color: #2d7a5f; font-weight: 700; }
+        .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; }
+        .info-value { color: #1f2937; font-weight: 500; }
+        .responsavel-card { background: linear-gradient(135deg, #f3e5f5, #e1bee7); border: 2px solid #9c27b0; }
+        .responsavel-card h3 { color: #7b1fa2; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .section-header h3 { margin: 0; font-size: 16px; color: #1f2937; }
+        
+        .card-item { background: #fff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+        .card-item:hover { border-color: #2d7a5f; }
+        .card-item.finalizado, .card-item.aprovado { background: #f0fdf4; border-color: #22c55e; }
+        .card-item.cancelado, .card-item.rejeitado { background: #fef2f2; border-color: #ef4444; opacity: 0.7; }
+        .card-item.pago { background: #f0fdf4; border-color: #22c55e; }
+        .card-item.vencido { background: #fef2f2; border-color: #ef4444; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+        .card-title { font-size: 15px; font-weight: 600; color: #1f2937; }
+        .card-status { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+        .status-andamento { background: #fef3c7; color: #92400e; }
+        .status-finalizado, .status-aprovado { background: #dcfce7; color: #166534; }
+        .status-cancelado, .status-rejeitado { background: #fecaca; color: #991b1b; }
+        .status-pendente { background: #e0e7ff; color: #3730a3; }
+        .card-info { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+        .card-info strong { color: #1f2937; }
+        .card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-actions button { padding: 5px 10px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .btn-success { background: #22c55e; color: #fff; }
+        .btn-edit { background: #e5e7eb; color: #374151; }
+        .btn-danger { background: #fecaca; color: #991b1b; }
+        .btn-info { background: #dbeafe; color: #1d4ed8; }
+        
+        .progress-bar { background: #e5e7eb; border-radius: 10px; height: 6px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(135deg, #2d7a5f, #3d9970); border-radius: 10px; }
+        .progress-fill.complete { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+        .resumo-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .resumo-card { background: #f9fafb; border-radius: 10px; padding: 14px; text-align: center; }
+        .resumo-card.total { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+        .resumo-card.pago { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+        .resumo-card.pendente { background: linear-gradient(135deg, #fecaca, #fca5a5); }
+        .resumo-valor { font-size: 20px; font-weight: 700; }
+        .resumo-card.total .resumo-valor { color: #92400e; }
+        .resumo-card.pago .resumo-valor { color: #166534; }
+        .resumo-card.pendente .resumo-valor { color: #991b1b; }
+        .resumo-label { font-size: 11px; color: #6b7280; }
+
+        .parcelas-list { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e5e7eb; }
+        .parcela-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 12px; }
+        .parcela-item.paga { color: #22c55e; }
+        .parcela-item.atrasada { color: #ef4444; }
+        .parcela-check { width: 16px; height: 16px; cursor: pointer; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #6b7280; }
+        .empty-state h4 { color: #374151; margin-bottom: 6px; }
+
+        /* ANAMNESE */
+        .anamnese-form { max-width: 800px; }
+        .anamnese-section { background: #f9fafb; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .anamnese-section h4 { margin: 0 0 12px 0; color: #2d7a5f; font-size: 14px; border-bottom: 2px solid #2d7a5f; padding-bottom: 6px; }
+        .anamnese-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .anamnese-item { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0; }
+        .anamnese-item input[type="checkbox"] { width: 16px; height: 16px; }
+        .anamnese-item label { cursor: pointer; }
+        .anamnese-textarea { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; resize: vertical; box-sizing: border-box; }
+        .anamnese-textarea:focus { outline: none; border-color: #2d7a5f; }
+        .anamnese-saved { background: #dcfce7; color: #166534; padding: 10px; border-radius: 8px; margin-bottom: 16px; display: none; }
+
+        /* IMAGENS */
+        .images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+        .image-card { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 2px solid #e5e7eb; cursor: pointer; }
+        .image-card:hover { border-color: #2d7a5f; }
+        .image-card img { width: 100%; height: 100%; object-fit: cover; }
+        .image-card .image-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 8px; color: #fff; font-size: 11px; }
+        .image-card .image-delete { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; background: #ef4444; color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 14px; display: none; }
+        .image-card:hover .image-delete { display: block; }
+        .upload-area { border: 2px dashed #e5e7eb; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover { border-color: #2d7a5f; background: #f0fdf4; }
+        .upload-area input { display: none; }
+
+        /* MODAL */
+        .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-bg.open { display: flex; }
+        .modal-box { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-header { padding: 16px 20px; background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; border-radius: 16px 16px 0 0; }
+        .modal-header h2 { margin: 0; font-size: 16px; }
+        .modal-close { position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; background: #fff; border: 2px solid #2d7a5f; border-radius: 50%; font-size: 16px; cursor: pointer; color: #2d7a5f; }
+        .modal-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 0 20px 20px; display: flex; gap: 10px; }
+        .modal-footer button { flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-modal-cancel { background: #e5e7eb; color: #374151; }
+        .btn-modal-save { background: linear-gradient(135deg, #2d7a5f, #3d9970); color: #fff; }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px; color: #374151; }
+        .field input, .field select, .field textarea { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; box-sizing: border-box; }
+        .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #2d7a5f; }
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Image viewer */
+        .image-viewer { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .image-viewer.open { display: flex; }
+        .image-viewer img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .image-viewer-close { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: #fff; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; }
+
+        /* DOCUMENTOS */
+        .doc-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: #fff; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 10px; }
+        .doc-card:hover { border-color: #2d7a5f; }
+        .doc-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .doc-icon.pdf { background: #fecaca; }
+        .doc-icon.word { background: #dbeafe; }
+        .doc-icon.excel { background: #dcfce7; }
+        .doc-icon.other { background: #f3f4f6; }
+        .doc-info { flex: 1; }
+        .doc-name { font-weight: 600; color: #1f2937; font-size: 14px; }
+        .doc-meta { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .doc-actions { display: flex; gap: 6px; }
+        .doc-actions button { padding: 6px 10px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header"><div class="logo">🦷</div><h2>Dental Ultra</h2></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+            <a href="pacientes.html" class="nav-item active"><span class="icon">👥</span><span>Pacientes</span></a>
+            <a href="agenda.html" class="nav-item"><span class="icon">📅</span><span>Agenda</span></a>
+            <a href="prontuario.html" class="nav-item"><span class="icon">📋</span><span>Prontuário</span></a>
+            <a href="estoque.html" class="nav-item"><span class="icon">📦</span><span>Estoque</span></a>
+            <a href="nota-fiscal.html" class="nav-item"><span class="icon">📄</span><span>Notas Fiscais</span></a>
+            <a href="financeiro.html" class="nav-item"><span class="icon">💰</span><span>Financeiro</span></a>
+            <a href="configuracoes.html" class="nav-item"><span class="icon">⚙️</span><span>Configurações</span></a>
+        </nav>
+        <div class="user-info">
+            <div class="user-avatar">👨‍⚕️</div>
+            <div class="user-details"><span class="user-name" id="userName">...</span><span class="user-role" id="userCRO">CRO: ---</span></div>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <button class="btn-voltar" onclick="window.history.back()">←</button>
+            <div class="paciente-avatar" id="pacienteAvatar">--</div>
+            <div class="paciente-info">
+                <h1 id="pacienteNome">Carregando...</h1>
+                <p id="pacienteResumo">---</p>
+            </div>
+            <div class="paciente-actions">
+                <button class="btn-action whatsapp" onclick="enviarWhatsApp()">📱 WhatsApp</button>
+                <button class="btn-action primary" onclick="location.href='agenda.html?paciente='+pacienteId">📅 Agendar</button>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="abrirAba('sobre', this)">📋 Sobre</button>
+                <button class="tab-btn" onclick="abrirAba('tratamentos', this)">🦷 Tratamentos<span class="tab-count" id="cntTrat">0</span></button>
+                <button class="tab-btn" onclick="abrirAba('orcamentos', this)">📝 Orçamentos<span class="tab-count" id="cntOrc">0</span></button>
+                <button class="tab-btn" onclick="abrirAba('debitos', this)">💰 Débitos<span class="tab-count" id="cntDeb">0</span></button>
+                <button class="tab-btn" onclick="abrirAba('anamnese', this)">❤️ Anamnese</button>
+                <button class="tab-btn" onclick="abrirAba('imagens', this)">📷 Imagens<span class="tab-count" id="cntImg">0</span></button>
+                <button class="tab-btn" onclick="abrirAba('documentos', this)">📄 Docs<span class="tab-count" id="cntDoc">0</span></button>
+            </div>
+
+            <!-- ABA SOBRE -->
+            <div class="tab-content active" id="tab-sobre"><div class="info-grid" id="infoGrid"></div></div>
+
+            <!-- ABA TRATAMENTOS -->
+            <div class="tab-content" id="tab-tratamentos">
+                <div class="section-header"><h3>Tratamentos</h3><button class="btn-action primary" onclick="abrirNovoTratamento()">+ Novo</button></div>
+                <div id="listaTratamentos"><div class="empty-state"><h4>Nenhum tratamento</h4></div></div>
+            </div>
+
+            <!-- ABA ORÇAMENTOS -->
+            <div class="tab-content" id="tab-orcamentos">
+                <div class="section-header"><h3>Orçamentos</h3><button class="btn-action primary" onclick="abrirNovoOrcamento()">+ Novo Orçamento</button></div>
+                <div id="listaOrcamentos"><div class="empty-state"><h4>Nenhum orçamento</h4></div></div>
+            </div>
+
+            <!-- ABA DÉBITOS -->
+            <div class="tab-content" id="tab-debitos">
+                <div class="resumo-cards">
+                    <div class="resumo-card total"><div class="resumo-valor" id="totalGeral">R$ 0</div><div class="resumo-label">Total</div></div>
+                    <div class="resumo-card pago"><div class="resumo-valor" id="totalPago">R$ 0</div><div class="resumo-label">Pago</div></div>
+                    <div class="resumo-card pendente"><div class="resumo-valor" id="totalPendente">R$ 0</div><div class="resumo-label">Pendente</div></div>
+                </div>
+                <div class="section-header"><h3>Débitos</h3><button class="btn-action primary" onclick="abrirNovoDebito()">+ Novo</button></div>
+                <div id="listaDebitos"><div class="empty-state"><h4>Nenhum débito</h4></div></div>
+            </div>
+
+            <!-- ABA ANAMNESE -->
+            <div class="tab-content" id="tab-anamnese">
+                <div class="anamnese-saved" id="anamneseSaved">✓ Anamnese salva com sucesso!</div>
+                <div class="anamnese-form">
+                    <div class="anamnese-section">
+                        <h4>🏥 Histórico Médico</h4>
+                        <div class="anamnese-grid" id="historicoMedico"></div>
+                    </div>
+                    <div class="anamnese-section">
+                        <h4>💊 Medicamentos em Uso</h4>
+                        <textarea class="anamnese-textarea" id="anaMedicamentos" rows="3" placeholder="Liste os medicamentos que o paciente usa regularmente..."></textarea>
+                    </div>
+                    <div class="anamnese-section">
+                        <h4>⚠️ Alergias</h4>
+                        <textarea class="anamnese-textarea" id="anaAlergias" rows="2" placeholder="Liste alergias conhecidas (medicamentos, látex, etc)..."></textarea>
+                    </div>
+                    <div class="anamnese-section">
+                        <h4>🦷 Histórico Odontológico</h4>
+                        <div class="anamnese-grid" id="historicoOdonto"></div>
+                    </div>
+                    <div class="anamnese-section">
+                        <h4>📝 Observações Gerais</h4>
+                        <textarea class="anamnese-textarea" id="anaObservacoes" rows="3" placeholder="Outras informações relevantes..."></textarea>
+                    </div>
+                    <button class="btn-action primary" style="width:100%;padding:14px;font-size:15px;" onclick="salvarAnamnese()">💾 Salvar Anamnese</button>
+                </div>
+            </div>
+
+            <!-- ABA IMAGENS -->
+            <div class="tab-content" id="tab-imagens">
+                <div class="section-header"><h3>Galeria de Imagens</h3></div>
+                <div class="upload-area" onclick="document.getElementById('inputImagem').click()">
+                    <input type="file" id="inputImagem" accept="image/*" multiple onchange="uploadImagens(this.files)">
+                    <p style="margin:0;font-size:14px;color:#6b7280;">📷 Clique ou arraste imagens aqui</p>
+                    <p style="margin:5px 0 0;font-size:12px;color:#9ca3af;">Fotos, radiografias, documentos escaneados</p>
+                </div>
+                <div class="images-grid" id="listaImagens" style="margin-top:20px;"></div>
+            </div>
+
+            <!-- ABA DOCUMENTOS -->
+            <div class="tab-content" id="tab-documentos">
+                <div class="section-header"><h3>Documentos do Paciente</h3></div>
+                <div class="upload-area" onclick="document.getElementById('inputDocumento').click()">
+                    <input type="file" id="inputDocumento" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" multiple onchange="uploadDocumentos(this.files)">
+                    <p style="margin:0;font-size:14px;color:#6b7280;">📄 Clique para anexar documentos</p>
+                    <p style="margin:5px 0 0;font-size:12px;color:#9ca3af;">PDF, Word, Excel, TXT</p>
+                </div>
+                <div id="listaDocumentos" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAIS -->
+    <!-- Modal Tratamento -->
+    <div class="modal-bg" id="modalTratamento">
+        <div class="modal-box">
+            <div class="modal-header"><h2 id="modalTratTitulo">Novo Tratamento</h2><button class="modal-close" onclick="fecharModal('modalTratamento')">×</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="tratId">
+                <div class="field"><label>Nome *</label><input type="text" id="tratNome" placeholder="Ex: Canal dente 36"></div>
+                <div class="field-row">
+                    <div class="field"><label>Valor (R$)</label><input type="number" id="tratValor" step="0.01"></div>
+                    <div class="field"><label>Sessões</label><input type="number" id="tratSessoes" value="1" min="1"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>Início</label><input type="date" id="tratDataIni"></div>
+                    <div class="field"><label>Prev. Fim</label><input type="date" id="tratDataFim"></div>
+                </div>
+                <div class="field"><label>Obs</label><textarea id="tratObs" rows="2"></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn-modal-cancel" onclick="fecharModal('modalTratamento')">Cancelar</button><button class="btn-modal-save" onclick="salvarTratamento()">Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Finalizar -->
+    <div class="modal-bg" id="modalFinalizar">
+        <div class="modal-box">
+            <div class="modal-header" style="background:linear-gradient(135deg,#22c55e,#16a34a);"><h2>Finalizar Tratamento</h2><button class="modal-close" onclick="fecharModal('modalFinalizar')">×</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="finId">
+                <p>Finalizando: <strong id="finNome">---</strong></p>
+                <div class="field"><label>Data Conclusão</label><input type="date" id="finData"></div>
+                <div class="field"><label>Resultado</label><select id="finResultado"><option value="sucesso">Sucesso</option><option value="parcial">Parcial</option><option value="encaminhado">Encaminhado</option></select></div>
+                <div class="field"><label>Obs Finais</label><textarea id="finObs" rows="2"></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn-modal-cancel" onclick="fecharModal('modalFinalizar')">Cancelar</button><button class="btn-modal-save" style="background:#22c55e;" onclick="confirmarFinalizar()">Finalizar</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Orçamento -->
+    <div class="modal-bg" id="modalOrcamento">
+        <div class="modal-box">
+            <div class="modal-header" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);"><h2 id="modalOrcTitulo">Novo Orçamento</h2><button class="modal-close" onclick="fecharModal('modalOrcamento')">×</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="orcId">
+                <div class="field"><label>Descrição *</label><input type="text" id="orcDescricao" placeholder="Ex: Implante + Prótese"></div>
+                <div class="field" id="orcItensContainer">
+                    <label>Itens do Orçamento</label>
+                    <div id="orcItensList"></div>
+                    <button type="button" class="btn-action" style="margin-top:8px;width:100%;" onclick="addItemOrcamento()">+ Adicionar Item</button>
+                </div>
+                <div class="field-row">
+                    <div class="field"><label>Subtotal</label><input type="text" id="orcSubtotal" readonly style="background:#f3f4f6;"></div>
+                    <div class="field"><label>Desconto (%)</label><input type="number" id="orcDesconto" value="0" min="0" max="100" onchange="calcularOrcamento()"></div>
+                </div>
+                <div class="field"><label>TOTAL</label><input type="text" id="orcTotal" readonly style="background:#dcfce7;font-weight:bold;font-size:18px;"></div>
+                <div class="field"><label>Validade</label><input type="date" id="orcValidade"></div>
+                <div class="field"><label>Obs</label><textarea id="orcObs" rows="2"></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn-modal-cancel" onclick="fecharModal('modalOrcamento')">Cancelar</button><button class="btn-modal-save" style="background:#8b5cf6;" onclick="salvarOrcamento()">Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Débito -->
+    <div class="modal-bg" id="modalDebito">
+        <div class="modal-box">
+            <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><h2>Novo Débito</h2><button class="modal-close" onclick="fecharModal('modalDebito')">×</button></div>
+            <div class="modal-body">
+                <div class="field"><label>Descrição *</label><input type="text" id="debDescricao" placeholder="Ex: Tratamento de canal"></div>
+                <div class="field-row">
+                    <div class="field"><label>Valor (R$) *</label><input type="number" id="debValor" step="0.01" onchange="calcularDebito()"></div>
+                    <div class="field"><label>Parcelas</label><select id="debParcelas" onchange="calcularDebito()"><option value="1">À vista</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="6">6x</option><option value="10">10x</option><option value="12">12x</option></select></div>
+                </div>
+                <div class="field"><label>Valor Parcela</label><input type="text" id="debValorParcela" readonly style="background:#f3f4f6;"></div>
+                <div class="field"><label>1º Vencimento</label><input type="date" id="debVencimento"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-modal-cancel" onclick="fecharModal('modalDebito')">Cancelar</button><button class="btn-modal-save" style="background:#f59e0b;" onclick="salvarDebito()">Salvar</button></div>
+        </div>
+    </div>
+
+    <!-- Visualizador de Imagem -->
+    <div class="image-viewer" id="imageViewer" onclick="fecharViewer()">
+        <button class="image-viewer-close">×</button>
+        <img id="viewerImg" src="">
+    </div>
+
+    <script src="js/auth-check.js"></script>
+    <script src="js/whatsapp-integration.js"></script>
+    <script>
+    var paciente = null, pacienteId = null;
+    var tratamentos = [], orcamentos = [], debitos = [], imagens = [], documentos = [];
+    var historicoMedicoOpcoes = ['Diabetes','Hipertensão','Cardiopatia','Hepatite','HIV/AIDS','Hemofilia','Epilepsia','Asma','Gravidez','Fumante','Etilista'];
+    var historicoOdontoOpcoes = ['Sangramento gengival','Sensibilidade','Bruxismo','Dor de dente atual','Tratamento ortodôntico','Cirurgia prévia','Implantes','Prótese'];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadUserInfo();
+        pacienteId = new URLSearchParams(window.location.search).get('id');
+        if (!pacienteId) { alert('Paciente não especificado'); location.href = 'pacientes.html'; return; }
+        carregarTudo();
+        renderizarCheckboxes();
+    });
+
+    function loadUserInfo() { var d = getCurrentDentista(); if (d) { document.getElementById('userName').textContent = d.nome || ''; document.getElementById('userCRO').textContent = 'CRO: ' + (d.cro || '---'); } }
+
+    async function carregarTudo() {
+        var res = await apiCall('/api/pacientes/' + pacienteId);
+        if (res && res.success) { paciente = res.paciente; renderizarPaciente(); }
+        tratamentos = JSON.parse(localStorage.getItem('trat_' + pacienteId) || '[]');
+        orcamentos = JSON.parse(localStorage.getItem('orc_' + pacienteId) || '[]');
+        debitos = JSON.parse(localStorage.getItem('deb_' + pacienteId) || '[]');
+        imagens = JSON.parse(localStorage.getItem('img_' + pacienteId) || '[]');
+        documentos = JSON.parse(localStorage.getItem('doc_' + pacienteId) || '[]');
+        var anamnese = JSON.parse(localStorage.getItem('ana_' + pacienteId) || '{}');
+        if (anamnese.medicamentos) document.getElementById('anaMedicamentos').value = anamnese.medicamentos;
+        if (anamnese.alergias) document.getElementById('anaAlergias').value = anamnese.alergias;
+        if (anamnese.observacoes) document.getElementById('anaObservacoes').value = anamnese.observacoes;
+        if (anamnese.historicoMedico) anamnese.historicoMedico.forEach(h => { var cb = document.querySelector('#historicoMedico input[value="'+h+'"]'); if(cb) cb.checked = true; });
+        if (anamnese.historicoOdonto) anamnese.historicoOdonto.forEach(h => { var cb = document.querySelector('#historicoOdonto input[value="'+h+'"]'); if(cb) cb.checked = true; });
+        renderAll();
+    }
+
+    function renderizarPaciente() {
+        var p = paciente;
+        document.getElementById('pacienteAvatar').textContent = p.nome.split(' ').map(n => n[0]).slice(0,2).join('');
+        if (p.menorIdade) document.getElementById('pacienteAvatar').classList.add('menor');
+        if (p.estrangeiro) document.getElementById('pacienteAvatar').classList.add('estrangeiro');
+        var badges = '';
+        if (p.menorIdade) badges += ' <span class="badge badge-menor">Menor</span>';
+        if (p.estrangeiro) badges += ' <span class="badge badge-estrangeiro">Estrangeiro</span>';
+        document.getElementById('pacienteNome').innerHTML = p.nome + badges;
+        var info = [p.cpf ? 'CPF: '+p.cpf : '', p.passaporte ? 'Pass: '+p.passaporte : '', p.celular ? 'Tel: '+p.celular : ''].filter(Boolean).join(' | ');
+        document.getElementById('pacienteResumo').textContent = info || 'Sem contato';
+        
+        var html = '';
+        html += '<div class="info-card"><h3>📋 Dados</h3>';
+        html += infoRow('Nome', p.nome);
+        if (p.cpf) html += infoRow('CPF', p.cpf);
+        if (p.passaporte) html += infoRow('Passaporte', p.passaporte);
+        if (p.dataNascimento) html += infoRow('Nasc.', formatarData(p.dataNascimento));
+        if (p.sexo) html += infoRow('Sexo', p.sexo);
+        html += '</div>';
+        html += '<div class="info-card"><h3>📞 Contato</h3>';
+        html += p.celular ? infoRow('Celular', p.celular) : '';
+        html += p.telefone ? infoRow('Tel. Recados', p.telefone) : '';
+        html += p.email ? infoRow('Email', p.email) : '';
+        if (!p.celular && !p.telefone && !p.email) html += '<p style="color:#999;font-size:13px;">Sem contato</p>';
+        html += '</div>';
+        if (p.endereco || p.cidade) {
+            html += '<div class="info-card"><h3>🏠 Endereço</h3>';
+            if (p.endereco) html += infoRow('End.', p.endereco + (p.numero ? ', '+p.numero : ''));
+            if (p.bairro) html += infoRow('Bairro', p.bairro);
+            if (p.cidade) html += infoRow('Cidade', p.cidade + (p.estado ? '/'+p.estado : ''));
+            html += '</div>';
+        }
+        if (p.menorIdade && p.responsavelNome) {
+            html += '<div class="info-card responsavel-card"><h3>👨‍👩‍👧 Responsável</h3>';
+            html += infoRow('Nome', p.responsavelNome);
+            if (p.responsavelParentesco) html += infoRow('Parentesco', p.responsavelParentesco);
+            if (p.responsavelCpf) html += infoRow('CPF', p.responsavelCpf);
+            html += '</div>';
+        }
+        document.getElementById('infoGrid').innerHTML = html;
+    }
+
+    function infoRow(l, v) { return '<div class="info-row"><span class="info-label">'+l+'</span><span class="info-value">'+(v||'-')+'</span></div>'; }
+
+    function renderizarCheckboxes() {
+        var html1 = '';
+        historicoMedicoOpcoes.forEach(h => { html1 += '<div class="anamnese-item"><input type="checkbox" id="hm_'+h+'" value="'+h+'"><label for="hm_'+h+'">'+h+'</label></div>'; });
+        document.getElementById('historicoMedico').innerHTML = html1;
+        var html2 = '';
+        historicoOdontoOpcoes.forEach(h => { html2 += '<div class="anamnese-item"><input type="checkbox" id="ho_'+h+'" value="'+h+'"><label for="ho_'+h+'">'+h+'</label></div>'; });
+        document.getElementById('historicoOdonto').innerHTML = html2;
+    }
+
+    function renderAll() { renderTratamentos(); renderOrcamentos(); renderDebitos(); renderImagens(); renderDocumentos(); }
+
+    function abrirAba(aba, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + aba).classList.add('active');
+    }
+
+    // ========== TRATAMENTOS ==========
+    function renderTratamentos() {
+        document.getElementById('cntTrat').textContent = tratamentos.length;
+        var c = document.getElementById('listaTratamentos');
+        if (!tratamentos.length) { c.innerHTML = '<div class="empty-state"><h4>Nenhum tratamento</h4></div>'; return; }
+        var html = '';
+        tratamentos.forEach((t, i) => {
+            var sClass = t.status === 'finalizado' ? 'finalizado' : (t.status === 'cancelado' ? 'cancelado' : '');
+            var sBadge = t.status === 'finalizado' ? 'status-finalizado' : (t.status === 'cancelado' ? 'status-cancelado' : 'status-andamento');
+            var sText = t.status === 'finalizado' ? 'Finalizado' : (t.status === 'cancelado' ? 'Cancelado' : 'Em Andamento');
+            var prog = t.status === 'finalizado' ? 100 : Math.round(((t.sessoesRealizadas||0) / t.sessoes) * 100);
+            html += '<div class="card-item '+sClass+'"><div class="card-header"><span class="card-title">'+t.nome+'</span><span class="card-status '+sBadge+'">'+sText+'</span></div>';
+            html += '<div class="card-info">'+(t.valor?'<span>R$ '+parseFloat(t.valor).toFixed(2)+'</span>':'')+'<span>Sessões: '+(t.sessoesRealizadas||0)+'/'+t.sessoes+'</span></div>';
+            html += '<div class="progress-bar"><div class="progress-fill'+(prog===100?' complete':'')+'" style="width:'+prog+'%"></div></div>';
+            if (t.status !== 'finalizado' && t.status !== 'cancelado') {
+                html += '<div class="card-actions"><button class="btn-success" onclick="abrirFinalizar('+i+')">✓ Finalizar</button><button class="btn-edit" onclick="editarTratamento('+i+')">Editar</button><button class="btn-danger" onclick="cancelarTratamento('+i+')">Cancelar</button></div>';
+            }
+            html += '</div>';
+        });
+        c.innerHTML = html;
+    }
+
+    function abrirNovoTratamento() { document.getElementById('tratId').value = ''; document.getElementById('tratNome').value = ''; document.getElementById('tratValor').value = ''; document.getElementById('tratSessoes').value = '1'; document.getElementById('tratDataIni').value = formatarDataISO(new Date()); document.getElementById('tratDataFim').value = ''; document.getElementById('tratObs').value = ''; document.getElementById('modalTratTitulo').textContent = 'Novo Tratamento'; document.getElementById('modalTratamento').classList.add('open'); }
+    function editarTratamento(i) { var t = tratamentos[i]; document.getElementById('tratId').value = i; document.getElementById('tratNome').value = t.nome; document.getElementById('tratValor').value = t.valor||''; document.getElementById('tratSessoes').value = t.sessoes; document.getElementById('tratDataIni').value = t.dataInicio||''; document.getElementById('tratDataFim').value = t.dataFim||''; document.getElementById('tratObs').value = t.observacoes||''; document.getElementById('modalTratTitulo').textContent = 'Editar Tratamento'; document.getElementById('modalTratamento').classList.add('open'); }
+    function salvarTratamento() { var nome = document.getElementById('tratNome').value.trim(); if (!nome) { alert('Informe o nome'); return; } var dados = { nome: nome, valor: parseFloat(document.getElementById('tratValor').value)||0, sessoes: parseInt(document.getElementById('tratSessoes').value)||1, sessoesRealizadas: 0, dataInicio: document.getElementById('tratDataIni').value, dataFim: document.getElementById('tratDataFim').value, observacoes: document.getElementById('tratObs').value, status: 'andamento' }; var id = document.getElementById('tratId').value; if (id !== '') { dados.sessoesRealizadas = tratamentos[parseInt(id)].sessoesRealizadas||0; tratamentos[parseInt(id)] = dados; } else { tratamentos.push(dados); } localStorage.setItem('trat_' + pacienteId, JSON.stringify(tratamentos)); fecharModal('modalTratamento'); renderTratamentos(); }
+    function abrirFinalizar(i) { document.getElementById('finId').value = i; document.getElementById('finNome').textContent = tratamentos[i].nome; document.getElementById('finData').value = formatarDataISO(new Date()); document.getElementById('modalFinalizar').classList.add('open'); }
+    function confirmarFinalizar() { var i = parseInt(document.getElementById('finId').value); tratamentos[i].status = 'finalizado'; tratamentos[i].sessoesRealizadas = tratamentos[i].sessoes; localStorage.setItem('trat_' + pacienteId, JSON.stringify(tratamentos)); fecharModal('modalFinalizar'); renderTratamentos(); }
+    function cancelarTratamento(i) { if (!confirm('Cancelar?')) return; tratamentos[i].status = 'cancelado'; localStorage.setItem('trat_' + pacienteId, JSON.stringify(tratamentos)); renderTratamentos(); }
+
+    // ========== ORÇAMENTOS ==========
+    var orcItens = [];
+    function renderOrcamentos() {
+        var pendentes = orcamentos.filter(o => o.status === 'pendente').length;
+        document.getElementById('cntOrc').textContent = pendentes || orcamentos.length;
+        var c = document.getElementById('listaOrcamentos');
+        if (!orcamentos.length) { c.innerHTML = '<div class="empty-state"><h4>Nenhum orçamento</h4></div>'; return; }
+        var html = '';
+        orcamentos.forEach((o, i) => {
+            var sBadge = o.status === 'aprovado' ? 'status-aprovado' : (o.status === 'rejeitado' ? 'status-rejeitado' : 'status-pendente');
+            var sText = o.status === 'aprovado' ? 'Aprovado' : (o.status === 'rejeitado' ? 'Rejeitado' : 'Pendente');
+            html += '<div class="card-item '+(o.status||'')+'">';
+            html += '<div class="card-header"><span class="card-title">'+o.descricao+'</span><span class="card-status '+sBadge+'">'+sText+'</span></div>';
+            html += '<div class="card-info"><span>Total: <strong>R$ '+parseFloat(o.total).toFixed(2)+'</strong></span>';
+            if (o.desconto > 0) html += '<span>Desconto: '+o.desconto+'%</span>';
+            if (o.validade) html += '<span>Validade: '+formatarData(o.validade)+'</span>';
+            html += '</div>';
+            if (o.itens && o.itens.length) {
+                html += '<div style="font-size:12px;color:#6b7280;margin-top:8px;">';
+                o.itens.forEach(it => { html += '<div>• '+it.nome+' - R$ '+parseFloat(it.valor).toFixed(2)+'</div>'; });
+                html += '</div>';
+            }
+            html += '<div class="card-actions">';
+            if (o.status === 'pendente') {
+                html += '<button class="btn-success" onclick="aprovarOrcamento('+i+')">✓ Aprovar</button>';
+                html += '<button class="btn-danger" onclick="rejeitarOrcamento('+i+')">✗ Rejeitar</button>';
+            }
+            if (o.status === 'aprovado') html += '<button class="btn-info" onclick="converterEmDebito('+i+')">💰 Gerar Débito</button>';
+            html += '<button class="btn-edit" onclick="excluirOrcamento('+i+')">Excluir</button>';
+            html += '</div></div>';
+        });
+        c.innerHTML = html;
+    }
+
+    function abrirNovoOrcamento() { orcItens = [{ nome: '', valor: 0 }]; renderOrcItens(); document.getElementById('orcId').value = ''; document.getElementById('orcDescricao').value = ''; document.getElementById('orcDesconto').value = '0'; document.getElementById('orcValidade').value = ''; document.getElementById('orcObs').value = ''; calcularOrcamento(); document.getElementById('modalOrcamento').classList.add('open'); }
+    function renderOrcItens() { var html = ''; orcItens.forEach((it, i) => { html += '<div style="display:flex;gap:8px;margin-bottom:8px;"><input type="text" placeholder="Procedimento" value="'+(it.nome||'')+'" onchange="orcItens['+i+'].nome=this.value" style="flex:2;padding:8px;border:2px solid #e5e7eb;border-radius:6px;"><input type="number" placeholder="Valor" value="'+(it.valor||'')+'" onchange="orcItens['+i+'].valor=parseFloat(this.value)||0;calcularOrcamento()" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;"><button type="button" onclick="orcItens.splice('+i+',1);renderOrcItens();calcularOrcamento()" style="padding:8px 12px;background:#fecaca;color:#991b1b;border:none;border-radius:6px;cursor:pointer;">×</button></div>'; }); document.getElementById('orcItensList').innerHTML = html; }
+    function addItemOrcamento() { orcItens.push({ nome: '', valor: 0 }); renderOrcItens(); }
+    function calcularOrcamento() { var subtotal = orcItens.reduce((s, it) => s + (parseFloat(it.valor)||0), 0); var desconto = parseFloat(document.getElementById('orcDesconto').value)||0; var total = subtotal * (1 - desconto/100); document.getElementById('orcSubtotal').value = 'R$ ' + subtotal.toFixed(2); document.getElementById('orcTotal').value = 'R$ ' + total.toFixed(2); }
+    function salvarOrcamento() { var desc = document.getElementById('orcDescricao').value.trim(); if (!desc) { alert('Informe a descrição'); return; } var subtotal = orcItens.reduce((s, it) => s + (parseFloat(it.valor)||0), 0); var desconto = parseFloat(document.getElementById('orcDesconto').value)||0; var total = subtotal * (1 - desconto/100); var orc = { descricao: desc, itens: orcItens.filter(it => it.nome), subtotal: subtotal, desconto: desconto, total: total, validade: document.getElementById('orcValidade').value, observacoes: document.getElementById('orcObs').value, status: 'pendente', criadoEm: new Date().toISOString() }; orcamentos.push(orc); localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); fecharModal('modalOrcamento'); renderOrcamentos(); }
+    function aprovarOrcamento(i) { orcamentos[i].status = 'aprovado'; localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); renderOrcamentos(); }
+    function rejeitarOrcamento(i) { if (!confirm('Rejeitar orçamento?')) return; orcamentos[i].status = 'rejeitado'; localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); renderOrcamentos(); }
+    function excluirOrcamento(i) { if (!confirm('Excluir?')) return; orcamentos.splice(i, 1); localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); renderOrcamentos(); }
+    function converterEmDebito(i) { var o = orcamentos[i]; document.getElementById('debDescricao').value = o.descricao; document.getElementById('debValor').value = o.total; document.getElementById('debParcelas').value = '1'; document.getElementById('debVencimento').value = formatarDataISO(new Date()); calcularDebito(); document.getElementById('modalDebito').classList.add('open'); }
+
+    // ========== DÉBITOS ==========
+    function renderDebitos() {
+        var total = 0, pago = 0, pendente = 0;
+        debitos.forEach(d => { total += parseFloat(d.valor)||0; if (d.parcelas && d.parcelas.length) { d.parcelas.forEach(p => { if (p.pago) pago += parseFloat(p.valor); else pendente += parseFloat(p.valor); }); } else { if (d.pago) pago += parseFloat(d.valor); else pendente += parseFloat(d.valor); } });
+        document.getElementById('totalGeral').textContent = 'R$ ' + total.toFixed(0);
+        document.getElementById('totalPago').textContent = 'R$ ' + pago.toFixed(0);
+        document.getElementById('totalPendente').textContent = 'R$ ' + pendente.toFixed(0);
+        document.getElementById('cntDeb').textContent = pendente > 0 ? 'R$'+pendente.toFixed(0) : '0';
+        var c = document.getElementById('listaDebitos');
+        if (!debitos.length) { c.innerHTML = '<div class="empty-state"><h4>Nenhum débito</h4></div>'; return; }
+        var html = '';
+        debitos.forEach((d, i) => {
+            var todoPago = d.parcelas ? d.parcelas.every(p => p.pago) : d.pago;
+            var temVencido = d.parcelas ? d.parcelas.some(p => !p.pago && new Date(p.vencimento) < new Date()) : (!d.pago && new Date(d.vencimento) < new Date());
+            html += '<div class="card-item'+(todoPago?' pago':'')+(temVencido?' vencido':'')+'">';
+            html += '<div class="card-header"><span class="card-title">'+d.descricao+'</span><span style="font-size:16px;font-weight:700;color:'+(temVencido?'#ef4444':'#2d7a5f')+';">R$ '+parseFloat(d.valor).toFixed(2)+'</span></div>';
+            html += '<div class="card-info">';
+            if (d.numParcelas > 1) html += '<span>'+d.numParcelas+'x de R$ '+(parseFloat(d.valor)/d.numParcelas).toFixed(2)+'</span>';
+            if (todoPago) html += '<span style="color:#22c55e;">✓ Quitado</span>';
+            else if (temVencido) html += '<span style="color:#ef4444;">⚠ Vencido</span>';
+            html += '</div>';
+            if (d.parcelas && d.parcelas.length > 1) {
+                html += '<div class="parcelas-list">';
+                d.parcelas.forEach((p, pi) => { var venc = !p.pago && new Date(p.vencimento) < new Date(); html += '<div class="parcela-item'+(p.pago?' paga':'')+(venc?' atrasada':'')+'"><span>'+(pi+1)+'ª - '+formatarData(p.vencimento)+'</span><span>R$ '+parseFloat(p.valor).toFixed(2)+'</span><input type="checkbox" class="parcela-check" '+(p.pago?'checked':'')+' onchange="marcarParcela('+i+','+pi+',this.checked)"></div>'; });
+                html += '</div>';
+            }
+            html += '<div class="card-actions">';
+            if (!todoPago && (!d.parcelas || d.parcelas.length <= 1)) html += '<button class="btn-success" onclick="marcarPago('+i+')">✓ Pago</button>';
+            html += '<button class="btn-danger" onclick="excluirDebito('+i+')">Excluir</button></div></div>';
+        });
+        c.innerHTML = html;
+    }
+
+    function abrirNovoDebito() { document.getElementById('debDescricao').value = ''; document.getElementById('debValor').value = ''; document.getElementById('debParcelas').value = '1'; document.getElementById('debVencimento').value = formatarDataISO(new Date()); calcularDebito(); document.getElementById('modalDebito').classList.add('open'); }
+    function calcularDebito() { var v = parseFloat(document.getElementById('debValor').value)||0; var n = parseInt(document.getElementById('debParcelas').value)||1; document.getElementById('debValorParcela').value = 'R$ ' + (v/n).toFixed(2); }
+    function salvarDebito() { var desc = document.getElementById('debDescricao').value.trim(); var valor = parseFloat(document.getElementById('debValor').value); if (!desc || !valor) { alert('Preencha'); return; } var numP = parseInt(document.getElementById('debParcelas').value)||1; var venc = document.getElementById('debVencimento').value; var deb = { descricao: desc, valor: valor, numParcelas: numP, vencimento: venc, pago: false, parcelas: [] }; if (numP > 1) { var vp = valor/numP; var dv = new Date(venc+'T00:00:00'); for (var i=0; i<numP; i++) { deb.parcelas.push({ numero: i+1, valor: vp, vencimento: formatarDataISO(dv), pago: false }); dv.setMonth(dv.getMonth()+1); } } debitos.push(deb); localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); fecharModal('modalDebito'); renderDebitos(); }
+    function marcarPago(i) { debitos[i].pago = true; localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
+    function marcarParcela(di, pi, pago) { debitos[di].parcelas[pi].pago = pago; localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
+    function excluirDebito(i) { if (!confirm('Excluir?')) return; debitos.splice(i, 1); localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
+
+    // ========== ANAMNESE ==========
+    function salvarAnamnese() {
+        var hm = []; document.querySelectorAll('#historicoMedico input:checked').forEach(cb => hm.push(cb.value));
+        var ho = []; document.querySelectorAll('#historicoOdonto input:checked').forEach(cb => ho.push(cb.value));
+        var anamnese = { historicoMedico: hm, historicoOdonto: ho, medicamentos: document.getElementById('anaMedicamentos').value, alergias: document.getElementById('anaAlergias').value, observacoes: document.getElementById('anaObservacoes').value, atualizadoEm: new Date().toISOString() };
+        localStorage.setItem('ana_' + pacienteId, JSON.stringify(anamnese));
+        document.getElementById('anamneseSaved').style.display = 'block';
+        setTimeout(() => document.getElementById('anamneseSaved').style.display = 'none', 3000);
+    }
+
+    // ========== IMAGENS ==========
+    function renderImagens() {
+        document.getElementById('cntImg').textContent = imagens.length;
+        var c = document.getElementById('listaImagens');
+        if (!imagens.length) { c.innerHTML = '<div class="empty-state" style="padding:20px;"><h4>Nenhuma imagem</h4></div>'; return; }
+        var html = '';
+        imagens.forEach((img, i) => {
+            html += '<div class="image-card" onclick="abrirViewer(\''+img.data+'\')">';
+            html += '<img src="'+img.data+'" alt="'+img.nome+'">';
+            html += '<div class="image-overlay">'+img.nome+'<br><small>'+formatarData(img.adicionadoEm)+'</small></div>';
+            html += '<button class="image-delete" onclick="event.stopPropagation();excluirImagem('+i+')">×</button>';
+            html += '</div>';
+        });
+        c.innerHTML = html;
+    }
+
+    function uploadImagens(files) {
+        Array.from(files).forEach(file => {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                imagens.push({ nome: file.name, data: e.target.result, adicionadoEm: new Date().toISOString() });
+                localStorage.setItem('img_' + pacienteId, JSON.stringify(imagens));
+                renderImagens();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function excluirImagem(i) { if (!confirm('Excluir imagem?')) return; imagens.splice(i, 1); localStorage.setItem('img_' + pacienteId, JSON.stringify(imagens)); renderImagens(); }
+    function abrirViewer(src) { document.getElementById('viewerImg').src = src; document.getElementById('imageViewer').classList.add('open'); }
+    function fecharViewer() { document.getElementById('imageViewer').classList.remove('open'); }
+
+    // ========== DOCUMENTOS ==========
+    function renderDocumentos() {
+        document.getElementById('cntDoc').textContent = documentos.length;
+        var c = document.getElementById('listaDocumentos');
+        if (!documentos.length) { c.innerHTML = '<div class="empty-state" style="padding:20px;"><h4>Nenhum documento</h4></div>'; return; }
+        var html = '';
+        documentos.forEach((doc, i) => {
+            var ext = doc.nome.split('.').pop().toLowerCase();
+            var iconClass = ext === 'pdf' ? 'pdf' : (ext === 'doc' || ext === 'docx' ? 'word' : (ext === 'xls' || ext === 'xlsx' ? 'excel' : 'other'));
+            var icon = ext === 'pdf' ? '📕' : (ext === 'doc' || ext === 'docx' ? '📘' : (ext === 'xls' || ext === 'xlsx' ? '📗' : '📄'));
+            html += '<div class="doc-card">';
+            html += '<div class="doc-icon '+iconClass+'">'+icon+'</div>';
+            html += '<div class="doc-info"><div class="doc-name">'+doc.nome+'</div><div class="doc-meta">'+formatarData(doc.adicionadoEm)+' • '+(doc.tamanho ? formatarTamanho(doc.tamanho) : 'N/A')+'</div></div>';
+            html += '<div class="doc-actions"><button class="btn-info" onclick="baixarDocumento('+i+')">⬇ Baixar</button><button class="btn-danger" onclick="excluirDocumento('+i+')">×</button></div>';
+            html += '</div>';
+        });
+        c.innerHTML = html;
+    }
+
+    function uploadDocumentos(files) {
+        Array.from(files).forEach(file => {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                documentos.push({ nome: file.name, data: e.target.result, tamanho: file.size, tipo: file.type, adicionadoEm: new Date().toISOString() });
+                localStorage.setItem('doc_' + pacienteId, JSON.stringify(documentos));
+                renderDocumentos();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function baixarDocumento(i) {
+        var doc = documentos[i];
+        var link = document.createElement('a');
+        link.href = doc.data;
+        link.download = doc.nome;
+        link.click();
+    }
+
+    function excluirDocumento(i) { if (!confirm('Excluir documento?')) return; documentos.splice(i, 1); localStorage.setItem('doc_' + pacienteId, JSON.stringify(documentos)); renderDocumentos(); }
+
+    function formatarTamanho(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+        return (bytes/(1024*1024)).toFixed(1) + ' MB';
+    }
+
+    // ========== UTILS ==========
+    function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+    function formatarData(d) { if (!d) return '-'; var p = d.split('T')[0].split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+    function formatarDataISO(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+    function pad(n) { return n < 10 ? '0'+n : ''+n; }
+    function enviarWhatsApp() { if (typeof WhatsAppIntegration !== 'undefined' && paciente) WhatsAppIntegration.enviarOla(paciente); else if (paciente && paciente.celular) window.open('https://wa.me/55'+paciente.celular.replace(/\D/g,''), '_blank'); }
+    document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); }));
+    </script>
+</body>
+</html>

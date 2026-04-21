@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <title>Login - Dental Ultra</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Dental Ultra UI Kit -->
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--du-primary-dark) 0%, var(--du-dark) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--du-5);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .login-card {
+            background: var(--du-surface);
+            border-radius: var(--du-r-xl);
+            box-shadow: var(--du-sh-lg);
+            padding: var(--du-7);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: var(--du-5);
+        }
+
+        .login-logo img {
+            width: 72px;
+            height: 72px;
+            border-radius: var(--du-r-lg);
+            box-shadow: var(--du-sh-md);
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: var(--du-h3);
+            font-weight: 800;
+            color: var(--du-primary-dark);
+            margin: var(--du-3) 0 var(--du-1);
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--du-text-2);
+            font-size: var(--du-small);
+            margin-bottom: var(--du-6);
+        }
+
+        .form-title {
+            text-align: center;
+            font-size: var(--du-h4);
+            font-weight: 700;
+            margin-bottom: var(--du-5);
+            color: var(--du-text);
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--du-3);
+        }
+
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .login-card {
+                padding: var(--du-5);
+            }
+        }
+
+        .toggle-text {
+            text-align: center;
+            margin-top: var(--du-5);
+            color: var(--du-text-2);
+            font-size: var(--du-small);
+        }
+
+        .toggle-text a {
+            color: var(--du-primary);
+            font-weight: 600;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: var(--du-4);
+        }
+
+        .back-link a {
+            color: var(--du-text-2);
+            font-size: var(--du-small);
+        }
+
+        .back-link a:hover {
+            color: var(--du-primary);
+        }
+    </style>
+    
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo" style="margin-bottom: 24px;">
+                <img src="img/logo-header.png" alt="Dental Ultra" style="width: 100%; max-width: 280px; height: auto;">
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" class="form-container active">
+                <h2 class="form-title">Fazer Login</h2>
+                
+                <div class="du-field du-mb-4">
+                    <label class="du-label">Email <span class="required">*</span></label>
+                    <input type="email" id="loginEmail" class="du-input" required placeholder="seu@email.com">
+                </div>
+
+                <div class="du-field du-mb-4">
+                    <label class="du-label">Senha <span class="required">*</span></label>
+                    <input type="password" id="loginPassword" class="du-input" required placeholder="Sua senha">
+                </div>
+
+                <button type="submit" class="du-btn du-btn--primary du-btn--block">Entrar</button>
+
+                <div class="toggle-text">
+                    Não tem conta? <a href="javascript:void(0)" onclick="showRegister()">Cadastre-se aqui</a>
+                </div>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="registerForm" class="form-container">
+                <h2 class="form-title">Criar Conta</h2>
+                
+                <div class="form-row du-mb-3">
+                    <div class="du-field" style="flex: 2;">
+                        <label class="du-label">Nome Completo <span class="required">*</span></label>
+                        <input type="text" id="regName" class="du-input" required placeholder="Dr(a). João Silva">
+                    </div>
+                    <div class="du-field" style="flex: 1;">
+                        <label class="du-label">CRO <span class="required">*</span></label>
+                        <input type="text" id="regCRO" class="du-input" required placeholder="12345">
+                    </div>
+                </div>
+
+                <div class="form-row du-mb-3">
+                    <div class="du-field">
+                        <label class="du-label">Especialidade</label>
+                        <select id="regSpecialty" class="du-select">
+                            <option value="">Selecione...</option>
+                            <option value="Geral">Clínico Geral</option>
+                            <option value="Ortodontia">Ortodontia</option>
+                            <option value="Endodontia">Endodontia</option>
+                            <option value="Periodontia">Periodontia</option>
+                            <option value="Implantodontia">Implantodontia</option>
+                            <option value="Prótese">Prótese</option>
+                            <option value="Cirurgia">Cirurgia</option>
+                            <option value="Estética">Estética</option>
+                            <option value="Pediátrica">Odontopediatria</option>
+                            <option value="Outra">Outra</option>
+                        </select>
+                    </div>
+                    <div class="du-field">
+                        <label class="du-label">Clínica</label>
+                        <input type="text" id="regClinic" class="du-input" placeholder="Nome da Clínica">
+                    </div>
+                </div>
+
+                <div class="du-field du-mb-3">
+                    <label class="du-label">Email <span class="required">*</span></label>
+                    <input type="email" id="regEmail" class="du-input" required placeholder="seu@email.com">
+                </div>
+
+                <div class="form-row du-mb-3">
+                    <div class="du-field">
+                        <label class="du-label">Senha <span class="required">*</span></label>
+                        <input type="password" id="regPassword" class="du-input" required placeholder="Mín. 6 caracteres">
+                    </div>
+                    <div class="du-field">
+                        <label class="du-label">Confirmar <span class="required">*</span></label>
+                        <input type="password" id="regPasswordConfirm" class="du-input" required placeholder="Repita a senha">
+                    </div>
+                </div>
+
+                <button type="submit" class="du-btn du-btn--primary du-btn--block">Cadastrar</button>
+
+                <div class="toggle-text">
+                    Já tem conta? <a href="javascript:void(0)" onclick="showLogin()">Fazer login</a>
+                </div>
+            </form>
+
+            <div class="back-link">
+                <a href="/">← Voltar para página inicial</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/dental-ultra.ui.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

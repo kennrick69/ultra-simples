@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <title>Confirmar Email - Dental Ultra</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 50px;
+        }
+        
+        .icon.success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+        }
+        
+        .icon.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+        
+        .icon.loading {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        h1 {
+            font-size: 28px;
+            color: #1a1a2e;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        
+        .message {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            margin-top: 12px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .hidden { display: none; }
+        
+        .brand {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .brand-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1FA2FF;
+        }
+        
+        .brand-tagline {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Estado: Carregando -->
+        <div id="stateLoading">
+            <div class="icon loading">
+                <span class="spinner">⏳</span>
+            </div>
+            <h1>Confirmando...</h1>
+            <p class="message">Aguarde enquanto confirmamos seu email.</p>
+        </div>
+        
+        <!-- Estado: Sucesso -->
+        <div id="stateSuccess" class="hidden">
+            <div class="icon success">✓</div>
+            <h1>Email Confirmado!</h1>
+            <p class="message">
+                Olá <strong id="nomeUsuario">Usuário</strong>!<br>
+                Sua conta foi ativada com sucesso.<br>
+                Agora você pode fazer login no sistema.
+            </p>
+            <a href="login.html" class="btn btn-primary">Fazer Login</a>
+            <div class="brand">
+                <div class="brand-name">🦷 Dental Ultra</div>
+                <div class="brand-tagline">Sistema de Gestão Odontológica</div>
+            </div>
+        </div>
+        
+        <!-- Estado: Erro -->
+        <div id="stateError" class="hidden">
+            <div class="icon error">✕</div>
+            <h1>Link Inválido</h1>
+            <p class="message" id="errorMessage">
+                Este link de confirmação é inválido ou já foi utilizado.
+            </p>
+            <a href="login.html" class="btn btn-secondary">Voltar para Login</a>
+            <div class="brand">
+                <div class="brand-name">🦷 Dental Ultra</div>
+                <div class="brand-tagline">Sistema de Gestão Odontológica</div>
+            </div>
+        </div>
+        
+        <!-- Estado: Sem Token -->
+        <div id="stateNoToken" class="hidden">
+            <div class="logo">🦷</div>
+            <h1>Dental Ultra</h1>
+            <p class="message">
+                Para confirmar seu email, use o link enviado para seu email.
+            </p>
+            <a href="login.html" class="btn btn-primary">Ir para Login</a>
+        </div>
+    </div>
+
+    <script>
+    // URL da API
+    function getApiUrl() {
+        return 'https://dentist-backend-v2-production.up.railway.app';
+    }
+    
+    // Pegar token da URL
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get('token');
+    
+    // Estados
+    function mostrarEstado(estado) {
+        document.getElementById('stateLoading').classList.add('hidden');
+        document.getElementById('stateSuccess').classList.add('hidden');
+        document.getElementById('stateError').classList.add('hidden');
+        document.getElementById('stateNoToken').classList.add('hidden');
+        document.getElementById('state' + estado).classList.remove('hidden');
+    }
+    
+    // Confirmar email
+    async function confirmarEmail() {
+        if (!token) {
+            mostrarEstado('NoToken');
+            return;
+        }
+        
+        try {
+            var response = await fetch(getApiUrl() + '/api/auth/confirmar-email?token=' + token);
+            var data = await response.json();
+            
+            if (data.success) {
+                if (data.nome) {
+                    document.getElementById('nomeUsuario').textContent = data.nome;
+                }
+                mostrarEstado('Success');
+            } else {
+                document.getElementById('errorMessage').textContent = data.erro || 'Este link é inválido ou expirou.';
+                mostrarEstado('Error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            document.getElementById('errorMessage').textContent = 'Erro de conexão. Tente novamente.';
+            mostrarEstado('Error');
+        }
+    }
+    
+    // Iniciar
+    confirmarEmail();
+    </script>
+</body>
+</html>

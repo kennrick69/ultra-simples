@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Análise | Equiparação Hospitalar</title>
+    <meta name="description" content="Veja o resultado da sua análise de equiparação hospitalar.">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/result.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="result-page">
+    <div class="result-container">
+        <!-- Score Hero -->
+        <div class="score-hero" id="score-hero">
+            <!-- Preenchido via JavaScript -->
+        </div>
+        
+        <!-- Comparison -->
+        <div id="comparison-container">
+            <!-- Preenchido via JavaScript se vier da calculadora -->
+        </div>
+        
+        <!-- Savings Highlight -->
+        <div class="savings-highlight" id="savings-highlight" style="display: none;">
+            <!-- Preenchido via JavaScript se houver economia -->
+        </div>
+        
+        <!-- Next Steps -->
+        <div class="next-steps" id="next-steps">
+            <!-- Preenchido via JavaScript -->
+        </div>
+        
+        <!-- CTA -->
+        <div class="result-cta" id="result-cta">
+            <!-- Preenchido via JavaScript -->
+        </div>
+        
+        <!-- Footer Links -->
+        <div style="text-align: center; margin-top: 2rem; padding: 2rem 0; border-top: 1px solid var(--bg-quaternary);">
+            <p style="color: var(--text-tertiary); margin-bottom: 1rem;">
+                <a href="index.html" style="color: var(--primary); text-decoration: underline; margin: 0 1rem;">Início</a>
+                <a href="quiz.html" style="color: var(--primary); text-decoration: underline; margin: 0 1rem;">Fazer Novo Quiz</a>
+                <a href="calculadora.html" style="color: var(--primary); text-decoration: underline; margin: 0 1rem;">Nova Análise</a>
+            </p>
+            <p style="font-size: 0.875rem; color: var(--text-tertiary);">
+                © 2025 Converse com Maria. Todos os direitos reservados.
+            </p>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/calculations.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/result.js"></script>
+    
+    <script>
+        // Mostra savings highlight se houver leadData
+        document.addEventListener('DOMContentLoaded', () => {
+            if (resultState.leadData && resultState.source === 'calculator') {
+                document.getElementById('savings-highlight').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

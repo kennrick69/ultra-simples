@@ -1,0 +1,169 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    CONVERSE COM MARIA - EQUIPARAÇÃO HOSPITALAR                ║
+║                             Sistema Completo v2.0                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 DESCRIÇÃO DO PROJETO
+═══════════════════════════════════════════════════════════════════════════════
+
+Este é o site COMPLETO da Equiparação Hospitalar com:
+
+✅ PRODUTO PRINCIPAL: Equiparação Hospitalar
+   • Landing page (index.html)
+   • Calculadora de impostos (calculadora.html)
+   • Quiz rápido (quiz.html)
+   • Página de resultados (resultado.html)
+   • Painel admin (admin.html)
+
+✅ BÔNUS: Sistema Dental Ultra (pasta /area-dentistas/)
+   • Sistema completo de gestão odontológica
+   • Login e autenticação JWT
+   • Dashboard, agenda, pacientes, prontuário, financeiro, etc.
+
+
+📂 ESTRUTURA DE PASTAS
+═══════════════════════════════════════════════════════════════════════════════
+
+EquipacaoHospitalar/              ← EXTRAIR AQUI
+│
+├── index.html                    ← PÁGINA INICIAL (Equiparação Hospitalar)
+├── calculadora.html              
+├── quiz.html
+├── resultado.html
+├── admin.html
+│
+├── css/                          ← Estilos do site principal
+│   ├── global.css
+│   ├── components.css
+│   ├── landing.css
+│   ├── calculator.css
+│   ├── quiz.css
+│   ├── result.css
+│   └── admin.css
+│
+├── js/                           ← Scripts do site principal
+│   ├── app.js
+│   ├── utils.js
+│   ├── storage.js
+│   ├── calculations.js
+│   ├── calculator.js
+│   ├── quiz.js
+│   ├── result.js
+│   └── admin.js
+│
+└── area-dentistas/               ← SISTEMA DENTAL ULTRA (BÔNUS)
+    │
+    ├── login.html
+    ├── dashboard.html
+    ├── agenda.html
+    ├── pacientes.html
+    ├── pacientes-novo.html
+    ├── prontuario.html
+    ├── plano-tratamento.html
+    ├── financeiro.html
+    ├── nota-fiscal.html
+    ├── dentistas.html
+    ├── relatorios.html
+    │
+    ├── css/
+    │   ├── dashboard.css
+    │   ├── forms.css
+    │   └── login.css
+    │
+    └── js/
+        ├── auth.js
+        ├── auth-check.js
+        ├── dashboard.js
+        ├── agenda.js
+        ├── pacientes.js
+        ├── prontuario.js
+        ├── plano-tratamento.js
+        ├── pdf-generator.js
+        └── nfse-integration.js
+
+
+🚀 COMO USAR
+═══════════════════════════════════════════════════════════════════════════════
+
+OPÇÃO 1 - TESTE LOCAL (Desenvolvimento)
+────────────────────────────────────────
+1. Extraia o ZIP na pasta desejada
+2. Abra index.html no navegador OU
+3. Use Live Server (VS Code) na pasta raiz
+
+OPÇÃO 2 - HOSPEDAR NO SERVIDOR
+────────────────────────────────────────
+1. Extraia o ZIP
+2. Faça upload de TUDO para a raiz do seu domínio:
+   conversecommaria.com.br/
+   
+3. Configure o backend (se necessário):
+   • Backend de autenticação no Railway
+   • Banco de dados PostgreSQL
+   • Variáveis de ambiente (.env)
+
+
+📍 PÁGINAS PRINCIPAIS
+═══════════════════════════════════════════════════════════════════════════════
+
+🌐 SITE PRINCIPAL (Equiparação Hospitalar):
+   • https://conversecommaria.com.br/
+   • https://conversecommaria.com.br/calculadora.html
+   • https://conversecommaria.com.br/quiz.html
+   • https://conversecommaria.com.br/admin.html
+
+🦷 ÁREA DENTISTAS (Sistema Dental Ultra):
+   • https://conversecommaria.com.br/area-dentistas/login.html
+   • https://conversecommaria.com.br/area-dentistas/dashboard.html
+   • https://conversecommaria.com.br/area-dentistas/agenda.html
+
+
+⚙️ BACKEND & BANCO DE DADOS
+═══════════════════════════════════════════════════════════════════════════════
+
+O sistema /area-dentistas/ requer:
+
+✅ Backend Node.js no Railway
+   • Autenticação JWT
+   • API REST
+   • Integração NFSe
+
+✅ Banco de dados PostgreSQL
+   • Tabelas: users, patients, appointments, procedures, etc.
+
+✅ Variáveis de ambiente (.env):
+   DATABASE_URL=postgresql://...
+   JWT_SECRET=...
+   PORT=3000
+
+
+📊 ESTATÍSTICAS
+═══════════════════════════════════════════════════════════════════════════════
+
+• 16 páginas HTML
+• 10 arquivos CSS
+• 17 arquivos JavaScript
+• 44 arquivos totais
+• ~536 KB (compactado)
+
+
+💡 DICAS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Sempre teste localmente antes de fazer upload
+2. Use navegador atualizado (Chrome/Edge/Firefox)
+3. Abra o Console (F12) para ver logs e debugar
+4. Os arquivos CSS e JS estão bem organizados
+5. O sistema usa LocalStorage para dados temporários
+
+
+🆘 SUPORTE
+═══════════════════════════════════════════════════════════════════════════════
+
+Email: contato@conversecommaria.com
+Site: https://conversecommaria.com.br
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                          Desenvolvido por JOs - 2026
+═══════════════════════════════════════════════════════════════════════════════

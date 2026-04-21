@@ -1,0 +1,595 @@
+/* ==========================================
+   CALCULATOR.CSS - Estilos da Calculadora
+   Sistema: Equiparação Hospitalar - DENTISTAS
+   ========================================== */
+
+/* ==================== CALCULATOR PAGE ==================== */
+.calculator-page {
+    min-height: 100vh;
+    background: var(--bg-secondary);
+    padding: 2rem 0;
+}
+
+.calculator-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ==================== HEADER ==================== */
+.calculator-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: var(--radius-2xl);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: var(--text-white);
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.calculator-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.calculator-title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    margin-bottom: 0.5rem;
+}
+
+.calculator-subtitle {
+    font-size: var(--text-base);
+    opacity: 0.95;
+}
+
+/* ==================== STEPS INDICATOR ==================== */
+.steps-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.step-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 1.25rem;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: var(--bg-quaternary);
+    z-index: 0;
+}
+
+.step-item.completed:not(:last-child)::after {
+    background: var(--primary);
+}
+
+.step-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 3px solid var(--bg-quaternary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-bold);
+    margin: 0 auto 0.5rem;
+    position: relative;
+    z-index: 1;
+    transition: all var(--transition-base);
+}
+
+.step-item.completed .step-circle {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--text-white);
+}
+
+.step-item.active .step-circle {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-white);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+}
+
+.step-label {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    font-weight: var(--font-medium);
+}
+
+.step-item.completed .step-label,
+.step-item.active .step-label {
+    color: var(--text-primary);
+}
+
+/* ==================== FORM CARD ==================== */
+.calculator-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-2xl);
+    padding: 3rem;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+}
+
+.step-content {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.step-content.active {
+    display: block;
+}
+
+.step-header {
+    margin-bottom: 2rem;
+}
+
+.step-number {
+    display: inline-block;
+    background: var(--primary-100);
+    color: var(--primary);
+    padding: 0.375rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    margin-bottom: 1rem;
+}
+
+.step-title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.step-description {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+}
+
+/* ==================== FORM FIELDS ==================== */
+.form-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-grid.two-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.form-field {
+    margin-bottom: 1.5rem;
+}
+
+.field-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.field-label.required::after {
+    content: '*';
+    color: var(--danger);
+    margin-left: 0.25rem;
+}
+
+.field-help {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-top: 0.25rem;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-prefix,
+.input-suffix {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-weight: var(--font-medium);
+    pointer-events: none;
+}
+
+.input-prefix {
+    left: 1rem;
+}
+
+.input-suffix {
+    right: 1rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: var(--text-base);
+    border: 2px solid var(--bg-quaternary);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+    background: var(--bg-primary);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1);
+}
+
+.form-input.has-prefix {
+    padding-left: 3rem;
+}
+
+.form-input.has-suffix {
+    padding-right: 3rem;
+}
+
+.form-input.error {
+    border-color: var(--danger);
+}
+
+.form-input.error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.field-error {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--danger);
+    margin-top: 0.5rem;
+}
+
+/* Select Customizado */
+.form-select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: var(--text-base);
+    border: 2px solid var(--bg-quaternary);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+    background: var(--bg-primary);
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1);
+}
+
+/* Range Slider */
+.range-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+}
+
+.range-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: none;
+}
+
+.range-value {
+    display: inline-block;
+    background: var(--primary-100);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-bold);
+    margin-top: 0.5rem;
+}
+
+/* Checkbox/Radio personalizados */
+.checkbox-group,
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.checkbox-item,
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"],
+.radio-item input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+/* ==================== INFO BOXES ==================== */
+.info-box {
+    background: var(--bg-secondary);
+    border-left: 4px solid var(--primary);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+}
+
+.info-box.warning {
+    border-color: var(--warning);
+    background: #fef3c7;
+}
+
+.info-box.success {
+    border-color: var(--success);
+    background: #d1fae5;
+}
+
+.info-box-title {
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-box-text {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ==================== SUMMARY CARDS ==================== */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    border: 2px solid var(--bg-quaternary);
+}
+
+.summary-label {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-bottom: 0.5rem;
+}
+
+.summary-value {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+}
+
+.summary-help {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+}
+
+/* ==================== NAVIGATION ==================== */
+.calculator-navigation {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding-top: 2rem;
+    border-top: 1px solid var(--bg-quaternary);
+}
+
+.nav-buttons-left,
+.nav-buttons-right {
+    display: flex;
+    gap: 1rem;
+}
+
+/* ==================== LOADING STATE ==================== */
+.calculating-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.calculating-content {
+    background: var(--bg-primary);
+    padding: 3rem;
+    border-radius: var(--radius-2xl);
+    text-align: center;
+    max-width: 400px;
+}
+
+.calculating-spinner {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1.5rem;
+    border: 4px solid var(--bg-quaternary);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.calculating-text {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.calculating-subtext {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* ==================== DOCUMENT UPLOAD ==================== */
+.upload-area {
+    border: 2px dashed var(--bg-quaternary);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+    border-color: var(--primary);
+    background: var(--primary-50);
+}
+
+.upload-area.drag-over {
+    border-color: var(--primary);
+    background: var(--primary-100);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--text-tertiary);
+}
+
+.upload-text {
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.upload-hint {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}
+
+.files-list {
+    margin-top: 1.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    margin-bottom: 0.75rem;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+}
+
+.file-name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+.file-size {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 1.25rem;
+}
+
+/* ==================== RESPONSIVIDADE ==================== */
+@media (max-width: 768px) {
+    .calculator-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .form-grid.two-cols {
+        grid-template-columns: 1fr;
+    }
+    
+    .steps-indicator {
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+    
+    .step-label {
+        font-size: 0.75rem;
+    }
+    
+    .calculator-navigation {
+        flex-direction: column-reverse;
+    }
+    
+    .nav-buttons-left,
+    .nav-buttons-right {
+        width: 100%;
+    }
+    
+    .nav-buttons-left button,
+    .nav-buttons-right button {
+        flex: 1;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==================== ANIMAÇÕES ==================== */
+@keyframes stepComplete {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.step-circle.just-completed {
+    animation: stepComplete 0.5s ease-out;
+}

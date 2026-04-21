@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <title>Gerenciar Usuários - Dental Ultra</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Dental Ultra UI Kit -->
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <style>
+        /* === SIDEBAR STYLES === */
+        .sidebar { width: 220px; background: var(--du-surface); border-right: 1px solid var(--du-border); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
+        .sidebar .logo-link { display: block; width: 220px; height: 120px; overflow: hidden; border-bottom: 1px solid var(--du-border); }
+        .sidebar .logo-header { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+        .sidebar .logo-link:hover .logo-header { transform: scale(1.03); }
+        .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--du-text-2); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.2s; }
+        .sidebar nav a:hover { background: var(--du-surface-2); border-left-color: var(--du-primary); }
+        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
+        .sidebar .user-details { flex: 1; }
+        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; }
+        .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
+        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .loading-state { text-align: center; padding: 60px 20px; color: #666; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* === END SIDEBAR === */
+
+        .page-header {
+            background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 50%, #1FA2FF 100%);
+            padding: 24px 32px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+        .page-header p { margin: 4px 0 0 0; opacity: 0.9; font-size: 14px; }
+
+        .content-area { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+        /* Cards de usuário */
+        .usuarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .usuario-card {
+            background: var(--du-surface);
+            border-radius: var(--du-r-lg);
+            padding: 20px;
+            box-shadow: var(--du-sh-sm);
+            border: 1px solid var(--du-border);
+            transition: all 0.2s;
+        }
+        .usuario-card:hover {
+            box-shadow: var(--du-sh-md);
+            border-color: var(--du-primary);
+        }
+        .usuario-card.inativo {
+            opacity: 0.6;
+            background: #f9fafb;
+        }
+        .usuario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .usuario-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            color: var(--du-text);
+        }
+        .usuario-info .cargo {
+            font-size: 13px;
+            color: var(--du-text-2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .usuario-info .email {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.ativo { background: #dcfce7; color: #166534; }
+        .status-badge.inativo { background: #fee2e2; color: #991b1b; }
+
+        .permissoes-lista {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 12px 0;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            min-height: 40px;
+        }
+        .permissao-tag {
+            padding: 4px 10px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .permissao-tag.negada {
+            background: #fef2f2;
+            color: #991b1b;
+            text-decoration: line-through;
+        }
+
+        .usuario-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--du-border);
+        }
+        .usuario-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-editar { background: #e0f2fe; color: #0369a1; }
+        .btn-editar:hover { background: #bae6fd; }
+        .btn-excluir { background: #fee2e2; color: #dc2626; }
+        .btn-excluir:hover { background: #fecaca; }
+        .btn-ativar { background: #dcfce7; color: #166534; }
+        .btn-ativar:hover { background: #bbf7d0; }
+
+        /* Card de adicionar */
+        .add-usuario-card {
+            background: var(--du-surface);
+            border: 2px dashed var(--du-border);
+            border-radius: var(--du-r-lg);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-usuario-card:hover {
+            border-color: var(--du-primary);
+            background: rgba(31, 162, 255, 0.05);
+        }
+        .add-usuario-card .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .add-usuario-card h3 {
+            margin: 0;
+            color: var(--du-text);
+            font-size: 16px;
+        }
+        .add-usuario-card p {
+            margin: 8px 0 0 0;
+            color: var(--du-text-2);
+            font-size: 13px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--du-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .modal-header h2 { margin: 0; font-size: 18px; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 4px;
+        }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--du-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--du-text);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--du-border);
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--du-primary);
+            box-shadow: 0 0 0 3px rgba(31, 162, 255, 0.15);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* Permissões checkboxes */
+        .permissoes-section h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: var(--du-text);
+        }
+        .permissoes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .permissao-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .permissao-check:hover { background: #f1f5f9; }
+        .permissao-check.checked { background: #e0f2fe; }
+        .permissao-check input { margin-top: 2px; }
+        .permissao-check .info { flex: 1; }
+        .permissao-check .nome { font-weight: 600; font-size: 13px; color: var(--du-text); display: block; }
+        .permissao-check .desc { font-size: 11px; color: #6b7280; display: block; margin-top: 2px; }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(31, 162, 255, 0.4); }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid var(--du-border);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-secondary:hover { background: #e5e7eb; }
+
+        /* Info box */
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 15px; color: #1e40af; }
+        .info-box p { margin: 0; font-size: 13px; color: #3b82f6; line-height: 1.6; }
+        .info-box ul { margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; color: #3b82f6; }
+        .info-box li { margin-bottom: 4px; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+        .empty-state h3 { margin: 0 0 8px 0; color: var(--du-text); }
+        .empty-state p { margin: 0; font-size: 14px; }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+            .page-header { padding: 16px; }
+            .content-area { padding: 16px; }
+            .usuarios-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .permissoes-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="dashboard.html" class="logo-link">
+            <img src="img/header-logo.png" alt="Dental Ultra" class="logo-header">
+        </a>
+        <nav id="sidebar-nav">
+            <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+            <a href="pacientes.html"><span class="nav-icon">👥</span> Pacientes</a>
+            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
+            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
+            <a href="casos-proteticos.html"><span class="nav-icon">🦷</span> Casos Protéticos</a>
+            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
+            <a href="nota-fiscal.html"><span class="nav-icon">📄</span> Notas Fiscais</a>
+            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
+            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
+            <a href="tabela-precos.html"><span class="nav-icon">💲</span> Tabela de Preços</a>
+            <a href="usuarios.html" class="active"><span class="nav-icon">👤</span> Usuários</a>
+            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        </nav>
+        <div class="user-info">
+            <div class="user-details">
+                <span class="user-name" id="user-name">Carregando...</span>
+                <span class="user-role" id="user-role">Dentista</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="page-header">
+            <div>
+                <h1>👤 Gerenciar Usuários</h1>
+                <p>Crie contas para sua equipe com permissões personalizadas</p>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="info-box">
+                <h3>💡 Como funciona?</h3>
+                <p>Você pode criar contas de acesso para sua equipe (secretárias, auxiliares, etc.) com permissões específicas:</p>
+                <ul>
+                    <li><strong>Secretária</strong> - Pode acessar agenda e pacientes, mas não prontuários</li>
+                    <li><strong>Auxiliar</strong> - Acesso limitado conforme você definir</li>
+                    <li><strong>Dentista Parceiro</strong> - Acesso completo ou parcial aos dados</li>
+                </ul>
+            </div>
+
+            <div id="loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Carregando usuários...</p>
+            </div>
+
+            <div id="usuarios-container" class="usuarios-grid" style="display: none;">
+                <!-- Usuários serão inseridos aqui -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Adicionar/Editar Usuário -->
+    <div class="modal-overlay" id="modal-usuario">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-titulo">➕ Novo Usuário</h2>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-usuario">
+                    <input type="hidden" id="usuario-id">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome Completo *</label>
+                            <input type="text" id="usuario-nome" required placeholder="Ex: Maria Silva">
+                        </div>
+                        <div class="form-group">
+                            <label>Cargo</label>
+                            <select id="usuario-cargo">
+                                <option value="Secretária">Secretária</option>
+                                <option value="Auxiliar">Auxiliar</option>
+                                <option value="Recepcionista">Recepcionista</option>
+                                <option value="Dentista Parceiro">Dentista Parceiro</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email de Acesso *</label>
+                        <input type="email" id="usuario-email" required placeholder="email@exemplo.com">
+                    </div>
+
+                    <div class="form-group" id="grupo-senha">
+                        <label>Senha * <small style="color: #6b7280;">(mínimo 6 caracteres)</small></label>
+                        <input type="password" id="usuario-senha" placeholder="••••••••" minlength="6">
+                    </div>
+
+                    <div class="permissoes-section">
+                        <h4>🔐 Permissões de Acesso</h4>
+                        <div class="permissoes-grid" id="permissoes-grid">
+                            <!-- Checkboxes serão inseridos aqui -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button type="button" class="btn-primary" onclick="salvarUsuario()">💾 Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="frontend-auth.js"></script>
+    <script>
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api' 
+            : 'https://dentist-backend-v2-production.up.railway.app/api';
+
+        let usuarios = [];
+        let permissoesDisponiveis = [];
+        let editandoId = null;
+
+        // Verificar autenticação
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = verificarAuth();
+            if (!auth) return;
+            
+            // Verificar se é dentista (apenas dentistas podem acessar esta página)
+            const dadosUsuario = JSON.parse(localStorage.getItem('dentista') || '{}');
+            const tipoUsuario = localStorage.getItem('tipoUsuario') || 'dentista';
+            
+            if (tipoUsuario !== 'dentista') {
+                alert('Apenas o dentista pode gerenciar usuários');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            // Atualizar sidebar
+            document.getElementById('user-name').textContent = dadosUsuario.nome || 'Dentista';
+            document.getElementById('user-role').textContent = dadosUsuario.especialidade || 'Administrador';
+            
+            // Carregar dados
+            await carregarPermissoes();
+            await carregarUsuarios();
+        });
+
+        // Carregar lista de permissões disponíveis
+        async function carregarPermissoes() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/usuarios/permissoes-disponiveis`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    permissoesDisponiveis = data.permissoes;
+                    renderizarPermissoes();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar permissões:', error);
+            }
+        }
+
+        // Renderizar checkboxes de permissões
+        function renderizarPermissoes() {
+            const grid = document.getElementById('permissoes-grid');
+            grid.innerHTML = permissoesDisponiveis.map(p => `
+                <label class="permissao-check" onclick="togglePermissao(this)">
+                    <input type="checkbox" name="permissao" value="${p.id}">
+                    <div class="info">
+                        <span class="nome">${p.nome}</span>
+                        <span class="desc">${p.descricao}</span>
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        function togglePermissao(label) {
+            const checkbox = label.querySelector('input');
+            label.classList.toggle('checked', checkbox.checked);
+        }
+
+        // Carregar usuários
+        async function carregarUsuarios() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/usuarios`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('usuarios-container').style.display = 'grid';
+                
+                if (data.success) {
+                    usuarios = data.usuarios;
+                    renderizarUsuarios();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                mostrarToast('Erro ao carregar usuários', 'error');
+            }
+        }
+
+        // Renderizar cards de usuários
+        function renderizarUsuarios() {
+            const container = document.getElementById('usuarios-container');
+            
+            let html = `
+                <div class="add-usuario-card" onclick="abrirModalNovo()">
+                    <div class="icon">➕</div>
+                    <h3>Adicionar Usuário</h3>
+                    <p>Crie uma conta para sua equipe</p>
+                </div>
+            `;
+            
+            if (usuarios.length === 0) {
+                html += `
+                    <div class="empty-state" style="grid-column: span 2;">
+                        <div class="icon">👥</div>
+                        <h3>Nenhum usuário cadastrado</h3>
+                        <p>Clique em "Adicionar Usuário" para criar contas para sua equipe</p>
+                    </div>
+                `;
+            } else {
+                usuarios.forEach(u => {
+                    const permissoesNomes = (u.permissoes || []).map(pid => {
+                        const p = permissoesDisponiveis.find(x => x.id === pid);
+                        return p ? p.nome : pid;
+                    });
+                    
+                    html += `
+                        <div class="usuario-card ${u.ativo ? '' : 'inativo'}">
+                            <div class="usuario-header">
+                                <div class="usuario-info">
+                                    <h3>${escapeHtml(u.nome)}</h3>
+                                    <div class="cargo">👤 ${escapeHtml(u.cargo || 'Sem cargo')}</div>
+                                    <div class="email">📧 ${escapeHtml(u.email)}</div>
+                                </div>
+                                <span class="status-badge ${u.ativo ? 'ativo' : 'inativo'}">
+                                    ${u.ativo ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </div>
+                            <div class="permissoes-lista">
+                                ${permissoesNomes.length > 0 
+                                    ? permissoesNomes.map(n => `<span class="permissao-tag">${n}</span>`).join('')
+                                    : '<span style="color: #9ca3af; font-size: 12px;">Sem permissões definidas</span>'
+                                }
+                            </div>
+                            <div class="usuario-actions">
+                                <button class="btn-editar" onclick="editarUsuario(${u.id})">✏️ Editar</button>
+                                ${u.ativo 
+                                    ? `<button class="btn-excluir" onclick="desativarUsuario(${u.id})">🚫 Desativar</button>`
+                                    : `<button class="btn-ativar" onclick="ativarUsuario(${u.id})">✅ Ativar</button>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Abrir modal para novo usuário
+        function abrirModalNovo() {
+            editandoId = null;
+            document.getElementById('modal-titulo').textContent = '➕ Novo Usuário';
+            document.getElementById('form-usuario').reset();
+            document.getElementById('usuario-id').value = '';
+            document.getElementById('grupo-senha').querySelector('label').innerHTML = 
+                'Senha * <small style="color: #6b7280;">(mínimo 6 caracteres)</small>';
+            document.getElementById('usuario-senha').required = true;
+            
+            // Resetar checkboxes
+            document.querySelectorAll('.permissao-check').forEach(el => {
+                el.classList.remove('checked');
+                el.querySelector('input').checked = false;
+            });
+            
+            // Marcar permissões padrão para secretária
+            ['agenda', 'pacientes_visualizar'].forEach(pid => {
+                const checkbox = document.querySelector(`input[value="${pid}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    checkbox.closest('.permissao-check').classList.add('checked');
+                }
+            });
+            
+            document.getElementById('modal-usuario').classList.add('show');
+        }
+
+        // Abrir modal para editar usuário
+        function editarUsuario(id) {
+            const usuario = usuarios.find(u => u.id === id);
+            if (!usuario) return;
+            
+            editandoId = id;
+            document.getElementById('modal-titulo').textContent = '✏️ Editar Usuário';
+            document.getElementById('usuario-id').value = id;
+            document.getElementById('usuario-nome').value = usuario.nome;
+            document.getElementById('usuario-email').value = usuario.email;
+            document.getElementById('usuario-cargo').value = usuario.cargo || 'Secretária';
+            document.getElementById('usuario-senha').value = '';
+            document.getElementById('grupo-senha').querySelector('label').innerHTML = 
+                'Nova Senha <small style="color: #6b7280;">(deixe em branco para manter)</small>';
+            document.getElementById('usuario-senha').required = false;
+            
+            // Resetar e marcar permissões do usuário
+            document.querySelectorAll('.permissao-check').forEach(el => {
+                const checkbox = el.querySelector('input');
+                const marcado = (usuario.permissoes || []).includes(checkbox.value);
+                checkbox.checked = marcado;
+                el.classList.toggle('checked', marcado);
+            });
+            
+            document.getElementById('modal-usuario').classList.add('show');
+        }
+
+        // Fechar modal
+        function fecharModal() {
+            document.getElementById('modal-usuario').classList.remove('show');
+        }
+
+        // Salvar usuário
+        async function salvarUsuario() {
+            const nome = document.getElementById('usuario-nome').value.trim();
+            const email = document.getElementById('usuario-email').value.trim();
+            const senha = document.getElementById('usuario-senha').value;
+            const cargo = document.getElementById('usuario-cargo').value;
+            
+            // Coletar permissões marcadas
+            const permissoes = [];
+            document.querySelectorAll('input[name="permissao"]:checked').forEach(cb => {
+                permissoes.push(cb.value);
+            });
+            
+            if (!nome || !email) {
+                mostrarToast('Preencha nome e email', 'error');
+                return;
+            }
+            
+            if (!editandoId && (!senha || senha.length < 6)) {
+                mostrarToast('Senha deve ter no mínimo 6 caracteres', 'error');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const dados = { nome, email, cargo, permissoes };
+                if (senha) dados.senha = senha;
+                
+                const url = editandoId 
+                    ? `${API_URL}/usuarios/${editandoId}` 
+                    : `${API_URL}/usuarios`;
+                
+                const response = await fetch(url, {
+                    method: editandoId ? 'PUT' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarToast(data.message || 'Salvo com sucesso!', 'success');
+                    fecharModal();
+                    await carregarUsuarios();
+                } else {
+                    mostrarToast(data.erro || 'Erro ao salvar', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                mostrarToast('Erro ao salvar usuário', 'error');
+            }
+        }
+
+        // Desativar usuário
+        async function desativarUsuario(id) {
+            if (!confirm('Deseja desativar este usuário? Ele não poderá mais fazer login.')) return;
+            await atualizarStatus(id, false);
+        }
+
+        // Ativar usuário
+        async function ativarUsuario(id) {
+            await atualizarStatus(id, true);
+        }
+
+        async function atualizarStatus(id, ativo) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/usuarios/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ ativo })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    mostrarToast(ativo ? 'Usuário ativado!' : 'Usuário desativado!', 'success');
+                    await carregarUsuarios();
+                } else {
+                    mostrarToast(data.erro || 'Erro', 'error');
+                }
+            } catch (error) {
+                mostrarToast('Erro ao atualizar', 'error');
+            }
+        }
+
+        // Utilitários
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function mostrarToast(msg, tipo = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') fecharModal();
+        });
+    </script>
+    <script src="js/orcamentos-modal.js"></script>
+</body>
+</html>

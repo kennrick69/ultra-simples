@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacientes - Dental Ultra</title>
+    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
+    <link rel="stylesheet" href="css/dental-ultra.ui.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    
+    <!-- SheetJS para ler Excel/ODS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        /* === SIDEBAR STYLES === */
+        .sidebar { width: 220px; background: var(--du-surface); border-right: 1px solid var(--du-border); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
+        .sidebar .logo-link { display: block; width: 220px; height: 120px; overflow: hidden; border-bottom: 1px solid var(--du-border); }
+        .sidebar .logo-header { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+        .sidebar .logo-link:hover .logo-header { transform: scale(1.03); }
+        .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--du-text-2); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.2s; }
+        .sidebar nav a:hover { background: var(--du-surface-2); border-left-color: var(--du-primary); }
+        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
+        .sidebar .user-details { flex: 1; }
+        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; }
+        .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
+        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        /* Loading styles */
+        .loading-state { text-align: center; padding: 60px 20px; color: #666; }
+        .loading-more { text-align: center; padding: 20px; color: #666; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        .spinner-small { width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .load-more-info { text-align: center; padding: 16px; color: #666; font-size: 13px; background: #f9fafb; border-radius: 8px; margin-top: 16px; }
+        /* === END SIDEBAR === */
+
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .page-header h1 { margin: 0; }
+        .btn-primary { padding: 12px 24px; background: linear-gradient(135deg, #1FA2FF, #6FE7FF); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { box-shadow: 0 4px 12px rgba(45,122,95,0.4); }
+        .search-box { display: flex; gap: 12px; margin-bottom: 20px; }
+        .search-box input { flex: 1; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; }
+        .search-box input:focus { outline: none; border-color: #1FA2FF; }
+        .search-box button { padding: 12px 20px; background: #1FA2FF; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+        .patients-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
+        .patient-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border-left: 4px solid #1FA2FF; transition: all 0.2s; }
+        .patient-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+        .patient-card.menor { border-left-color: #ff9800; }
+        .patient-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .patient-name { font-size: 18px; font-weight: 600; color: #333; margin: 0; }
+        .patient-badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+        .badge-menor { background: #fff3e0; color: #e65100; }
+        .patient-badge.badge-incompleto { background: #fef3c7; color: #d97706; }
+        .patient-info { font-size: 14px; color: #666; }
+        .patient-info p { margin: 4px 0; display: flex; align-items: center; gap: 8px; }
+        .patient-info span { color: #999; }
+        .patient-responsavel { background: #f3e5f5; padding: 10px; border-radius: 8px; margin-top: 12px; font-size: 13px; }
+        .patient-responsavel strong { color: #7b1fa2; }
+        .patient-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #eee; }
+        .patient-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-view { background: #e3f2fd; color: #1976d2; }
+        .btn-edit { background: #e8f5e9; color: #2e7d32; }
+        .btn-delete { background: #ffebee; color: #c62828; }
+        .btn-new-window { background: #e8f5e9; color: #2e7d32; min-width: 36px; flex: 0 !important; font-size: 16px; }
+        .btn-new-window:hover { background: #c8e6c9; }
+        .patient-card.estrangeiro { border-left-color: #2196f3; }
+        .badge-estrangeiro { background: #e3f2fd; color: #1565c0; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .empty-state h3 { margin-bottom: 10px; color: #333; }
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-item { background: #fff; padding: 16px 24px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .stat-item strong { font-size: 24px; color: #1FA2FF; display: block; }
+        .stat-item span { font-size: 13px; color: #666; }
+        .stat-item.stat-clickable { cursor: pointer; transition: all 0.2s; }
+        .stat-item.stat-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .stat-item.stat-clickable.active { box-shadow: 0 0 0 3px #1FA2FF; }
+        .btn-whatsapp-small { width: 32px; height: 32px; border-radius: 50%; background: #25D366; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-whatsapp-small:hover { background: #128C7E; transform: scale(1.1); }
+        
+        /* ========== MODAL DE IMPORTAÇÃO ========== */
+        .modal-import-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-import-overlay.active { display: flex; }
+        
+        .modal-import {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 1100px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-import-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-import-header h2 { margin: 0; font-size: 20px; }
+        
+        .modal-import-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            line-height: 1;
+        }
+        
+        .modal-import-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+        
+        .modal-import-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .import-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .import-stat {
+            background: #f3f4f6;
+            padding: 16px 24px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .import-stat .number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1FA2FF;
+        }
+        
+        .import-stat.warning .number { color: #f59e0b; }
+        .import-stat.success .number { color: #22c55e; }
+        
+        .import-stat .label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .import-filters {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .import-filters label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .import-filters input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #1FA2FF;
+        }
+        
+        .import-table-wrap {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .import-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .import-table th {
+            background: #f3f4f6;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        .import-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .import-table tr:hover { background: #f9fafb; }
+        
+        .import-table tr.row-duplicate {
+            background: #fef3c7;
+        }
+        
+        .import-table tr.row-duplicate:hover {
+            background: #fde68a;
+        }
+        
+        .badge-dup {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #f59e0b;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 20px;
+        }
+        
+        .badge-new {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #22c55e;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 20px;
+        }
+        
+        .btn-import-confirm {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #1FA2FF, #0B3C78);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-import-confirm:hover {
+            box-shadow: 0 4px 16px rgba(31,162,255,0.4);
+        }
+        
+        .btn-import-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-cancel {
+            padding: 12px 24px;
+            background: #f3f4f6;
+            color: #333;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .import-progress {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .import-progress.active { display: block; }
+        
+        .progress-bar-bg {
+            width: 100%;
+            max-width: 400px;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 16px auto;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1FA2FF, #22c55e);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+    <script src="js/no-autocomplete.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/notificacoes.js"></script>
+    <script src="js/alertas-bonitos.js"></script>
+</head>
+<body>
+            <aside class="sidebar">
+        <a href="agenda.html" class="logo-link" title="Ir para Agenda">
+            <img src="img/logo-header.png" alt="Dental Ultra" class="logo-header">
+        </a>
+        <nav>
+            <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+            <a href="pacientes.html" class="active"><span class="nav-icon">👥</span> Pacientes</a>
+            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
+            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
+            <a href="casos-proteticos.html"><span class="nav-icon">🦷</span> Casos Protéticos</a>
+            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
+            <a href="nota-fiscal.html"><span class="nav-icon">📄</span> Notas Fiscais</a>
+            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
+            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
+            <a href="tabela-precos.html"><span class="nav-icon">💲</span> Tabela de Preços</a>
+            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        </nav>
+        <div class="user-info">
+            <div class="user-details">
+                <span class="user-name" id="userName">...</span>
+                <span class="user-role" id="userCRO">CRO: ...</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>👥 Pacientes</h1>
+                <p>Gerencie todos os pacientes cadastrados</p>
+            </div>
+            <button class="btn-primary" onclick="ModalPaciente.abrir(onPacienteCriado)">
+                ➕ Novo Paciente
+            </button>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item stat-clickable active" onclick="filtrarPorStatus('todos')" title="Clique para ver todos">
+                <strong id="totalPacientes">0</strong>
+                <span>Total de Pacientes</span>
+            </div>
+            <div class="stat-item stat-clickable" style="border-left: 3px solid #22c55e;" onclick="filtrarPorStatus('completo')" title="Clique para filtrar">
+                <strong id="totalCompletos" style="color:#22c55e;">0</strong>
+                <span>Cadastro Completo</span>
+            </div>
+            <div class="stat-item stat-clickable" style="border-left: 3px solid #f59e0b;" onclick="filtrarPorStatus('incompleto')" title="Clique para filtrar">
+                <strong id="totalIncompletos" style="color:#f59e0b;">0</strong>
+                <span>Cadastro Incompleto</span>
+            </div>
+            <div class="stat-item stat-clickable" onclick="filtrarPorStatus('menor')" title="Clique para filtrar">
+                <strong id="totalMenores">0</strong>
+                <span>Menores de Idade</span>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Buscar por nome, CPF ou telefone..." oninput="filtrarPacientes()" onkeyup="filtrarPacientes()">
+            <button onclick="filtrarPacientes()">🔍 Buscar</button>
+            <button onclick="exportarPacientes()" style="background:#4caf50;" title="Exportar para Excel">📥 Exportar</button>
+            <button onclick="document.getElementById('inputImportar').click()" style="background:#2196f3;" title="Importar de Excel/ODS">📤 Importar</button>
+            <input type="file" id="inputImportar" accept=".xlsx,.xls,.ods,.csv" style="display:none;" onchange="abrirModalImportacao(this.files[0])">
+        </div>
+
+        <div class="patients-grid" id="patientsGrid">
+            <div class="empty-state">
+                <h3>Carregando pacientes...</h3>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Modal de Importação -->
+    <div class="modal-import-overlay" id="modalImportacao">
+        <div class="modal-import">
+            <div class="modal-import-header">
+                <h2>📤 Importar Pacientes</h2>
+                <button class="modal-import-close" onclick="fecharModalImportacao()">×</button>
+            </div>
+            
+            <div class="modal-import-body">
+                <!-- Preview -->
+                <div id="importPreview">
+                    <div class="import-stats">
+                        <div class="import-stat">
+                            <div class="number" id="importTotal">0</div>
+                            <div class="label">Total no Arquivo</div>
+                        </div>
+                        <div class="import-stat success">
+                            <div class="number" id="importComCPF">0</div>
+                            <div class="label">Têm CPF</div>
+                        </div>
+                        <div class="import-stat warning">
+                            <div class="number" id="importSemCPF">0</div>
+                            <div class="label">Sem CPF</div>
+                        </div>
+                        <div class="import-stat" style="border-left: 3px solid #ef4444;">
+                            <div class="number" id="importDuplicados" style="color:#ef4444;">0</div>
+                            <div class="label">Duplicados (ignorar)</div>
+                        </div>
+                    </div>
+                    <p style="background:#fef3c7;padding:12px;border-radius:8px;font-size:13px;margin-bottom:16px;">
+                        ⚠️ <strong>Atenção:</strong> Pacientes sem <strong>CPF + CEP</strong> ficarão com "Cadastro Incompleto" 
+                        e não poderão emitir NFS-e. Complete os dados quando necessário.
+                    </p>
+                    
+                    <div class="import-filters">
+                        <label>
+                            <input type="checkbox" id="chkTodos" checked onchange="toggleTodosImport()">
+                            Selecionar Todos
+                        </label>
+                        <label>
+                            <input type="checkbox" id="chkSoDuplicados" onchange="filtrarTabelaImport()">
+                            Mostrar só duplicados
+                        </label>
+                        <label>
+                            <input type="checkbox" id="chkSoNovos" onchange="filtrarTabelaImport()">
+                            Mostrar só novos
+                        </label>
+                        <div style="flex:1"></div>
+                        <span style="font-size:12px;color:#888;">Duplicidade: CPF ou Nome+Telefone</span>
+                    </div>
+                    
+                    <div class="import-table-wrap">
+                        <table class="import-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px"><input type="checkbox" id="chkAllTable" checked onchange="toggleTodosImport()"></th>
+                                    <th>Nome</th>
+                                    <th>Nascimento</th>
+                                    <th>CPF</th>
+                                    <th>Telefone</th>
+                                    <th>Observação</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="importTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Progress -->
+                <div class="import-progress" id="importProgress">
+                    <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+                    <h3>Importando pacientes...</h3>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="importProgressBar"></div>
+                    </div>
+                    <p id="importProgressText">0 de 0</p>
+                </div>
+            </div>
+            
+            <div class="modal-import-footer" id="importFooter">
+                <button class="btn-cancel" onclick="fecharModalImportacao()">Cancelar</button>
+                <div style="display:flex;gap:12px;">
+                    <button class="btn-cancel" onclick="exportarPreviewCSV()">📊 Exportar CSV</button>
+                    <button class="btn-import-confirm" id="btnConfirmarImport" onclick="confirmarImportacao()">
+                        Importar <span id="btnImportCount">0</span> Pacientes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth-check.js"></script>
+    <script src="js/whatsapp-integration.js"></script>
+    <script src="js/modal-paciente.js"></script>
+    <script>
+    var pacientes = [];
+    var filtroAtual = 'todos';
+    
+    // Lazy loading / Infinite scroll
+    var paginacao = {
+        limit: 50,
+        offset: 0,
+        hasMore: true,
+        loading: false,
+        totalServidor: 0,
+        stats: null
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadUserInfo();
+        loadPacientes(false);
+        
+        // Infinite scroll - detectar quando chega perto do fim
+        window.addEventListener('scroll', function() {
+            if (paginacao.loading || !paginacao.hasMore) return;
+            if (filtroAtual !== 'todos') return; // Só carrega mais no filtro "todos"
+            
+            var scrollPos = window.innerHeight + window.scrollY;
+            var threshold = document.body.offsetHeight - 300;
+            
+            if (scrollPos >= threshold) {
+                loadPacientes(true);
+            }
+        });
+    });
+
+    function loadUserInfo() {
+        var d = getCurrentDentista();
+        if (d) {
+            document.getElementById('userName').textContent = d.nome || 'Usuário';
+            document.getElementById('userCRO').textContent = 'CRO: ' + (d.cro || '-----');
+        }
+    }
+
+    async function loadPacientes(append) {
+        if (paginacao.loading) return;
+        if (append && !paginacao.hasMore) return;
+        
+        paginacao.loading = true;
+        
+        if (!append) {
+            paginacao.offset = 0;
+            paginacao.hasMore = true;
+            pacientes = [];
+        }
+        
+        var container = document.getElementById('patientsGrid');
+        if (!append) {
+            container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Carregando pacientes...</p></div>';
+        } else {
+            var loadingEl = document.createElement('div');
+            loadingEl.id = 'loadingMore';
+            loadingEl.className = 'loading-more';
+            loadingEl.innerHTML = '<div class="spinner-small"></div> Carregando mais...';
+            container.appendChild(loadingEl);
+        }
+        
+        var url = '/api/pacientes?limit=' + paginacao.limit + '&offset=' + paginacao.offset;
+        var res = await apiCall(url);
+        
+        var loadingMore = document.getElementById('loadingMore');
+        if (loadingMore) loadingMore.remove();
+        
+        paginacao.loading = false;
+        
+        if (res && res.success) {
+            pacientes = pacientes.concat(res.pacientes || []);
+            paginacao.hasMore = res.hasMore;
+            paginacao.offset += res.pacientes.length;
+            paginacao.totalServidor = res.total;
+            paginacao.stats = res.stats;
+            
+            filtrarPorStatus(filtroAtual);
+            updateStats();
+        } else {
+            if (!append) {
+                container.innerHTML = '<div class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar os pacientes</p></div>';
+            }
+        }
+    }
+
+    function filtrarPorStatus(status) {
+        filtroAtual = status;
+        
+        // Atualizar visual dos cards de estatísticas
+        document.querySelectorAll('.stat-clickable').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        event && event.target && event.target.closest('.stat-clickable') && event.target.closest('.stat-clickable').classList.add('active');
+        
+        // Se não clicou em nada (chamada programática), marcar o correto
+        if (!event || !event.target) {
+            var index = { 'todos': 0, 'completo': 1, 'incompleto': 2, 'menor': 3 };
+            var items = document.querySelectorAll('.stat-clickable');
+            if (items[index[status]]) items[index[status]].classList.add('active');
+        }
+        
+        // Filtrar lista
+        var filtrados;
+        switch(status) {
+            case 'completo':
+                filtrados = pacientes.filter(function(p) { return p.cadastroCompleto; });
+                break;
+            case 'incompleto':
+                filtrados = pacientes.filter(function(p) { return !p.cadastroCompleto; });
+                break;
+            case 'menor':
+                filtrados = pacientes.filter(function(p) { return p.menorIdade; });
+                break;
+            default:
+                filtrados = pacientes;
+        }
+        
+        // Aplicar também filtro de busca se houver
+        var termo = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (termo) {
+            filtrados = filtrados.filter(function(p) {
+                return (p.nome && p.nome.toLowerCase().includes(termo)) ||
+                       (p.cpf && p.cpf.includes(termo)) ||
+                       (p.telefone && p.telefone.includes(termo)) ||
+                       (p.celular && p.celular.includes(termo));
+            });
+        }
+        
+        renderPacientes(filtrados);
+    }
+
+    function updateStats() {
+        // Stats vêm do servidor (totais reais)
+        if (paginacao.stats) {
+            document.getElementById('totalPacientes').textContent = paginacao.stats.total;
+            document.getElementById('totalCompletos').textContent = paginacao.stats.completos;
+            document.getElementById('totalIncompletos').textContent = paginacao.stats.incompletos;
+            document.getElementById('totalMenores').textContent = paginacao.stats.menores;
+        }
+    }
+
+    function renderPacientes(lista) {
+        var container = document.getElementById('patientsGrid');
+
+        if (lista.length === 0) {
+            container.innerHTML = '<div class="empty-state"><h3>Nenhum paciente encontrado</h3><p>Clique em "Novo Paciente" para cadastrar</p></div>';
+            return;
+        }
+
+        var html = '';
+        lista.forEach(function(p) {
+            var isMenor = p.menorIdade;
+            var isEstrangeiro = p.estrangeiro || p.tipo_documento === 'passaporte';
+            var telefone = p.celular || p.telefone;
+            html += '<div class="patient-card' + (isMenor ? ' menor' : '') + (isEstrangeiro ? ' estrangeiro' : '') + '">';
+            html += '<div class="patient-header">';
+            html += '<h3 class="patient-name">' + p.nome + '</h3>';
+            html += '<div style="display:flex;gap:8px;align-items:center;">';
+            if (isMenor) {
+                html += '<span class="patient-badge badge-menor">Menor</span>';
+            }
+            if (isEstrangeiro) {
+                html += '<span class="patient-badge badge-estrangeiro">Estrangeiro</span>';
+            }
+            // Badge de cadastro incompleto
+            if (!p.cadastroCompleto) {
+                html += '<span class="patient-badge badge-incompleto" title="Falta CPF e/ou CEP - não pode emitir NFS-e">⚠️ Incompleto</span>';
+            }
+            // Botão WhatsApp - agora com "Olá, tudo bem?"
+            if (telefone) {
+                var nomeEscapado = (p.nome || '').replace(/'/g, "\\'");
+                html += '<button class="btn-whatsapp-small" onclick="event.stopPropagation();enviarOlaWhatsApp(\'' + telefone + '\', \'' + nomeEscapado + '\', ' + isEstrangeiro + ')" title="Enviar WhatsApp: Ola, tudo bem?">';
+                html += '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+                html += '</button>';
+            }
+            html += '</div>';
+            html += '</div>';
+            html += '<div class="patient-info">';
+            if (p.cpf) html += '<p><span>CPF:</span> ' + p.cpf + '</p>';
+            if (p.passaporte) html += '<p><span>Passaporte:</span> ' + p.passaporte + '</p>';
+            if (telefone) html += '<p><span>Tel:</span> ' + telefone + '</p>';
+            if (p.email) html += '<p><span>Email:</span> ' + p.email + '</p>';
+            if (p.cidade && p.estado) html += '<p><span>Cidade:</span> ' + p.cidade + '/' + p.estado + '</p>';
+            if (p.pais && p.pais !== 'Brasil') html += '<p><span>Pais:</span> ' + p.pais + '</p>';
+            html += '</div>';
+
+            if (isMenor && p.responsavelNome) {
+                html += '<div class="patient-responsavel">';
+                html += '<strong>Responsavel:</strong> ' + p.responsavelNome;
+                if (p.responsavelParentesco) html += ' (' + p.responsavelParentesco + ')';
+                if (p.responsavelCpf) html += '<br>CPF: ' + p.responsavelCpf;
+                html += '</div>';
+            }
+
+            html += '<div class="patient-actions">';
+            html += '<button class="btn-view" onclick="verFichaCompleta(\'' + p.id + '\')">Ficha</button>';
+            html += '<button class="btn-edit" onclick="editarPaciente(\'' + p.id + '\')">Editar</button>';
+            html += '<button class="btn-new-window" onclick="event.stopPropagation();abrirNovaJanela(\'' + p.id + '\')" title="Abrir em nova janela">&#x2197;</button>';
+            html += '<button class="btn-delete" onclick="excluirPaciente(\'' + p.id + '\')">Excluir</button>';
+            html += '</div>';
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+
+        // Mostrar indicador se há mais pacientes
+        if (paginacao.hasMore && filtroAtual === 'todos') {
+            var maisInfo = document.createElement('div');
+            maisInfo.className = 'load-more-info';
+            maisInfo.innerHTML = '📥 Mostrando ' + pacientes.length + ' de ' + paginacao.totalServidor + ' pacientes. <strong>Role para baixo</strong> para ver mais.';
+            container.appendChild(maisInfo);
+        }
+    }
+
+    var buscaTimeout = null;
+    
+    function filtrarPacientes() {
+        // Debounce - espera 300ms após parar de digitar
+        clearTimeout(buscaTimeout);
+        buscaTimeout = setTimeout(function() {
+            executarBusca();
+        }, 300);
+    }
+    
+    async function executarBusca() {
+        var termo = document.getElementById('searchInput').value.trim();
+        
+        // Se termo vazio, recarregar lista normal
+        if (!termo) {
+            paginacao.offset = 0;
+            paginacao.hasMore = true;
+            pacientes = [];
+            loadPacientes(false);
+            return;
+        }
+        
+        // Buscar no servidor
+        var container = document.getElementById('patientsGrid');
+        container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Buscando pacientes...</p></div>';
+        
+        var url = '/api/pacientes?busca=' + encodeURIComponent(termo) + '&limit=500';
+        var res = await apiCall(url);
+        
+        if (res && res.success) {
+            pacientes = res.pacientes || [];
+            paginacao.stats = res.stats;
+            paginacao.totalServidor = res.total;
+            paginacao.hasMore = false; // Busca retorna todos os resultados
+            
+            // Aplicar filtro de status se necessário
+            var filtrados = pacientes;
+            if (filtroAtual === 'completo') {
+                filtrados = pacientes.filter(function(p) { return p.cadastroCompleto; });
+            } else if (filtroAtual === 'incompleto') {
+                filtrados = pacientes.filter(function(p) { return !p.cadastroCompleto; });
+            } else if (filtroAtual === 'menor') {
+                filtrados = pacientes.filter(function(p) { return p.menorIdade; });
+            }
+            
+            renderPacientes(filtrados);
+            
+            // Mostrar quantos encontrou
+            if (filtrados.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nenhum paciente encontrado</h3><p>Tente buscar por outro termo</p></div>';
+            }
+        } else {
+            container.innerHTML = '<div class="empty-state"><h3>Erro na busca</h3><p>Não foi possível buscar pacientes</p></div>';
+        }
+    }
+
+    function onPacienteCriado(paciente) {
+        pacientes.push(paciente);
+        renderPacientes(pacientes);
+        updateStats();
+    }
+
+    function verPaciente(id) {
+        var p = pacientes.find(function(x) { return x.id === id; });
+        if (!p) return;
+
+        var msg = '=== DADOS DO PACIENTE ===\n\n';
+        msg += 'Nome: ' + p.nome + '\n';
+        if (p.cpf) msg += 'CPF: ' + p.cpf + '\n';
+        if (p.rg) msg += 'RG: ' + p.rg + '\n';
+        if (p.dataNascimento) msg += 'Nascimento: ' + formatDate(p.dataNascimento) + '\n';
+        if (p.sexo) msg += 'Sexo: ' + p.sexo + '\n';
+        if (p.celular) msg += 'Celular: ' + p.celular + '\n';
+        if (p.telefone) msg += 'Telefone: ' + p.telefone + '\n';
+        if (p.email) msg += 'Email: ' + p.email + '\n';
+        
+        if (p.endereco) {
+            msg += '\n=== ENDEREÇO ===\n';
+            msg += p.endereco;
+            if (p.numero) msg += ', ' + p.numero;
+            if (p.complemento) msg += ' - ' + p.complemento;
+            msg += '\n';
+            if (p.bairro) msg += 'Bairro: ' + p.bairro + '\n';
+            if (p.cidade && p.estado) msg += 'Cidade: ' + p.cidade + '/' + p.estado + '\n';
+            if (p.cep) msg += 'CEP: ' + p.cep + '\n';
+        }
+
+        if (p.menorIdade && p.responsavelNome) {
+            msg += '\n=== RESPONSÁVEL ===\n';
+            msg += 'Nome: ' + p.responsavelNome + '\n';
+            if (p.responsavelParentesco) msg += 'Parentesco: ' + p.responsavelParentesco + '\n';
+            if (p.responsavelCpf) msg += 'CPF: ' + p.responsavelCpf + '\n';
+            if (p.responsavelTelefone) msg += 'Telefone: ' + p.responsavelTelefone + '\n';
+            if (p.responsavelEmail) msg += 'Email: ' + p.responsavelEmail + '\n';
+        }
+
+        if (p.convenio) {
+            msg += '\n=== CONVÊNIO ===\n';
+            msg += 'Convênio: ' + p.convenio + '\n';
+            if (p.numeroConvenio) msg += 'Número: ' + p.numeroConvenio + '\n';
+        }
+
+        if (p.observacoes) {
+            msg += '\n=== OBSERVAÇÕES ===\n';
+            msg += p.observacoes + '\n';
+        }
+
+        alert(msg);
+    }
+
+    function editarPaciente(id) {
+        var p = pacientes.find(function(x) { return x.id === id; });
+        if (!p) {
+            alert('Paciente não encontrado!');
+            return;
+        }
+        
+        // Abrir modal em modo edição
+        ModalPaciente.abrirEdicao(p, function(pacienteAtualizado) {
+            // Atualizar na lista local
+            var index = pacientes.findIndex(function(x) { return x.id === id; });
+            if (index >= 0) {
+                // Recarregar lista completa do servidor para pegar dados atualizados
+                loadPacientes();
+            }
+        });
+    }
+
+    async function excluirPaciente(id) {
+        var p = pacientes.find(function(x) { return x.id === id; });
+        if (!p) return;
+
+        if (!confirm('Excluir paciente "' + p.nome + '"?\n\nEsta ação não pode ser desfeita.')) return;
+
+        var res = await apiCall('/api/pacientes/' + id, 'DELETE');
+        if (res && res.success) {
+            pacientes = pacientes.filter(function(x) { return x.id !== id; });
+            renderPacientes(pacientes);
+            updateStats();
+            alert('Paciente removido!');
+        } else {
+            alert('Erro: ' + (res ? res.erro : 'Falha ao excluir'));
+        }
+    }
+
+    function formatDate(d) {
+        if (!d) return '';
+        var parts = d.split('T')[0].split('-');
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
+
+    // Enviar WhatsApp com "Olá, tudo bem?" (usando WhatsAppIntegration)
+    function enviarOlaWhatsApp(telefone, nome, internacional) {
+        if (typeof WhatsAppIntegration !== 'undefined') {
+            WhatsAppIntegration.enviarOlaDireto(telefone, nome, internacional);
+        } else {
+            // Fallback se WhatsAppIntegration não estiver carregado
+            if (!telefone) {
+                alert('Telefone nao informado!');
+                return;
+            }
+            var numero = telefone.replace(/\D/g, '');
+            if (!internacional && !numero.startsWith('55')) numero = '55' + numero;
+            var primeiroNome = nome ? nome.split(' ')[0] : '';
+            var msg = 'Ola ' + primeiroNome + ', tudo bem?';
+            window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+    }
+    
+    // Abrir WhatsApp simples (mantido para compatibilidade)
+    function abrirWhatsApp(telefone) {
+        if (!telefone) {
+            alert('Telefone nao informado!');
+            return;
+        }
+        var numero = telefone.replace(/\D/g, '');
+        if (!numero.startsWith('55')) numero = '55' + numero;
+        window.open('https://wa.me/' + numero, '_blank');
+    }
+    
+    // Abrir ficha do paciente em nova janela
+    function abrirNovaJanela(id) {
+        window.open('paciente-detalhe.html?id=' + id, '_blank');
+    }
+
+    // Ver ficha completa do paciente
+    function verFichaCompleta(id) {
+        window.location.href = 'paciente-detalhe.html?id=' + id;
+    }
+
+    // ========================================================
+    // EXPORTAR PACIENTES PARA EXCEL
+    // ========================================================
+    function exportarPacientes() {
+        if (pacientes.length === 0) {
+            if (typeof mostrarAviso === 'function') mostrarAviso('Nenhum paciente para exportar!');
+            else alert('Nenhum paciente para exportar!');
+            return;
+        }
+        
+        // Cabeçalho: Nome | Celular | Telefone | CPF | Email
+        var csv = 'Nome;Celular;Telefone;CPF;Email\n';
+        
+        pacientes.forEach(function(p) {
+            var linha = [
+                (p.nome || '').replace(/;/g, ','),
+                (p.celular || '').replace(/;/g, ','),
+                (p.telefone || '').replace(/;/g, ','),
+                (p.cpf || '').replace(/;/g, ','),
+                (p.email || '').replace(/;/g, ',')
+            ];
+            csv += linha.join(';') + '\n';
+        });
+        
+        // Criar e baixar arquivo
+        var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'pacientes_dental_ultra_' + new Date().toISOString().slice(0,10) + '.csv';
+        link.click();
+        
+        if (typeof mostrarSucesso === 'function') mostrarSucesso('Exportado com sucesso! ' + pacientes.length + ' pacientes');
+    }
+
+    // ========================================================
+    // IMPORTAR PACIENTES - SISTEMA COMPLETO COM PREVIEW
+    // ========================================================
+    var pacientesImportar = [];
+    var selecionadosImport = new Set();
+    
+    async function abrirModalImportacao(file) {
+        if (!file) return;
+        
+        try {
+            // Ler arquivo com SheetJS
+            var data = await file.arrayBuffer();
+            var workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            
+            // Pegar primeira planilha
+            var sheetName = workbook.SheetNames[0];
+            var sheet = workbook.Sheets[sheetName];
+            
+            // Converter para JSON
+            var rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            
+            console.log('Linhas encontradas:', rows.length);
+            console.log('Cabeçalho:', rows[0]);
+            
+            // Detectar estrutura do arquivo
+            var header = rows[0] || [];
+            var headerLower = header.map(function(h) { return String(h || '').toLowerCase(); });
+            
+            // Encontrar índices das colunas
+            var colNome = findColumnIndex(headerLower, ['nome', 'name', 'paciente']);
+            var colNasc = findColumnIndex(headerLower, ['nascimento', 'data_nascimento', 'nasc', 'birth']);
+            var colCpf = findColumnIndex(headerLower, ['cpf', 'documento']);
+            var colTel = findColumnIndex(headerLower, ['telefone', 'celular', 'tel', 'phone', 'fone']);
+            var colObs = findColumnIndex(headerLower, ['observ', 'obs', 'plano', 'convenio', 'notas']);
+            
+            // Se não encontrou nome na primeira linha, pode ser estrutura fixa (ex: Simples Dental)
+            if (colNome === -1) {
+                // Estrutura fixa: NP, Nome, Nascimento, CPF, Telefone, Observação
+                colNome = 1;
+                colNasc = 2;
+                colCpf = 3;
+                colTel = 4;
+                colObs = 5;
+            }
+            
+            // Processar dados
+            pacientesImportar = [];
+            
+            for (var i = 1; i < rows.length; i++) {
+                var row = rows[i];
+                if (!row || row.length < 2) continue;
+                
+                // Pegar nome e limpar "visibility" e espaços especiais
+                var nome = String(row[colNome] || '').trim();
+                nome = nome.replace(/^visibility[\s\u2003\u00A0]+/gi, '').trim();
+                
+                if (!nome) continue;
+                
+                // Processar data de nascimento
+                var nascimento = '';
+                if (colNasc >= 0 && row[colNasc]) {
+                    nascimento = formatarDataImport(row[colNasc]);
+                }
+                
+                // CPF
+                var cpf = colCpf >= 0 ? String(row[colCpf] || '').trim() : '';
+                
+                // Telefone
+                var telefone = colTel >= 0 ? String(row[colTel] || '').trim() : '';
+                
+                // Observação
+                var observacao = colObs >= 0 ? String(row[colObs] || '').trim() : '';
+                
+                pacientesImportar.push({
+                    id: i,
+                    nome: nome,
+                    nascimento: nascimento,
+                    cpf: cpf,
+                    telefone: telefone,
+                    observacao: observacao,
+                    duplicado: false,
+                    motivoDuplicado: ''
+                });
+            }
+            
+            console.log('Pacientes processados:', pacientesImportar.length);
+            
+            // Verificar duplicados
+            verificarDuplicadosImport();
+            
+            // Selecionar todos os novos por padrão
+            selecionadosImport.clear();
+            pacientesImportar.forEach(function(p) {
+                if (!p.duplicado) {
+                    selecionadosImport.add(p.id);
+                }
+            });
+            
+            // Renderizar tabela
+            renderizarTabelaImport();
+            atualizarContadoresImport();
+            
+            // Mostrar modal
+            document.getElementById('modalImportacao').classList.add('active');
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('importProgress').classList.remove('active');
+            document.getElementById('importFooter').style.display = 'flex';
+            
+        } catch (error) {
+            console.error('Erro ao processar arquivo:', error);
+            alert('Erro ao processar arquivo: ' + error.message);
+        }
+        
+        // Limpar input
+        document.getElementById('inputImportar').value = '';
+    }
+    
+    function findColumnIndex(headers, possibilities) {
+        for (var i = 0; i < headers.length; i++) {
+            for (var j = 0; j < possibilities.length; j++) {
+                if (headers[i].indexOf(possibilities[j]) >= 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+    
+    function formatarDataImport(valor) {
+        if (!valor) return '';
+        
+        // Se é uma data JS
+        if (valor instanceof Date) {
+            var d = valor.getDate().toString().padStart(2, '0');
+            var m = (valor.getMonth() + 1).toString().padStart(2, '0');
+            var y = valor.getFullYear();
+            return d + '/' + m + '/' + y;
+        }
+        
+        // Se é string no formato dd/mm/aa ou dd/mm/aaaa
+        var str = String(valor).trim();
+        var match = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        
+        if (match) {
+            var dia = match[1].padStart(2, '0');
+            var mes = match[2].padStart(2, '0');
+            var ano = match[3];
+            
+            // Converter ano de 2 dígitos para 4
+            if (ano.length === 2) {
+                var anoNum = parseInt(ano);
+                // Se > 30, assume 1900s, senão 2000s
+                ano = anoNum > 30 ? '19' + ano : '20' + ano;
+            }
+            
+            return dia + '/' + mes + '/' + ano;
+        }
+        
+        return str;
+    }
+    
+    function verificarDuplicadosImport() {
+        // Criar mapas para busca rápida
+        var cpfMap = {};
+        var nometelMap = {};
+        
+        pacientes.forEach(function(p) {
+            // CPF
+            var cpf = (p.cpf || '').replace(/\D/g, '');
+            if (cpf.length >= 11) {
+                cpfMap[cpf] = p;
+            }
+            
+            // Nome + Telefone
+            var nome = (p.nome || '').toLowerCase().trim();
+            var tel = (p.celular || p.telefone || '').replace(/\D/g, '');
+            if (nome && tel.length >= 8) {
+                nometelMap[nome + '|' + tel] = p;
+            }
+        });
+        
+        // Verificar cada paciente do arquivo
+        pacientesImportar.forEach(function(p) {
+            p.duplicado = false;
+            p.motivoDuplicado = '';
+            
+            // Verificar CPF
+            var cpf = (p.cpf || '').replace(/\D/g, '');
+            if (cpf.length >= 11 && cpfMap[cpf]) {
+                p.duplicado = true;
+                p.motivoDuplicado = 'CPF já cadastrado';
+                return;
+            }
+            
+            // Verificar Nome + Telefone
+            var nome = (p.nome || '').toLowerCase().trim();
+            var tel = (p.telefone || '').replace(/\D/g, '');
+            if (nome && tel.length >= 8) {
+                var key = nome + '|' + tel;
+                if (nometelMap[key]) {
+                    p.duplicado = true;
+                    p.motivoDuplicado = 'Nome + Telefone já existe';
+                    return;
+                }
+            }
+        });
+    }
+    
+    function renderizarTabelaImport() {
+        var tbody = document.getElementById('importTableBody');
+        var soDuplicados = document.getElementById('chkSoDuplicados').checked;
+        var soNovos = document.getElementById('chkSoNovos').checked;
+        
+        var html = '';
+        
+        pacientesImportar.forEach(function(p) {
+            // Filtros
+            if (soDuplicados && !p.duplicado) return;
+            if (soNovos && p.duplicado) return;
+            
+            var checked = selecionadosImport.has(p.id) ? 'checked' : '';
+            var rowClass = p.duplicado ? 'row-duplicate' : '';
+            
+            html += '<tr class="' + rowClass + '">';
+            html += '<td><input type="checkbox" ' + checked + ' onchange="togglePacienteImport(' + p.id + ')"></td>';
+            html += '<td><strong>' + escapeHtml(p.nome) + '</strong></td>';
+            html += '<td>' + escapeHtml(p.nascimento) + '</td>';
+            html += '<td>' + escapeHtml(p.cpf) + '</td>';
+            html += '<td>' + escapeHtml(p.telefone) + '</td>';
+            html += '<td>' + escapeHtml(p.observacao) + '</td>';
+            html += '<td>';
+            if (p.duplicado) {
+                html += '<span class="badge-dup">⚠️ ' + p.motivoDuplicado + '</span>';
+            } else {
+                html += '<span class="badge-new">✓ Novo</span>';
+            }
+            html += '</td>';
+            html += '</tr>';
+        });
+        
+        if (!html) {
+            html = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#888;">Nenhum paciente encontrado</td></tr>';
+        }
+        
+        tbody.innerHTML = html;
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '-';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+    
+    function togglePacienteImport(id) {
+        if (selecionadosImport.has(id)) {
+            selecionadosImport.delete(id);
+        } else {
+            selecionadosImport.add(id);
+        }
+        atualizarContadoresImport();
+    }
+    
+    function toggleTodosImport() {
+        var chkTodos = document.getElementById('chkTodos');
+        var chkAllTable = document.getElementById('chkAllTable');
+        
+        if (chkTodos.checked || chkAllTable.checked) {
+            pacientesImportar.forEach(function(p) {
+                selecionadosImport.add(p.id);
+            });
+        } else {
+            selecionadosImport.clear();
+        }
+        
+        chkTodos.checked = chkAllTable.checked;
+        chkAllTable.checked = chkTodos.checked;
+        
+        atualizarContadoresImport();
+        renderizarTabelaImport();
+    }
+    
+    function filtrarTabelaImport() {
+        // Desmarcar o outro filtro
+        if (document.getElementById('chkSoDuplicados').checked) {
+            document.getElementById('chkSoNovos').checked = false;
+        }
+        if (document.getElementById('chkSoNovos').checked) {
+            document.getElementById('chkSoDuplicados').checked = false;
+        }
+        renderizarTabelaImport();
+    }
+    
+    function atualizarContadoresImport() {
+        var total = pacientesImportar.length;
+        var duplicados = pacientesImportar.filter(function(p) { return p.duplicado; }).length;
+        
+        // Contar quantos têm CPF válido
+        var comCPF = pacientesImportar.filter(function(p) { 
+            var cpf = (p.cpf || '').replace(/\D/g, '');
+            return cpf.length >= 11;
+        }).length;
+        var semCPF = total - comCPF;
+        
+        var selecionados = selecionadosImport.size;
+        
+        document.getElementById('importTotal').textContent = total;
+        document.getElementById('importComCPF').textContent = comCPF;
+        document.getElementById('importSemCPF').textContent = semCPF;
+        document.getElementById('importDuplicados').textContent = duplicados;
+        document.getElementById('btnImportCount').textContent = selecionados;
+        
+        document.getElementById('btnConfirmarImport').disabled = selecionados === 0;
+    }
+    
+    function fecharModalImportacao() {
+        document.getElementById('modalImportacao').classList.remove('active');
+        pacientesImportar = [];
+        selecionadosImport.clear();
+    }
+    
+    async function confirmarImportacao() {
+        if (selecionadosImport.size === 0) {
+            alert('Selecione pelo menos um paciente!');
+            return;
+        }
+        
+        if (!confirm('Importar ' + selecionadosImport.size + ' pacientes?')) return;
+        
+        // Mostrar progresso
+        document.getElementById('importPreview').style.display = 'none';
+        document.getElementById('importProgress').classList.add('active');
+        document.getElementById('importFooter').style.display = 'none';
+        
+        var lista = pacientesImportar.filter(function(p) { return selecionadosImport.has(p.id); });
+        var total = lista.length;
+        var importados = 0;
+        var erros = 0;
+        var primeiroErro = null;
+        
+        for (var i = 0; i < lista.length; i++) {
+            var p = lista[i];
+            
+            try {
+                // Converter data para formato ISO
+                var dataNasc = null;
+                if (p.nascimento) {
+                    var parts = p.nascimento.split('/');
+                    if (parts.length === 3) {
+                        dataNasc = parts[2] + '-' + parts[1] + '-' + parts[0];
+                    }
+                }
+                
+                var payload = {
+                    nome: p.nome,
+                    dataNascimento: dataNasc,
+                    cpf: p.cpf || null,
+                    celular: p.telefone || null,
+                    telefone: p.telefone || null,
+                    observacoes: p.observacao || null,
+                    // Campos obrigatórios - valores padrão para importação
+                    menorIdade: false,
+                    estrangeiro: false,
+                    tipo_documento: 'cpf',
+                    // Endereço vazio mas presente
+                    cep: null,
+                    endereco: null,
+                    numero: null,
+                    complemento: null,
+                    bairro: null,
+                    cidade: null,
+                    estado: null,
+                    // Outros campos
+                    email: null,
+                    rg: null,
+                    sexo: null,
+                    convenio: null,
+                    numeroConvenio: null
+                };
+                
+                console.log('Enviando paciente:', p.nome, payload);
+                var res = await apiCall('/api/pacientes', 'POST', payload);
+                console.log('Resposta:', res);
+                
+                if (res && res.success) {
+                    pacientes.push(res.paciente);
+                    importados++;
+                } else {
+                    erros++;
+                    if (!primeiroErro) {
+                        primeiroErro = (res && res.erro) ? res.erro : (res && res.message) ? res.message : JSON.stringify(res);
+                    }
+                    console.error('Erro na resposta:', p.nome, res);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao importar:', p.nome, error);
+                erros++;
+                if (!primeiroErro) {
+                    primeiroErro = error.message || String(error);
+                }
+            }
+            
+            // Atualizar progresso
+            var progresso = Math.round(((i + 1) / total) * 100);
+            document.getElementById('importProgressBar').style.width = progresso + '%';
+            document.getElementById('importProgressText').textContent = (i + 1) + ' de ' + total;
+        }
+        
+        // Fechar modal e atualizar lista
+        fecharModalImportacao();
+        renderPacientes(pacientes);
+        updateStats();
+        
+        // Mensagem final
+        var msg = 'Importação concluída!\n' + importados + ' pacientes importados';
+        if (erros > 0) {
+            msg += '\n' + erros + ' erros';
+            if (primeiroErro) {
+                msg += '\n\nPrimeiro erro: ' + primeiroErro;
+            }
+        }
+        
+        if (typeof mostrarSucesso === 'function' && importados > 0) mostrarSucesso(msg);
+        else alert(msg);
+    }
+    
+    function exportarPreviewCSV() {
+        var csv = 'Nome;Nascimento;CPF;Telefone;Observacao;Status\n';
+        
+        pacientesImportar.forEach(function(p) {
+            var status = p.duplicado ? 'DUPLICADO: ' + p.motivoDuplicado : 'NOVO';
+            csv += '"' + p.nome + '";"' + p.nascimento + '";"' + p.cpf + '";"' + p.telefone + '";"' + p.observacao + '";"' + status + '"\n';
+        });
+        
+        var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'preview_importacao.csv';
+        link.click();
+    }
+    </script>
+    <script src="js/whatsapp-integration.js"></script>
+    <script src="js/onboarding.js"></script>
+    <script src="js/orcamentos-modal.js"></script>
+</body>
+</html>
