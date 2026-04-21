@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta - Ultra Simples</title>
+    <meta name="description" content="Crie sua conta grátis no Ultra Simples e teste por 14 dias sem cartão de crédito.">
+    <meta name="robots" content="noindex">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] } } },
+        };
+    </script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; color: #111827; }
+
+        .blur-bg {
+            position: fixed;
+            inset: 0;
+            filter: blur(8px);
+            opacity: 0.6;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blur-bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#F9FAFB]">
+
+    <!-- FUNDO BORRADO SIMULANDO DASHBOARD -->
+    <div class="blur-bg" aria-hidden="true">
+        <div class="flex h-screen">
+            <!-- Sidebar fake -->
+            <div class="bg-[#1F2937] flex-shrink-0 p-4 space-y-3" style="width: 240px;">
+                <div class="h-10 bg-gray-600 rounded mb-6"></div>
+                <div class="h-8 bg-gray-600 rounded"></div>
+                <div class="h-8 bg-gray-600 rounded"></div>
+                <div class="h-8 bg-gray-600 rounded"></div>
+                <div class="h-8 bg-gray-600 rounded"></div>
+                <div class="h-8 bg-gray-600 rounded"></div>
+                <div class="h-8 bg-gray-600 rounded"></div>
+            </div>
+
+            <!-- Área principal fake -->
+            <div class="flex-1 bg-[#F9FAFB] p-6 overflow-hidden">
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm" style="height: 100px;"></div>
+                    <div class="bg-white rounded-lg shadow-sm" style="height: 100px;"></div>
+                    <div class="bg-white rounded-lg shadow-sm" style="height: 100px;"></div>
+                    <div class="bg-white rounded-lg shadow-sm" style="height: 100px;"></div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="blur-bg-overlay" aria-hidden="true"></div>
+
+    <!-- BOTÃO VOLTAR -->
+    <a href="/" class="fixed top-4 left-4 sm:top-6 sm:left-6 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/90 backdrop-blur text-sm font-medium text-[#111827] hover:bg-white shadow-sm transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Voltar</span>
+    </a>
+
+    <!-- CARD DE CADASTRO -->
+    <main class="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+        <div class="w-[90%] max-w-[440px] bg-white rounded-2xl shadow-2xl p-6 sm:p-10">
+
+            <!-- Logo -->
+            <div class="flex items-center justify-center gap-2 mb-6">
+                <i data-lucide="tooth" class="w-6 h-6 text-teal-600"></i>
+                <span class="font-bold text-lg text-[#111827]">Ultra Simples</span>
+            </div>
+
+            <!-- Título -->
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-center text-[#111827] tracking-tight">
+                Crie sua conta grátis
+            </h1>
+            <p class="mt-2 text-center text-sm text-[#6B7280]">
+                Já tem uma conta?
+                <a href="/login" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Fazer login</a>
+            </p>
+
+            <!-- Formulário -->
+            <form id="cadastroForm" class="mt-8 space-y-5" novalidate>
+                <!-- E-mail -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-[#111827] mb-1.5">E-mail</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        autocomplete="email"
+                        placeholder="seu@email.com"
+                        class="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-colors"
+                    >
+                    <p data-error-for="email" class="hidden mt-1 text-xs text-red-600"></p>
+                </div>
+
+                <!-- Nome completo -->
+                <div>
+                    <label for="nome" class="block text-sm font-medium text-[#111827] mb-1.5">Nome completo</label>
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        required
+                        autocomplete="name"
+                        placeholder="Como devemos te chamar?"
+                        class="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-colors"
+                    >
+                    <p data-error-for="nome" class="hidden mt-1 text-xs text-red-600"></p>
+                </div>
+
+                <!-- WhatsApp -->
+                <div>
+                    <label for="telefone" class="block text-sm font-medium text-[#111827] mb-1.5">WhatsApp ou celular</label>
+                    <input
+                        type="tel"
+                        id="telefone"
+                        name="telefone"
+                        required
+                        autocomplete="tel"
+                        inputmode="tel"
+                        placeholder="(47) 99999-9999"
+                        class="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-colors"
+                    >
+                    <p data-error-for="telefone" class="hidden mt-1 text-xs text-red-600"></p>
+                </div>
+
+                <!-- Senha com toggle -->
+                <div>
+                    <label for="senha" class="block text-sm font-medium text-[#111827] mb-1.5">Senha</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            required
+                            autocomplete="new-password"
+                            placeholder="Mínimo 8 caracteres"
+                            class="w-full px-3.5 py-2.5 pr-11 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-colors"
+                        >
+                        <button
+                            type="button"
+                            id="toggleSenha"
+                            aria-label="Mostrar senha"
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-[#6B7280] hover:text-[#111827] transition-colors"
+                        >
+                            <i data-lucide="eye" class="w-5 h-5" id="toggleSenhaIcon"></i>
+                        </button>
+                    </div>
+                    <p data-error-for="senha" class="hidden mt-1 text-xs text-red-600"></p>
+                </div>
+
+                <!-- Checkbox termos -->
+                <div class="flex items-start gap-3">
+                    <input
+                        type="checkbox"
+                        id="aceite"
+                        name="aceite"
+                        required
+                        class="mt-1 w-4 h-4 rounded border-[#E5E7EB] text-teal-600 focus:ring-teal-600 cursor-pointer"
+                    >
+                    <label for="aceite" class="text-sm text-[#6B7280] cursor-pointer select-none">
+                        Li e aceito os
+                        <a href="/termos" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Termos de Uso</a>
+                        e a
+                        <a href="/privacidade" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Política de Privacidade</a>
+                    </label>
+                </div>
+
+                <!-- Botão -->
+                <button
+                    type="submit"
+                    id="submitBtn"
+                    disabled
+                    class="w-full h-12 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-teal-600"
+                >
+                    Criar minha conta grátis
+                </button>
+            </form>
+
+            <!-- Rodapé do card -->
+            <p class="mt-6 text-center text-xs text-gray-500 leading-relaxed">
+                Ao criar sua conta, você ganha 14 dias de acesso completo grátis. Sem cartão de crédito.
+            </p>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        const form = document.getElementById('cadastroForm');
+        const emailEl = document.getElementById('email');
+        const nomeEl = document.getElementById('nome');
+        const telEl = document.getElementById('telefone');
+        const senhaEl = document.getElementById('senha');
+        const aceiteEl = document.getElementById('aceite');
+        const submitBtn = document.getElementById('submitBtn');
+        const toggleSenhaBtn = document.getElementById('toggleSenha');
+
+        // Máscara de telefone BR
+        telEl.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+            if (v.length > 10) {
+                v = v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+            } else if (v.length > 6) {
+                v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+            } else if (v.length > 2) {
+                v = v.replace(/^(\d{2})(\d*).*/, '($1) $2');
+            } else if (v.length > 0) {
+                v = v.replace(/^(\d*)/, '($1');
+            }
+            e.target.value = v;
+            validate();
+        });
+
+        // Toggle senha
+        toggleSenhaBtn.addEventListener('click', () => {
+            const isPass = senhaEl.type === 'password';
+            senhaEl.type = isPass ? 'text' : 'password';
+            toggleSenhaBtn.setAttribute('aria-label', isPass ? 'Ocultar senha' : 'Mostrar senha');
+            const icon = document.getElementById('toggleSenhaIcon');
+            icon.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
+            lucide.createIcons();
+        });
+
+        // Validadores
+        function isEmailValid(v) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+        }
+        function digitsOnly(v) {
+            return v.replace(/\D/g, '');
+        }
+
+        function setError(field, msg) {
+            const input = document.getElementById(field);
+            const errEl = document.querySelector(`[data-error-for="${field}"]`);
+            if (msg) {
+                input.classList.remove('border-[#E5E7EB]', 'focus:border-teal-600');
+                input.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                errEl.textContent = msg;
+                errEl.classList.remove('hidden');
+            } else {
+                input.classList.add('border-[#E5E7EB]', 'focus:border-teal-600');
+                input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+                errEl.textContent = '';
+                errEl.classList.add('hidden');
+            }
+        }
+
+        function validate({ showErrors = false } = {}) {
+            const email = emailEl.value.trim();
+            const nome = nomeEl.value.trim();
+            const tel = digitsOnly(telEl.value);
+            const senha = senhaEl.value;
+            const aceite = aceiteEl.checked;
+
+            const errors = {
+                email: !email ? '' : (isEmailValid(email) ? '' : 'Digite um e-mail válido.'),
+                nome: !nome ? '' : (nome.length >= 2 ? '' : 'Informe seu nome completo.'),
+                telefone: !tel ? '' : (tel.length >= 10 ? '' : 'Telefone precisa de pelo menos 10 dígitos.'),
+                senha: !senha ? '' : (senha.length >= 8 ? '' : 'Senha precisa de no mínimo 8 caracteres.'),
+            };
+
+            if (showErrors) {
+                setError('email', !email ? 'Campo obrigatório.' : errors.email);
+                setError('nome', !nome ? 'Campo obrigatório.' : errors.nome);
+                setError('telefone', !tel ? 'Campo obrigatório.' : errors.telefone);
+                setError('senha', !senha ? 'Campo obrigatório.' : errors.senha);
+            } else {
+                ['email', 'nome', 'telefone', 'senha'].forEach((f) => setError(f, errors[f]));
+            }
+
+            const allFilled = email && nome && tel && senha;
+            const allValid = allFilled &&
+                isEmailValid(email) &&
+                nome.length >= 2 &&
+                tel.length >= 10 &&
+                senha.length >= 8 &&
+                aceite;
+
+            submitBtn.disabled = !allValid;
+            return allValid;
+        }
+
+        [emailEl, nomeEl, senhaEl].forEach((el) => el.addEventListener('input', () => validate()));
+        aceiteEl.addEventListener('change', () => validate());
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!validate({ showErrors: true })) return;
+
+            const data = {
+                email: emailEl.value.trim(),
+                nome: nomeEl.value.trim(),
+                telefone: telEl.value,
+                senha: senhaEl.value,
+            };
+            console.log('Cadastro:', data);
+            alert('Cadastro enviado! (integração com backend em breve)');
+        });
+
+        validate();
+    </script>
+</body>
+</html>
