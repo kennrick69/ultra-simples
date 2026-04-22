@@ -21,6 +21,54 @@
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; color: #111827; }
 
+        /* Modais */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 680px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #E5E7EB;
+            flex-shrink: 0;
+        }
+        .modal-body {
+            overflow-y: auto;
+            padding: 1.5rem;
+            flex: 1;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #E5E7EB;
+            flex-shrink: 0;
+        }
+        .prose h2 { font-size: 1.1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.5rem; color: #111827; }
+        .prose h3 { font-size: 1rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.4rem; color: #111827; }
+        .prose p { margin-bottom: 0.875rem; line-height: 1.75; color: #374151; font-size: 0.9rem; }
+        .prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.875rem; color: #374151; font-size: 0.9rem; }
+        .prose li { margin-bottom: 0.4rem; line-height: 1.7; }
+        .prose strong { color: #111827; font-weight: 600; }
+        .prose a { color: #0D9488; font-weight: 600; }
+
         .blur-bg {
             position: fixed;
             inset: 0;
@@ -193,9 +241,9 @@
                     >
                     <label for="aceite" class="text-sm text-[#6B7280] cursor-pointer select-none">
                         Li e aceito os
-                        <a href="/termos" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Termos de Uso</a>
+                        <a href="javascript:void(0)" onclick="abrirModal('modalTermos')" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Termos de Uso</a>
                         e a
-                        <a href="/privacidade" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Política de Privacidade</a>
+                        <a href="javascript:void(0)" onclick="abrirModal('modalPrivacidade')" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">Política de Privacidade</a>
                     </label>
                 </div>
 
@@ -217,9 +265,157 @@
         </div>
     </main>
 
+    <!-- MODAL TERMOS DE USO -->
+    <div id="modalTermos" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tituloTermos">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="tituloTermos" class="text-lg font-bold text-[#111827]">Termos de Uso</h2>
+                <button onclick="fecharModal('modalTermos')" class="text-[#6B7280] hover:text-[#111827] transition-colors p-1 rounded-lg hover:bg-gray-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="modal-body prose">
+                <p class="text-xs text-[#6B7280] mb-1">Última atualização: 21 de abril de 2026</p>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 text-sm text-amber-900">
+                    <strong>Aviso:</strong> este é um documento base. Recomendamos revisão por advogado antes da publicação definitiva.
+                </div>
+                <p>Bem-vindo ao <strong>Ultra Simples</strong>. Estes Termos de Uso ("Termos") regem o uso da plataforma Ultra Simples oferecida pela Ultra Simples ("nós", "nosso"). Ao criar uma conta ou usar o Serviço, você concorda com estes Termos.</p>
+                <h2>1. Definições</h2>
+                <ul>
+                    <li><strong>Usuário:</strong> pessoa física ou jurídica que cria uma conta e utiliza a Plataforma.</li>
+                    <li><strong>Conta:</strong> credenciais e espaço de dados associados ao Usuário.</li>
+                    <li><strong>Serviço:</strong> software de gestão odontológica disponibilizado via web.</li>
+                    <li><strong>Conteúdo do Usuário:</strong> dados cadastrados pelo Usuário, incluindo dados de pacientes, agendamentos, prontuários e financeiros.</li>
+                </ul>
+                <h2>2. Aceitação dos Termos</h2>
+                <p>Ao clicar em "Criar minha conta grátis", você declara ter lido, entendido e aceito estes Termos e nossa Política de Privacidade. Se não concordar, não utilize o Serviço.</p>
+                <h2>3. Cadastro e Conta</h2>
+                <p>O cadastro é gratuito para o período de avaliação. O Usuário se compromete a fornecer informações verdadeiras, completas e atualizadas. O Usuário é responsável por manter a confidencialidade de suas credenciais.</p>
+                <h2>4. Teste Grátis de 14 Dias</h2>
+                <p>Oferecemos um período de teste grátis de 14 dias, sem necessidade de cartão de crédito. Ao final do período, o Usuário poderá optar por assinar um plano pago ou encerrar o uso.</p>
+                <h2>5. Planos e Pagamentos</h2>
+                <p>Após o teste grátis, a continuidade do uso está sujeita à contratação de um plano pago. O pagamento é devido antecipadamente e pode ser feito por cartão de crédito, PIX ou boleto.</p>
+                <h2>6. Uso Permitido</h2>
+                <p>O Usuário compromete-se a usar o Serviço em conformidade com a legislação aplicável, incluindo o Código de Ética Odontológica e a LGPD (Lei 13.709/2018). É vedado usar o Serviço para fins ilícitos, tentar burlar medidas de segurança ou revender credenciais.</p>
+                <h2>7. Conteúdo do Usuário</h2>
+                <p>O Usuário é o titular dos dados inseridos na Plataforma e atua como <strong>controlador</strong> dos dados de seus pacientes nos termos da LGPD. O Ultra Simples atua como <strong>operador</strong>.</p>
+                <h2>8. Disponibilidade</h2>
+                <p>Empenhamo-nos para manter o Serviço disponível 24/7, mas não garantimos disponibilidade ininterrupta.</p>
+                <h2>9. Propriedade Intelectual</h2>
+                <p>Todos os direitos sobre a Plataforma pertencem ao Ultra Simples. O Usuário recebe apenas uma licença limitada, não exclusiva e revogável para uso conforme estes Termos.</p>
+                <h2>10. Limitação de Responsabilidade</h2>
+                <p>A responsabilidade total do Ultra Simples, em qualquer hipótese, fica limitada ao valor pago pelo Usuário nos últimos 12 meses.</p>
+                <h2>11. Rescisão</h2>
+                <p>O Usuário pode encerrar sua Conta a qualquer momento. Após o encerramento, os dados ficam disponíveis para exportação por 30 dias.</p>
+                <h2>12. Alterações nos Termos</h2>
+                <p>Alterações materiais serão comunicadas por e-mail com 15 dias de antecedência.</p>
+                <h2>13. Lei Aplicável e Foro</h2>
+                <p>Estes Termos são regidos pelas leis da República Federativa do Brasil.</p>
+                <h2>14. Contato</h2>
+                <p><strong>contato@ultrasimples.com.br</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharModal('modalTermos')" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm transition-colors">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POLÍTICA DE PRIVACIDADE -->
+    <div id="modalPrivacidade" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tituloPrivacidade">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="tituloPrivacidade" class="text-lg font-bold text-[#111827]">Política de Privacidade</h2>
+                <button onclick="fecharModal('modalPrivacidade')" class="text-[#6B7280] hover:text-[#111827] transition-colors p-1 rounded-lg hover:bg-gray-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="modal-body prose">
+                <p class="text-xs text-[#6B7280] mb-1">Última atualização: 21 de abril de 2026</p>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 text-sm text-amber-900">
+                    <strong>Aviso:</strong> documento base em conformidade com a LGPD (Lei 13.709/2018). Recomendamos revisão por advogado especializado.
+                </div>
+                <p>Esta Política descreve como o <strong>Ultra Simples</strong> coleta, usa, armazena e compartilha dados pessoais em conformidade com a LGPD.</p>
+                <h2>1. Quem é o Controlador</h2>
+                <p>O Ultra Simples é <strong>controlador</strong> dos dados do Usuário. Em relação aos dados de pacientes, atua como <strong>operador</strong>, conforme instruções do Usuário.</p>
+                <h2>2. Dados que Coletamos</h2>
+                <h3>2.1 Dados do Usuário</h3>
+                <ul>
+                    <li>Nome, e-mail, telefone/WhatsApp.</li>
+                    <li>CPF/CNPJ, CRO, endereço.</li>
+                    <li>Senha (armazenada com hash).</li>
+                    <li>Dados de pagamento (processados por gateway parceiro).</li>
+                    <li>Logs de acesso, IP, dispositivo.</li>
+                </ul>
+                <h3>2.2 Dados de pacientes (inseridos pelo Usuário)</h3>
+                <ul>
+                    <li>Dados cadastrais: nome, CPF, data de nascimento, contato, endereço.</li>
+                    <li>Dados clínicos: anamnese, prontuário, odontograma, plano de tratamento, imagens.</li>
+                    <li>Dados financeiros dos atendimentos.</li>
+                </ul>
+                <h2>3. Finalidades e Bases Legais</h2>
+                <ul>
+                    <li><strong>Execução de contrato</strong> — fornecer e manter o Serviço.</li>
+                    <li><strong>Obrigação legal</strong> — registros fiscais e contábeis.</li>
+                    <li><strong>Legítimo interesse</strong> — segurança e prevenção de fraudes.</li>
+                    <li><strong>Consentimento</strong> — comunicações de marketing.</li>
+                    <li><strong>Tutela da saúde</strong> (art. 11, II, "f" da LGPD) — dados de pacientes.</li>
+                </ul>
+                <h2>4. Compartilhamento de Dados</h2>
+                <p>Compartilhamos dados apenas com: prestadores de infraestrutura (nuvem, banco de dados), gateways de pagamento e autoridades públicas quando exigido por lei. <strong>Não vendemos dados.</strong></p>
+                <h2>5. Retenção de Dados</h2>
+                <ul>
+                    <li>Dados cadastrais e financeiros: até 5 anos.</li>
+                    <li>Dados clínicos: conforme exigência do CFO (geralmente 10 anos).</li>
+                    <li>Logs de acesso: mínimo 6 meses (Marco Civil da Internet).</li>
+                </ul>
+                <h2>6. Seus Direitos (LGPD Art. 18)</h2>
+                <p>Acesso, correção, portabilidade, eliminação, revogação de consentimento e demais direitos previstos na LGPD. Contate-nos pelo e-mail abaixo.</p>
+                <h2>7. Segurança</h2>
+                <ul>
+                    <li>Senhas com hash bcrypt.</li>
+                    <li>Conexões HTTPS/TLS.</li>
+                    <li>Controle de acesso por permissões.</li>
+                    <li>Backup periódico.</li>
+                </ul>
+                <h2>8. Cookies</h2>
+                <p>Usamos apenas cookies estritamente necessários para autenticação. Sem rastreamento publicitário.</p>
+                <h2>9. Contato e DPO</h2>
+                <p><strong>dpo@ultrasimples.com.br</strong> | <strong>contato@ultrasimples.com.br</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="fecharModal('modalPrivacidade')" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm transition-colors">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
+
+        function abrirModal(id) {
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function fecharModal(id) {
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        // Fechar ao clicar fora do box
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) fecharModal(this.id);
+            });
+        });
+        // Fechar com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.open').forEach(m => fecharModal(m.id));
+            }
+        });
 
         const form = document.getElementById('cadastroForm');
         const emailEl = document.getElementById('email');
