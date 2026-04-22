@@ -1,5 +1,5 @@
 // ==============================================================================
-// AUTENTICAÇÃO - DENTAL ULTRA v4.0
+// AUTENTICAÇÃO - ULTRA SIMPLES v1.0
 // Login e Cadastro com Confirmação de Email
 // ==============================================================================
 
@@ -7,7 +7,7 @@
 function getApiUrl() {
     var customUrl = localStorage.getItem('api_url');
     if (customUrl) return customUrl;
-    return 'https://dentist-backend-v2-production.up.railway.app';
+    return 'https://ultra-simples-production.up.railway.app';
 }
 
 // Página de destino após login
@@ -21,52 +21,33 @@ function showLogin() {
     document.getElementById('loginForm').classList.add('active');
     document.getElementById('registerForm').classList.remove('active');
     var msgConfirmacao = document.getElementById('msgConfirmacao');
-    if (msgConfirmacao) msgConfirmacao.classList.add('hidden');
+    if (msgConfirmacao) msgConfirmacao.classList.remove('visible');
 }
 
 function showRegister() {
     document.getElementById('loginForm').classList.remove('active');
     document.getElementById('registerForm').classList.add('active');
     var msgConfirmacao = document.getElementById('msgConfirmacao');
-    if (msgConfirmacao) msgConfirmacao.classList.add('hidden');
+    if (msgConfirmacao) msgConfirmacao.classList.remove('visible');
 }
+
+// email ativo para reenvio
+var _emailConfirmacao = '';
 
 // Mostrar mensagem de aguardando confirmação
 function showAguardandoConfirmacao(email) {
+    _emailConfirmacao = email;
     document.getElementById('loginForm').classList.remove('active');
     document.getElementById('registerForm').classList.remove('active');
-    
     var msgDiv = document.getElementById('msgConfirmacao');
-    if (!msgDiv) {
-        // Criar div se não existir
-        msgDiv = document.createElement('div');
-        msgDiv.id = 'msgConfirmacao';
-        msgDiv.innerHTML = `
-            <div style="text-align: center; padding: 20px;">
-                <div style="font-size: 60px; margin-bottom: 20px;">📧</div>
-                <h2 style="color: #1FA2FF; margin-bottom: 16px;">Verifique seu Email!</h2>
-                <p style="color: #666; margin-bottom: 20px; line-height: 1.6;">
-                    Enviamos um link de confirmação para:<br>
-                    <strong id="emailEnviado">${email}</strong>
-                </p>
-                <p style="color: #888; font-size: 14px; margin-bottom: 24px;">
-                    Clique no link do email para ativar sua conta.<br>
-                    O link expira em 24 horas.
-                </p>
-                <button onclick="reenviarConfirmacao('${email}')" class="du-btn du-btn--outline" style="margin-bottom: 12px; width: 100%;">
-                    📨 Reenviar Email
-                </button>
-                <button onclick="showLogin()" class="du-btn" style="width: 100%; background: #f3f4f6; color: #374151;">
-                    ← Voltar para Login
-                </button>
-            </div>
-        `;
-        var loginCard = document.querySelector('.login-card');
-        if (loginCard) loginCard.appendChild(msgDiv);
-    } else {
+    if (msgDiv) {
         document.getElementById('emailEnviado').textContent = email;
-        msgDiv.classList.remove('hidden');
+        msgDiv.classList.add('visible');
     }
+}
+
+function reenviarConfirmacaoClick() {
+    reenviarConfirmacao(_emailConfirmacao);
 }
 
 // Reenviar email de confirmação

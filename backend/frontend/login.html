@@ -3,176 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="img/logo.png">
-    <title>Login - Dental Ultra</title>
-    
-    <!-- Google Fonts - Inter -->
+    <title>Login - Ultra Simples</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Dental Ultra UI Kit -->
-    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
-    <link rel="stylesheet" href="css/dental-ultra.ui.css">
-    
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                },
+            },
+        };
+    </script>
+
     <style>
-        body {
-            background: linear-gradient(135deg, var(--du-primary-dark) 0%, var(--du-dark) 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: var(--du-5);
-        }
-
-        .login-container {
-            width: 100%;
-            max-width: 440px;
-        }
-
-        .login-card {
-            background: var(--du-surface);
-            border-radius: var(--du-r-xl);
-            box-shadow: var(--du-sh-lg);
-            padding: var(--du-7);
-        }
-
-        .login-logo {
-            text-align: center;
-            margin-bottom: var(--du-5);
-        }
-
-        .login-logo img {
-            width: 72px;
-            height: 72px;
-            border-radius: var(--du-r-lg);
-            box-shadow: var(--du-sh-md);
-        }
-
-        .login-title {
-            text-align: center;
-            font-size: var(--du-h3);
-            font-weight: 800;
-            color: var(--du-primary-dark);
-            margin: var(--du-3) 0 var(--du-1);
-        }
-
-        .login-subtitle {
-            text-align: center;
-            color: var(--du-text-2);
-            font-size: var(--du-small);
-            margin-bottom: var(--du-6);
-        }
-
-        .form-title {
-            text-align: center;
-            font-size: var(--du-h4);
-            font-weight: 700;
-            margin-bottom: var(--du-5);
-            color: var(--du-text);
-        }
-
-        .form-container {
-            display: none;
-        }
-
-        .form-container.active {
-            display: block;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--du-3);
-        }
-
-        @media (max-width: 500px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            .login-card {
-                padding: var(--du-5);
-            }
-        }
-
-        .toggle-text {
-            text-align: center;
-            margin-top: var(--du-5);
-            color: var(--du-text-2);
-            font-size: var(--du-small);
-        }
-
-        .toggle-text a {
-            color: var(--du-primary);
-            font-weight: 600;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: var(--du-4);
-        }
-
-        .back-link a {
-            color: var(--du-text-2);
-            font-size: var(--du-small);
-        }
-
-        .back-link a:hover {
-            color: var(--du-primary);
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .form-container { display: none; }
+        .form-container.active { display: block; }
+        #msgConfirmacao { display: none; }
+        #msgConfirmacao.visible { display: block; }
     </style>
-    
-    <script src="js/no-autocomplete.js"></script>
-    <script src="js/notificacoes.js"></script>
-    <script src="js/alertas-bonitos.js"></script>
+
+    <script src="js/no-autocomplete.js" defer></script>
+    <script src="js/notificacoes.js" defer></script>
+    <script src="js/alertas-bonitos.js" defer></script>
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-logo" style="margin-bottom: 24px;">
-                <img src="img/logo-header.png" alt="Dental Ultra" style="width: 100%; max-width: 280px; height: auto;">
-            </div>
+<body class="bg-[#F9FAFB] text-[#111827] min-h-screen flex items-center justify-center px-4 py-10">
 
-            <!-- LOGIN FORM -->
+    <div class="w-full max-w-md">
+
+        <!-- Brand -->
+        <div class="text-center mb-8">
+            <a href="/" class="inline-flex items-center gap-2 font-bold text-2xl">
+                <i data-lucide="tooth" class="w-7 h-7 text-teal-600"></i>
+                <span class="text-[#111827]">Ultra Simples</span>
+            </a>
+            <p class="mt-2 text-sm text-[#6B7280]">Software odontológico sem complicação</p>
+        </div>
+
+        <div class="login-card bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+
+            <!-- LOGIN -->
             <form id="loginForm" class="form-container active">
-                <h2 class="form-title">Fazer Login</h2>
-                
-                <div class="du-field du-mb-4">
-                    <label class="du-label">Email <span class="required">*</span></label>
-                    <input type="email" id="loginEmail" class="du-input" required placeholder="seu@email.com">
+                <h2 class="text-xl font-bold text-[#111827] mb-6">Entrar na sua conta</h2>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                        Email <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" id="loginEmail" required placeholder="seu@email.com"
+                        class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
                 </div>
 
-                <div class="du-field du-mb-4">
-                    <label class="du-label">Senha <span class="required">*</span></label>
-                    <input type="password" id="loginPassword" class="du-input" required placeholder="Sua senha">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                        Senha <span class="text-red-500">*</span>
+                    </label>
+                    <input type="password" id="loginPassword" required placeholder="Sua senha"
+                        class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
                 </div>
 
-                <button type="submit" class="du-btn du-btn--primary du-btn--block">Entrar</button>
+                <button type="submit"
+                    class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm transition-colors shadow-sm">
+                    Entrar
+                </button>
 
-                <div class="toggle-text">
-                    Não tem conta? <a href="javascript:void(0)" onclick="showRegister()">Cadastre-se aqui</a>
-                </div>
+                <p class="text-center mt-5 text-sm text-[#6B7280]">
+                    Não tem conta?
+                    <a href="javascript:void(0)" onclick="showRegister()"
+                        class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">
+                        Cadastre-se grátis
+                    </a>
+                </p>
             </form>
 
-            <!-- REGISTER FORM -->
+            <!-- CADASTRO -->
             <form id="registerForm" class="form-container">
-                <h2 class="form-title">Criar Conta</h2>
-                
-                <div class="form-row du-mb-3">
-                    <div class="du-field" style="flex: 2;">
-                        <label class="du-label">Nome Completo <span class="required">*</span></label>
-                        <input type="text" id="regName" class="du-input" required placeholder="Dr(a). João Silva">
-                    </div>
-                    <div class="du-field" style="flex: 1;">
-                        <label class="du-label">CRO <span class="required">*</span></label>
-                        <input type="text" id="regCRO" class="du-input" required placeholder="12345">
-                    </div>
-                </div>
+                <h2 class="text-xl font-bold text-[#111827] mb-6">Criar conta grátis</h2>
 
-                <div class="form-row du-mb-3">
-                    <div class="du-field">
-                        <label class="du-label">Especialidade</label>
-                        <select id="regSpecialty" class="du-select">
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                            Nome Completo <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="regName" required placeholder="Dr(a). João Silva"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                            CRO <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="regCRO" required placeholder="12345"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#111827] mb-1.5">Especialidade</label>
+                        <select id="regSpecialty"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition bg-white">
                             <option value="">Selecione...</option>
                             <option value="Geral">Clínico Geral</option>
                             <option value="Ortodontia">Ortodontia</option>
@@ -186,42 +117,88 @@
                             <option value="Outra">Outra</option>
                         </select>
                     </div>
-                    <div class="du-field">
-                        <label class="du-label">Clínica</label>
-                        <input type="text" id="regClinic" class="du-input" placeholder="Nome da Clínica">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[#111827] mb-1.5">Nome da Clínica</label>
+                    <input type="text" id="regClinic" placeholder="Ex: Clínica Sorriso"
+                        class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                        Email <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" id="regEmail" required placeholder="seu@email.com"
+                        class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                            Senha <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" id="regPassword" required placeholder="Mín. 6 caracteres"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
+                            Confirmar <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" id="regPasswordConfirm" required placeholder="Repita a senha"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
                     </div>
                 </div>
 
-                <div class="du-field du-mb-3">
-                    <label class="du-label">Email <span class="required">*</span></label>
-                    <input type="email" id="regEmail" class="du-input" required placeholder="seu@email.com">
-                </div>
+                <button type="submit"
+                    class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm transition-colors shadow-sm">
+                    Criar conta grátis
+                </button>
 
-                <div class="form-row du-mb-3">
-                    <div class="du-field">
-                        <label class="du-label">Senha <span class="required">*</span></label>
-                        <input type="password" id="regPassword" class="du-input" required placeholder="Mín. 6 caracteres">
-                    </div>
-                    <div class="du-field">
-                        <label class="du-label">Confirmar <span class="required">*</span></label>
-                        <input type="password" id="regPasswordConfirm" class="du-input" required placeholder="Repita a senha">
-                    </div>
-                </div>
+                <p class="text-sm text-[#6B7280] text-center mt-3">
+                    Sem cartão de crédito. Cancele quando quiser.
+                </p>
 
-                <button type="submit" class="du-btn du-btn--primary du-btn--block">Cadastrar</button>
-
-                <div class="toggle-text">
-                    Já tem conta? <a href="javascript:void(0)" onclick="showLogin()">Fazer login</a>
-                </div>
+                <p class="text-center mt-4 text-sm text-[#6B7280]">
+                    Já tem conta?
+                    <a href="javascript:void(0)" onclick="showLogin()"
+                        class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">
+                        Fazer login
+                    </a>
+                </p>
             </form>
 
-            <div class="back-link">
-                <a href="/">← Voltar para página inicial</a>
+            <!-- AGUARDANDO CONFIRMAÇÃO DE EMAIL -->
+            <div id="msgConfirmacao" class="text-center py-4">
+                <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="mail" class="w-8 h-8 text-teal-600"></i>
+                </div>
+                <h2 class="text-xl font-bold text-[#111827] mb-2">Verifique seu email</h2>
+                <p class="text-sm text-[#6B7280] mb-1">Enviamos um link de confirmação para:</p>
+                <p class="text-sm font-semibold text-[#111827] mb-4" id="emailEnviado"></p>
+                <p class="text-xs text-[#6B7280] mb-6">Clique no link para ativar sua conta. O link expira em 24 horas.</p>
+                <button onclick="reenviarConfirmacaoClick()"
+                    class="w-full py-2.5 mb-3 border border-teal-600 text-teal-600 hover:bg-teal-50 font-semibold rounded-lg text-sm transition-colors">
+                    Reenviar email
+                </button>
+                <button onclick="showLogin()"
+                    class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-[#374151] font-semibold rounded-lg text-sm transition-colors">
+                    ← Voltar para login
+                </button>
             </div>
+
         </div>
+
+        <p class="text-center mt-5">
+            <a href="/" class="text-sm text-[#6B7280] hover:text-teal-600 transition-colors">
+                ← Voltar para página inicial
+            </a>
+        </p>
+
     </div>
 
-    <script src="js/dental-ultra.ui.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>lucide.createIcons();</script>
     <script src="js/auth.js"></script>
 </body>
 </html>
