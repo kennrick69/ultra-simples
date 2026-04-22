@@ -5013,6 +5013,14 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend/login.html'));
 });
 
+app.get('/termos', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/termos.html'));
+});
+
+app.get('/privacidade', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/privacidade.html'));
+});
+
 app.use((req, res) => {
     res.status(404).json({ success: false, erro: 'Endpoint não encontrado' });
 });
