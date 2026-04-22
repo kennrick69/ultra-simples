@@ -127,6 +127,20 @@
                     <p data-error-for="nome" class="hidden mt-1 text-xs text-red-600"></p>
                 </div>
 
+                <!-- CRO -->
+                <div>
+                    <label for="cro" class="block text-sm font-medium text-[#111827] mb-1.5">CRO</label>
+                    <input
+                        type="text"
+                        id="cro"
+                        name="cro"
+                        required
+                        placeholder="Ex: CRO-SC 12345"
+                        class="w-full px-3.5 py-2.5 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-colors"
+                    >
+                    <p data-error-for="cro" class="hidden mt-1 text-xs text-red-600"></p>
+                </div>
+
                 <!-- WhatsApp -->
                 <div>
                     <label for="telefone" class="block text-sm font-medium text-[#111827] mb-1.5">WhatsApp ou celular</label>
@@ -210,6 +224,7 @@
         const form = document.getElementById('cadastroForm');
         const emailEl = document.getElementById('email');
         const nomeEl = document.getElementById('nome');
+        const croEl = document.getElementById('cro');
         const telEl = document.getElementById('telefone');
         const senhaEl = document.getElementById('senha');
         const aceiteEl = document.getElementById('aceite');
@@ -269,6 +284,7 @@
         function validate({ showErrors = false } = {}) {
             const email = emailEl.value.trim();
             const nome = nomeEl.value.trim();
+            const cro = croEl.value.trim();
             const tel = digitsOnly(telEl.value);
             const senha = senhaEl.value;
             const aceite = aceiteEl.checked;
@@ -276,6 +292,7 @@
             const errors = {
                 email: !email ? '' : (isEmailValid(email) ? '' : 'Digite um e-mail válido.'),
                 nome: !nome ? '' : (nome.length >= 2 ? '' : 'Informe seu nome completo.'),
+                cro: !cro ? '' : (cro.length >= 3 ? '' : 'Informe seu CRO.'),
                 telefone: !tel ? '' : (tel.length >= 10 ? '' : 'Telefone precisa de pelo menos 10 dígitos.'),
                 senha: !senha ? '' : (senha.length >= 8 ? '' : 'Senha precisa de no mínimo 8 caracteres.'),
             };
@@ -283,16 +300,18 @@
             if (showErrors) {
                 setError('email', !email ? 'Campo obrigatório.' : errors.email);
                 setError('nome', !nome ? 'Campo obrigatório.' : errors.nome);
+                setError('cro', !cro ? 'Campo obrigatório.' : errors.cro);
                 setError('telefone', !tel ? 'Campo obrigatório.' : errors.telefone);
                 setError('senha', !senha ? 'Campo obrigatório.' : errors.senha);
             } else {
-                ['email', 'nome', 'telefone', 'senha'].forEach((f) => setError(f, errors[f]));
+                ['email', 'nome', 'cro', 'telefone', 'senha'].forEach((f) => setError(f, errors[f]));
             }
 
-            const allFilled = email && nome && tel && senha;
+            const allFilled = email && nome && cro && tel && senha;
             const allValid = allFilled &&
                 isEmailValid(email) &&
                 nome.length >= 2 &&
+                cro.length >= 3 &&
                 tel.length >= 10 &&
                 senha.length >= 8 &&
                 aceite;
@@ -301,21 +320,54 @@
             return allValid;
         }
 
-        [emailEl, nomeEl, senhaEl].forEach((el) => el.addEventListener('input', () => validate()));
+        [emailEl, nomeEl, croEl, senhaEl].forEach((el) => el.addEventListener('input', () => validate()));
         aceiteEl.addEventListener('change', () => validate());
 
-        form.addEventListener('submit', (e) => {
+        function setBtnLoading(loading) {
+            if (loading) {
+                submitBtn.disabled = true;
+                submitBtn.dataset.originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Criando conta...';
+            } else {
+                submitBtn.textContent = submitBtn.dataset.originalText || 'Criar minha conta grátis';
+                validate();
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!validate({ showErrors: true })) return;
 
-            const data = {
+            const payload = {
+                name: nomeEl.value.trim(),
+                cro: croEl.value.trim(),
                 email: emailEl.value.trim(),
-                nome: nomeEl.value.trim(),
-                telefone: telEl.value,
-                senha: senhaEl.value,
+                password: senhaEl.value,
+                telefone: telEl.value.trim(),
             };
-            console.log('Cadastro:', data);
-            alert('Cadastro enviado! (integração com backend em breve)');
+
+            setBtnLoading(true);
+            try {
+                const resp = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+
+                if (resp.ok && data.success) {
+                    form.reset();
+                    alert(data.message || 'Cadastro realizado! Verifique seu e-mail para confirmar a conta.');
+                    window.location.href = '/login';
+                } else {
+                    alert(data.erro || data.message || 'Não foi possível concluir o cadastro. Tente novamente.');
+                }
+            } catch (err) {
+                console.error('Erro no cadastro:', err);
+                alert('Erro de conexão com o servidor. Tente novamente em instantes.');
+            } finally {
+                setBtnLoading(false);
+            }
         });
 
         validate();

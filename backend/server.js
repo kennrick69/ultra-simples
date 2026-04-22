@@ -462,7 +462,8 @@ async function initDatabase() {
         const migracoesEmail = [
             "ALTER TABLE dentistas ADD COLUMN IF NOT EXISTS email_confirmado BOOLEAN DEFAULT false",
             "ALTER TABLE dentistas ADD COLUMN IF NOT EXISTS token_confirmacao VARCHAR(64)",
-            "ALTER TABLE dentistas ADD COLUMN IF NOT EXISTS token_expira TIMESTAMP"
+            "ALTER TABLE dentistas ADD COLUMN IF NOT EXISTS token_expira TIMESTAMP",
+            "ALTER TABLE dentistas ADD COLUMN IF NOT EXISTS telefone VARCHAR(20)"
         ];
         for (const mig of migracoesEmail) {
             try { await pool.query(mig); } catch (e) {}
@@ -850,7 +851,7 @@ async function enviarEmail(para, assunto, mensagemHtml) {
 
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { name, cro, email, password, clinic, specialty } = req.body;
+        const { name, cro, email, password, clinic, specialty, telefone } = req.body;
 
         if (!name || !cro || !email || !password) {
             return res.status(400).json({ success: false, erro: 'Campos obrigatórios faltando' });
@@ -921,9 +922,9 @@ app.post('/api/auth/register', async (req, res) => {
         
         // Inserir usando nomes das colunas existentes no banco (inglês)
         const result = await pool.query(
-            `INSERT INTO dentistas (name, cro, email, password, clinic, specialty, email_confirmado, token_confirmacao, token_expira)
-             VALUES ($1, $2, $3, $4, $5, $6, false, $7, $8) RETURNING id, name, cro, email, clinic, specialty`,
-            [name, cro, email.toLowerCase(), senhaHash, clinic || '', specialty || '', token, expira]
+            `INSERT INTO dentistas (name, cro, email, password, clinic, specialty, telefone, email_confirmado, token_confirmacao, token_expira)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, false, $8, $9) RETURNING id, name, cro, email, clinic, specialty, telefone`,
+            [name, cro, email.toLowerCase(), senhaHash, clinic || '', specialty || '', telefone || '', token, expira]
         );
 
         // Enviar email de confirmação
