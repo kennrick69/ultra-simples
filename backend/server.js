@@ -813,9 +813,10 @@ function verificarPermissao(permissaoNecessaria) {
 // ==============================================================================
 
 // Configuração do envio de email via PHP (Hostinger)
+// Reutiliza a infra de email compartilhada com o projeto Dental Ultra (PHP mailer + chave)
 const EMAIL_PHP_URL = process.env.EMAIL_PHP_URL || 'https://dentalultra.com.br/api/enviar-email.php';
 const EMAIL_CHAVE_SECRETA = process.env.EMAIL_CHAVE_SECRETA || 'DENTAL_ULTRA_EMAIL_2024_SECRETKEY';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://dentalultra.com.br';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://ultra-simples-production.up.railway.app';
 
 // Função para gerar token aleatório
 function gerarToken(tamanho = 32) {
@@ -829,6 +830,10 @@ function gerarToken(tamanho = 32) {
 
 // Função para enviar email via PHP
 async function enviarEmail(para, assunto, mensagemHtml) {
+    if (!EMAIL_PHP_URL || !EMAIL_CHAVE_SECRETA) {
+        console.warn('EMAIL_PHP_URL/EMAIL_CHAVE_SECRETA não configurados — email não enviado para', para);
+        return false;
+    }
     try {
         const response = await fetch(EMAIL_PHP_URL, {
             method: 'POST',
@@ -881,29 +886,30 @@ app.post('/api/auth/register', async (req, res) => {
                 // Enviar email
                 const linkConfirmacao = `${FRONTEND_URL}/area-dentistas/confirmar-email.html?token=${token}`;
                 const emailHtml = `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #111827;">
                         <div style="text-align: center; margin-bottom: 30px;">
-                            <h1 style="color: #1FA2FF;">[dente] Dental Ultra</h1>
+                            <h1 style="color: #0D9488; margin: 0;">Ultra Simples</h1>
+                            <p style="color: #6B7280; font-size: 13px; margin: 4px 0 0;">Software odontológico que não complica sua rotina.</p>
                         </div>
-                        <h2 style="color: #333;">Confirme seu email</h2>
+                        <h2 style="color: #111827;">Confirme seu email</h2>
                         <p>Olá <strong>${name}</strong>,</p>
                         <p>Você já iniciou um cadastro anteriormente. Clique no botão abaixo para confirmar seu email:</p>
                         <div style="text-align: center; margin: 30px 0;">
-                            <a href="${linkConfirmacao}" style="background: linear-gradient(135deg, #1FA2FF, #12D8FA); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                                [OK] Confirmar Email
+                            <a href="${linkConfirmacao}" style="background: linear-gradient(135deg, #0D9488, #0F766E); color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                                Confirmar Email
                             </a>
                         </div>
-                        <p style="color: #666; font-size: 14px;">Este link expira em 24 horas.</p>
-                        <p style="color: #666; font-size: 14px;">Se você não solicitou este cadastro, ignore este email.</p>
-                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                        <p style="color: #999; font-size: 12px; text-align: center;">
-                            Dental Ultra - Sistema de Gestão Odontológica<br>
+                        <p style="color: #6B7280; font-size: 14px;">Este link expira em 24 horas.</p>
+                        <p style="color: #6B7280; font-size: 14px;">Se você não solicitou este cadastro, ignore este email.</p>
+                        <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
+                        <p style="color: #6B7280; font-size: 12px; text-align: center;">
+                            Ultra Simples — Sistema de Gestão Odontológica<br>
                             suporte@dentalultra.com.br
                         </p>
                     </div>
                 `;
-                
-                await enviarEmail(email.toLowerCase(), '[dente] Confirme seu email - Dental Ultra', emailHtml);
+
+                await enviarEmail(email.toLowerCase(), 'Confirme seu email - Ultra Simples', emailHtml);
                 
                 return res.status(200).json({
                     success: true,
@@ -930,29 +936,30 @@ app.post('/api/auth/register', async (req, res) => {
         // Enviar email de confirmação
         const linkConfirmacao = `${FRONTEND_URL}/area-dentistas/confirmar-email.html?token=${token}`;
         const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #111827;">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #1FA2FF;">[dente] Dental Ultra</h1>
+                    <h1 style="color: #0D9488; margin: 0;">Ultra Simples</h1>
+                    <p style="color: #6B7280; font-size: 13px; margin: 4px 0 0;">Software odontológico que não complica sua rotina.</p>
                 </div>
-                <h2 style="color: #333;">Bem-vindo(a) ao Dental Ultra!</h2>
+                <h2 style="color: #111827;">Bem-vindo(a) ao Ultra Simples!</h2>
                 <p>Olá <strong>${name}</strong>,</p>
                 <p>Obrigado por se cadastrar! Para ativar sua conta, clique no botão abaixo:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${linkConfirmacao}" style="background: linear-gradient(135deg, #1FA2FF, #12D8FA); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                        [OK] Confirmar Email
+                    <a href="${linkConfirmacao}" style="background: linear-gradient(135deg, #0D9488, #0F766E); color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                        Confirmar Email
                     </a>
                 </div>
-                <p style="color: #666; font-size: 14px;">Este link expira em 24 horas.</p>
-                <p style="color: #666; font-size: 14px;">Se você não solicitou este cadastro, ignore este email.</p>
-                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                <p style="color: #999; font-size: 12px; text-align: center;">
-                    Dental Ultra - Sistema de Gestão Odontológica<br>
+                <p style="color: #6B7280; font-size: 14px;">Este link expira em 24 horas.</p>
+                <p style="color: #6B7280; font-size: 14px;">Se você não solicitou este cadastro, ignore este email.</p>
+                <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
+                <p style="color: #6B7280; font-size: 12px; text-align: center;">
+                    Ultra Simples — Sistema de Gestão Odontológica<br>
                     suporte@dentalultra.com.br
                 </p>
             </div>
         `;
-        
-        const emailEnviado = await enviarEmail(email.toLowerCase(), '[dente] Confirme seu email - Dental Ultra', emailHtml);
+
+        const emailEnviado = await enviarEmail(email.toLowerCase(), 'Confirme seu email - Ultra Simples', emailHtml);
 
         res.status(201).json({
             success: true,
@@ -1042,28 +1049,29 @@ app.post('/api/auth/reenviar-confirmacao', async (req, res) => {
         
         const linkConfirmacao = `${FRONTEND_URL}/area-dentistas/confirmar-email.html?token=${token}`;
         const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #111827;">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #1FA2FF;">[dente] Dental Ultra</h1>
+                    <h1 style="color: #0D9488; margin: 0;">Ultra Simples</h1>
+                    <p style="color: #6B7280; font-size: 13px; margin: 4px 0 0;">Software odontológico que não complica sua rotina.</p>
                 </div>
-                <h2 style="color: #333;">Confirme seu email</h2>
+                <h2 style="color: #111827;">Confirme seu email</h2>
                 <p>Olá <strong>${result.rows[0].name}</strong>,</p>
                 <p>Clique no botão abaixo para confirmar seu email:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${linkConfirmacao}" style="background: linear-gradient(135deg, #1FA2FF, #12D8FA); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                        [OK] Confirmar Email
+                    <a href="${linkConfirmacao}" style="background: linear-gradient(135deg, #0D9488, #0F766E); color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                        Confirmar Email
                     </a>
                 </div>
-                <p style="color: #666; font-size: 14px;">Este link expira em 24 horas.</p>
-                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                <p style="color: #999; font-size: 12px; text-align: center;">
-                    Dental Ultra - Sistema de Gestão Odontológica<br>
+                <p style="color: #6B7280; font-size: 14px;">Este link expira em 24 horas.</p>
+                <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
+                <p style="color: #6B7280; font-size: 12px; text-align: center;">
+                    Ultra Simples — Sistema de Gestão Odontológica<br>
                     suporte@dentalultra.com.br
                 </p>
             </div>
         `;
-        
-        await enviarEmail(email.toLowerCase(), '[dente] Confirme seu email - Dental Ultra', emailHtml);
+
+        await enviarEmail(email.toLowerCase(), 'Confirme seu email - Ultra Simples', emailHtml);
         
         res.json({ success: true, message: 'Email de confirmação reenviado!' });
     } catch (error) {
@@ -5034,7 +5042,7 @@ initDatabase().then(() => {
     app.listen(PORT, () => {
         console.log('');
         console.log('==============================================');
-        console.log('   DENTAL ULTRA API - VERSÃO 6.0');
+        console.log('   ULTRA SIMPLES API - VERSÃO 1.0');
         console.log('==============================================');
         console.log('   Servidor: http://localhost:' + PORT);
         console.log('   Banco: PostgreSQL');

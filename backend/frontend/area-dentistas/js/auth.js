@@ -1,5 +1,5 @@
 // ==============================================================================
-// AUTENTICAÇÃO - DENTAL ULTRA v4.0
+// AUTENTICAÇÃO - ULTRA SIMPLES v1.0
 // Login e Cadastro com Confirmação de Email
 // ==============================================================================
 
@@ -7,7 +7,7 @@
 function getApiUrl() {
     var customUrl = localStorage.getItem('api_url');
     if (customUrl) return customUrl;
-    return 'https://dentist-backend-v2-production.up.railway.app';
+    return 'https://ultra-simples-production.up.railway.app';
 }
 
 // Página de destino após login

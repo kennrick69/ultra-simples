@@ -11,7 +11,7 @@ Software web completo para gestão de clínicas odontológicas, com foco em **Eq
 | Backend | Node.js + Express + PostgreSQL |
 | Autenticação | JWT + bcrypt |
 | Frontend | HTML / CSS / JavaScript vanilla |
-| Deploy | Railway (backend) + Hostinger (frontend) |
+| Deploy | Railway (backend + frontend no mesmo serviço) |
 
 ---
 
@@ -153,35 +153,105 @@ background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
 
 ## Variáveis de ambiente (backend)
 
+Todas as variáveis usadas em `backend/server.js`. **Nenhum valor real** deve aparecer aqui — apenas nomes, finalidade e exemplo placeholder. Segredos ficam no painel do Railway.
+
+### Obrigatórias
 ```env
-DATABASE_URL=postgresql://user:password@host/db
-JWT_SECRET=sua-chave-secreta
-PORT=3001
-NODE_ENV=production
+DATABASE_URL=postgresql://user:password@host/db   # Conexão PostgreSQL
+JWT_SECRET=sua-chave-secreta                      # Assinatura dos tokens JWT (expira em 30d)
+PORT=3001                                         # Porta do servidor Express
+NODE_ENV=production                               # "production" no Railway
 ```
+
+### Envio de email (fluxo de confirmação de cadastro)
+```env
+FRONTEND_URL=https://ultra-simples-production.up.railway.app               # Base do link de confirmação — mesmo host do backend (Express serve o frontend)
+EMAIL_PHP_URL=https://dentalultra.com.br/api/enviar-email.php              # PHP mailer (infra compartilhada com o projeto Dental Ultra)
+EMAIL_CHAVE_SECRETA=DENTAL_ULTRA_EMAIL_2024_SECRETKEY                      # Chave compartilhada — igual à do Dental Ultra
+```
+
+> **Infra de email reutilizada:** o Ultra Simples usa o mesmo PHP mailer e a mesma chave secreta do Dental Ultra — é infraestrutura compartilhada, não código copiado. Por isso os valores aparecem aqui (não são segredos de produção diferentes). O email remetente/assunto/HTML são identidade Ultra Simples.
+> **Suporte no rodapé dos emails:** `suporte@dentalultra.com.br` (enquanto não houver caixa de suporte própria do Ultra Simples).
+> **Defaults em `server.js`:** `FRONTEND_URL` → `https://ultra-simples-production.up.railway.app` (mesmo host do backend — Express serve o frontend na mesma porta); `EMAIL_PHP_URL` e `EMAIL_CHAVE_SECRETA` já apontam para a infra do Dental Ultra. Se qualquer um ficar vazio, `enviarEmail()` retorna `false` sem request e o usuário precisa ser ativado manualmente.
+
+---
+
+## Fluxo de cadastro e confirmação de email
+
+### 1. Cadastro — `POST /api/auth/register`
+
+**Body:** `{ name, cro, email, password, clinic?, specialty?, telefone? }`
+
+**Validação:**
+- `name`, `cro`, `email`, `password` obrigatórios → senão `400`
+- `password.length >= 6` → senão `400`
+
+**Lógica:**
+1. `SELECT FROM dentistas WHERE email` (lowercase)
+2. Se existe + `email_confirmado = false` → gera novo `token_confirmacao` + `token_expira` (agora + 24h), atualiza registro, reenvia email, responde `200 { aguardandoConfirmacao: true }`
+3. Se existe + confirmado → `400 "Email já cadastrado"`
+4. Se não existe → `bcrypt.hash(password, 10)`, gera token (32 chars alfanuméricos via `gerarToken()`), `INSERT` com `email_confirmado=false`, envia email, responde `201 { aguardandoConfirmacao: true, emailEnviado }`
+
+**Email enviado:** template HTML com identidade Ultra Simples (teal `#0D9488`/`#0F766E`, Inter), link `${FRONTEND_URL}/area-dentistas/confirmar-email.html?token=${token}`.
+
+### 2. Confirmação — `GET /api/auth/confirmar-email?token=...`
+
+1. Busca `dentistas` por `token_confirmacao`
+2. Verifica `token_expira > now()` → senão `400 "Token expirado"`
+3. `UPDATE dentistas SET email_confirmado=true, token_confirmacao=NULL, token_expira=NULL`
+4. Responde `{ success: true, nome }`
+
+Página `area-dentistas/confirmar-email.html` (e versão raiz em `frontend/confirmar-email.html`) consome esse endpoint e mostra 4 estados: Loading / Success / Error / NoToken.
+
+### 3. Reenvio manual — `POST /api/auth/reenviar-confirmacao`
+
+**Body:** `{ email }`
+- Se email não existe → `400`
+- Se já confirmado → `400 "Email já confirmado. Faça login."`
+- Senão: gera novo token, atualiza, envia email
+
+### 4. Login — `POST /api/auth/login`
+
+Se `email_confirmado === false` → `403 { emailNaoConfirmado: true, email }` (o frontend mostra botão "Reenviar confirmação").
+
+### Colunas do banco usadas no fluxo (tabela `dentistas`)
+
+| Coluna | Tipo | Uso |
+|--------|------|-----|
+| `name`, `cro`, `email`, `password` | text | Identidade e hash bcrypt |
+| `clinic`, `specialty`, `telefone` | text | Dados opcionais |
+| `email_confirmado` | boolean | `false` enquanto pendente, `true` após confirmação |
+| `token_confirmacao` | text | Token aleatório de 32 chars, `NULL` após confirmar |
+| `token_expira` | timestamp | Expira em 24h a partir da criação/reenvio |
+| `subscription_active`, `ativo` | boolean | Login bloqueia com `403 "Conta desativada"` se `false` |
 
 ---
 
 ## Como rodar localmente
 
+Um único processo Node serve **backend + frontend** (o Express serve a pasta `frontend/` com `express.static`).
+
 ```bash
-# Backend
 cd backend
 npm install
 node server.js
-
-# Frontend
-cd backend/frontend
-npm install
-node server.js
 ```
+
+Depois acesse:
+- `http://localhost:<PORT>/` → landing (`frontend/index.html`)
+- `http://localhost:<PORT>/cadastro` → tela de cadastro
+- `http://localhost:<PORT>/login` → tela de login
+- `http://localhost:<PORT>/area-dentistas/dashboard.html` → app principal (após login)
+
+> Para testar o fluxo de cadastro localmente, defina `FRONTEND_URL=http://localhost:<PORT>` antes de iniciar — senão o link do email vai continuar apontando para o domínio do Railway.
 
 ---
 
 ## Deploy
 
-- **Backend:** push para o GitHub → Railway faz redeploy automático
-- **Frontend:** upload manual para Hostinger
+- **Tudo junto no Railway:** push para o GitHub → Railway faz redeploy automático de backend **e** frontend no mesmo serviço.
+- O Express serve o frontend estático via `app.use(express.static(path.join(__dirname, 'frontend')))` em `server.js`, então não existe deploy separado de frontend.
+- Rotas estáticas definidas em `server.js`: `GET /cadastro`, `GET /login`, `GET /termos`, `GET /privacidade` (redirecionam para os HTMLs correspondentes).
 
 ---
 
@@ -200,3 +270,15 @@ Ver arquivo: `backend/frontend/area-dentistas/TESTES-PENDENTES.md`
 - Identidade visual documentada (cores, tipografia, ícones, componentes)
 - `frontend/login.html` reformulado para seguir identidade visual (teal, Inter, Tailwind, Lucide)
 - `frontend/js/auth.js` corrigido: URL da API apontando para o backend correto do Ultra Simples
+- **Arquitetura confirmada:** backend e frontend rodam juntos no **mesmo serviço Railway** (Express serve `frontend/` via `express.static`). Não há Hostinger separado para o frontend. Stack e seção "Deploy" do README corrigidas.
+- **Auditoria e correção completa do fluxo de cadastro/confirmação de email** (contaminação Dental Ultra → Ultra Simples):
+  - `backend/server.js`: função `enviarEmail()` agora aborta cedo com warning se `EMAIL_PHP_URL` ou `EMAIL_CHAVE_SECRETA` estiverem vazios, evitando request falho silencioso
+  - `backend/server.js`: 3 templates HTML de email (cadastro novo, reenvio em cadastro existente, endpoint `/api/auth/reenviar-confirmacao`) reescritos com identidade Ultra Simples — texto "Ultra Simples", cores teal `#0D9488`/`#0F766E`, fonte Inter, placeholders `[dente]`/`[OK]` removidos, assunto atualizado
+  - `backend/server.js`: `FRONTEND_URL` default = `https://ultra-simples-production.up.railway.app` (mesmo host do backend). `EMAIL_PHP_URL` e `EMAIL_CHAVE_SECRETA` **mantidos** com valores do Dental Ultra — decisão explícita do usuário de reutilizar a infra compartilhada (PHP mailer em `dentalultra.com.br/api/enviar-email.php`) enquanto o Ultra Simples não tem a sua própria
+  - `backend/server.js`: banner de startup trocado de `"DENTAL ULTRA API - VERSÃO 6.0"` para `"ULTRA SIMPLES API - VERSÃO 1.0"`
+  - Rodapé dos emails: suporte mantido como `suporte@dentalultra.com.br` (compartilhado, enquanto não houver caixa própria)
+  - `backend/frontend/area-dentistas/js/auth.js`: URL da API estava hardcoded para `dentist-backend-v2-production.up.railway.app` (Dental Ultra) → corrigido para `ultra-simples-production.up.railway.app`. Header atualizado para "ULTRA SIMPLES v1.0"
+  - `backend/frontend/area-dentistas/confirmar-email.html` e `backend/frontend/confirmar-email.html`: reescritos completamente. Antes apontavam para a API do Dental Ultra (quebrava confirmação). Agora usam Tailwind + Lucide + Inter + teal, API correta, 4 estados (Loading/Success/Error/NoToken) com ícones Lucide (`loader`, `check`, `x`)
+  - README: seção "Fluxo de cadastro" + tabela de colunas do banco adicionadas; seção "Variáveis de ambiente" expandida com todas as env vars usadas no backend; seção "Como rodar localmente" corrigida (um único processo serve tudo)
+- **Pendências (não-bloqueantes):**
+  - Caixa de suporte própria — quando existir, substituir `suporte@dentalultra.com.br` nos 3 templates de email
