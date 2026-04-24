@@ -926,10 +926,9 @@ app.post('/api/auth/register', async (req, res) => {
 
         const senhaHash = await bcrypt.hash(password, 10);
         
-        // Inserir usando nomes das colunas existentes no banco (inglês)
         const result = await pool.query(
-            `INSERT INTO dentistas (name, cro, email, password, clinic, specialty, telefone, email_confirmado, token_confirmacao, token_expira)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, false, $8, $9) RETURNING id, name, cro, email, clinic, specialty, telefone`,
+            `INSERT INTO dentistas (nome, cro, email, senha, clinica, especialidade, telefone, email_confirmado, token_confirmacao, token_expira)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, false, $8, $9) RETURNING id, nome, cro, email, clinica, especialidade, telefone`,
             [name, cro, email.toLowerCase(), senhaHash, clinic || '', specialty || '', telefone || '', token, expira]
         );
 
@@ -985,7 +984,7 @@ app.get('/api/auth/confirmar-email', async (req, res) => {
         }
         
         const result = await pool.query(
-            'SELECT id, name, email, token_expira FROM dentistas WHERE token_confirmacao = $1',
+            'SELECT id, nome, email, token_expira FROM dentistas WHERE token_confirmacao = $1',
             [token]
         );
         
@@ -1027,7 +1026,7 @@ app.post('/api/auth/reenviar-confirmacao', async (req, res) => {
         }
         
         const result = await pool.query(
-            'SELECT id, name, email_confirmado FROM dentistas WHERE email = $1',
+            'SELECT id, nome, email_confirmado FROM dentistas WHERE email = $1',
             [email.toLowerCase()]
         );
         
@@ -1222,7 +1221,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/verify', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT id, name, cro, email, clinic, specialty, subscription_plan, subscription_active FROM dentistas WHERE id = $1',
+            'SELECT id, nome, cro, email, clinica, especialidade, ativo FROM dentistas WHERE id = $1',
             [parseInt(req.user.id)]
         );
         if (result.rows.length === 0) {
@@ -1475,7 +1474,7 @@ app.delete('/api/dentistas/:id', authMiddleware, async (req, res) => {
         }
         
         const userResult = await pool.query(
-            'SELECT password FROM dentistas WHERE id = $1',
+            'SELECT senha FROM dentistas WHERE id = $1',
             [parseInt(req.user.id)]
         );
         
