@@ -257,6 +257,130 @@ Depois acesse:
 
 ---
 
+## Dicionário de campos — banco de dados e API
+
+> **Por que existe esta seção:** erros como usar `dentista.name` em vez de `dentista.nome` ou `d.clinic` em vez de `d.clinica` causam bugs silenciosos (retornam `undefined`). Este dicionário é a referência definitiva. **Antes de escrever qualquer query SQL ou acessar qualquer campo de resposta da API, consulte aqui.**
+
+### Regra geral
+- Colunas no **banco de dados** → sempre `snake_case` em português
+- Campos na **API (req.body)** → geralmente `camelCase`, exceto onde indicado
+- Campos na **API (res.json)** → geralmente `camelCase`
+- **Nunca usar nomes em inglês** (`name`, `password`, `clinic`, `specialty`) — as colunas são em português
+
+---
+
+### Tabela `dentistas`
+
+| Coluna no banco | Tipo | Notas |
+|----------------|------|-------|
+| `id` | SERIAL PK | |
+| `nome` | VARCHAR 255 | ⚠️ Não é `name` |
+| `cro` | VARCHAR 50 | |
+| `email` | VARCHAR 255 UNIQUE | Sempre salvo em lowercase |
+| `senha` | VARCHAR 255 | ⚠️ Não é `password` — hash bcrypt |
+| `clinica` | VARCHAR 255 | ⚠️ Não é `clinic` |
+| `especialidade` | VARCHAR 255 | ⚠️ Não é `specialty` |
+| `telefone` | VARCHAR 20 | |
+| `ativo` | BOOLEAN | Default `true` |
+| `plano` | VARCHAR 50 | ⚠️ Não é `subscription_plan`. Default `'premium'` |
+| `email_confirmado` | BOOLEAN | Default `false` |
+| `token_confirmacao` | VARCHAR 64 | `NULL` após confirmar |
+| `token_expira` | TIMESTAMP | Expira em 24h |
+| `criado_em` | TIMESTAMP | |
+| `atualizado_em` | TIMESTAMP | |
+
+**Resposta da API (login/verify):**
+```json
+{ "id": "string", "nome": "string", "cro": "string", "email": "string",
+  "clinica": "string", "especialidade": "string", "plano": "string" }
+```
+
+---
+
+### Tabela `pacientes`
+
+| Coluna no banco | Tipo | Notas |
+|----------------|------|-------|
+| `id` | SERIAL PK | |
+| `dentista_id` | INTEGER FK | |
+| `nome` | VARCHAR 255 | |
+| `cpf` | VARCHAR 14 | |
+| `data_nascimento` | DATE | API: `dataNascimento` |
+| `sexo` | VARCHAR 20 | |
+| `telefone` / `celular` | VARCHAR 20 | |
+| `email` | VARCHAR 255 | |
+| `endereco`, `numero`, `complemento`, `bairro`, `cidade`, `estado`, `cep` | VARCHAR | |
+| `convenio` | VARCHAR 100 | |
+| `numero_convenio` | VARCHAR 50 | API: `numeroConvenio` |
+| `menor_idade` | BOOLEAN | API: `menorIdade` |
+| `responsavel_nome` | VARCHAR 255 | API: `responsavelNome` |
+| `responsavel_cpf` | VARCHAR 14 | API: `responsavelCpf` |
+| `responsavel_telefone` | VARCHAR 20 | API: `responsavelTelefone` |
+| `responsavel_email` | VARCHAR 255 | API: `responsavelEmail` |
+| `responsavel_parentesco` | VARCHAR 50 | API: `responsavelParentesco` |
+| `estrangeiro` | BOOLEAN | |
+| `passaporte` | VARCHAR 50 | |
+| `pais` / `nacionalidade` | VARCHAR 100 | |
+| `tel_recados` / `nome_recado` | VARCHAR | API: snake_case (exceção) |
+| `ativo` | BOOLEAN | Soft delete |
+| `criado_em` | TIMESTAMP | API: `criadoEm` |
+
+---
+
+### Tabela `agendamentos`
+
+| Coluna no banco | Tipo | Notas |
+|----------------|------|-------|
+| `id` | SERIAL PK | |
+| `dentista_id` | INTEGER FK | |
+| `paciente_id` | INTEGER FK | Opcional |
+| `paciente_nome` | VARCHAR 255 | |
+| `data` | DATE | |
+| `horario` | TIME | ⚠️ Coluna é `horario`, API retorna como `hora` |
+| `duracao` | INTEGER | Default 60 (minutos) |
+| `procedimento` | VARCHAR 255 | |
+| `valor` | DECIMAL 10,2 | |
+| `status` | VARCHAR 50 | Default `'confirmado'` |
+| `encaixe` | BOOLEAN | Default `false` |
+| `codigo_confirmacao` | VARCHAR 10 | Único, gerado automaticamente |
+| `rotulo` | VARCHAR 50 | |
+| `profissional_id` | INTEGER | ID da tabela `profissionais` |
+| `paciente_telefone` | VARCHAR 30 | |
+| `criado_em` | TIMESTAMP | |
+
+---
+
+### Tabela `profissionais` (agenda)
+
+| Coluna no banco | Tipo | Notas |
+|----------------|------|-------|
+| `id` | SERIAL PK | |
+| `dentista_id` | INTEGER FK | Dono da clínica |
+| `nome` | VARCHAR 255 | |
+| `cro` | VARCHAR 30 | |
+| `especialidade` | VARCHAR 100 | Default `'Clínico Geral'` |
+| `cor` | VARCHAR 20 | Default `'#2d7a5f'` |
+| `intervalo_minutos` | INTEGER | Default 30 |
+| `hora_entrada` / `hora_saida` | TIME | Default `08:00` / `18:00` |
+| `almoco_inicio` / `almoco_fim` | TIME | Default `12:00` / `13:00` |
+| `ativo` | BOOLEAN | Default `true` |
+
+---
+
+### Outras tabelas (referência de nomes)
+
+| Tabela | Colunas principais |
+|--------|-------------------|
+| `prontuarios` | `id`, `dentista_id`, `paciente_id`, `data`, `descricao`, `procedimento`, `dente`, `valor` |
+| `financeiro` | `id`, `dentista_id`, `paciente_id`, `tipo`, `descricao`, `valor`, `data`, `status`, `forma_pagamento`, `parcelas` |
+| `notas_fiscais` | `id`, `dentista_id`, `paciente_id`, `numero`, `valor`, `data_emissao`, `descricao_servico`, `status`, `xml`, `pdf_url` |
+| `laboratorios` | `id`, `dentista_id`, `nome`, `cnpj`, `telefone`, `whatsapp`, `email`, `responsavel_tecnico`, `cro_responsavel` |
+| `casos_proteticos` | `id`, `dentista_id`, `paciente_id`, `laboratorio_id`, `codigo`, `tipo_trabalho`, `material`, `cor_shade`, `urgencia`, `data_envio`, `data_prometida`, `status`, `valor_combinado`, `valor_pago` |
+| `config_clinica` | `id`, `dentista_id`, `nome_clinica`, `nome_dentista`, `telefone`, `whatsapp`, `endereco`, `assinatura`, `hora_abre`, `hora_fecha`, `intervalo_padrao` |
+| `usuarios_vinculados` | `id`, `dentista_id`, `nome`, `email`, `senha`, `cargo`, `permissoes` (JSONB) |
+
+---
+
 ## Checklist de segurança para produção comercial
 
 > **Executar obrigatoriamente antes de lançar o produto para clientes reais.**

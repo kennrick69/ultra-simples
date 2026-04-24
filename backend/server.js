@@ -1232,13 +1232,13 @@ app.get('/api/auth/verify', authMiddleware, async (req, res) => {
         res.json({
             success: true,
             dentista: { 
-                id: d.id.toString(), 
-                nome: d.name, 
-                cro: d.cro, 
-                email: d.email, 
-                clinica: d.clinic, 
-                especialidade: d.specialty, 
-                plano: d.subscription_plan || 'premium' 
+                id: d.id.toString(),
+                nome: d.nome,
+                cro: d.cro,
+                email: d.email,
+                clinica: d.clinica,
+                especialidade: d.especialidade,
+                plano: d.plano || 'premium'
             }
         });
     } catch (error) {
