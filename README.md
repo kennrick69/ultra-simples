@@ -257,6 +257,28 @@ Depois acesse:
 
 ---
 
+## Checklist de segurança para produção comercial
+
+> **Executar obrigatoriamente antes de lançar o produto para clientes reais.**
+> Nenhum item abaixo é opcional — são requisitos mínimos de segurança e conformidade.
+
+| # | Item | Onde | Status |
+|---|------|------|--------|
+| 1 | Trocar `JWT_SECRET` por uma chave forte e aleatória (mín. 64 chars) | Railway → Variables | ⏳ Pendente |
+| 2 | Trocar senha do PostgreSQL (rotacionar `DATABASE_URL`) | Railway → PostgreSQL → Credentials | ⏳ Pendente |
+| 3 | Configurar infra de email própria (SMTP ou serviço como Resend/SendGrid) e remover dependência do PHP mailer do Dental Ultra (`EMAIL_PHP_URL`, `EMAIL_CHAVE_SECRETA`) | Railway → Variables + server.js | ⏳ Pendente |
+| 4 | Substituir `suporte@dentalultra.com.br` nos 3 templates de email por endereço próprio do Ultra Simples | `backend/server.js` linhas dos templates HTML | ⏳ Pendente |
+| 5 | Restringir CORS — trocar `origin: '*'` por domínio real da aplicação | `backend/server.js` middleware CORS | ⏳ Pendente |
+| 6 | Ativar rate limiting no Express (ex: `express-rate-limit`) nos endpoints de login e cadastro para evitar brute force | `backend/server.js` | ⏳ Pendente |
+| 7 | Configurar domínio próprio (`app.ultrasimples.com.br` ou similar) e remover exposição direta do subdomínio Railway | Railway → Networking | ⏳ Pendente |
+| 8 | Substituir Tailwind CSS via CDN por build local (performance + não depender de CDN externo) | Todos os HTMLs | ⏳ Pendente |
+| 9 | Revisar e publicar Termos de Uso e Política de Privacidade com advogado | `frontend/termos.html`, `frontend/privacidade.html` | ⏳ Pendente |
+| 10 | Remover arquivos e código herdado do Dental Ultra (`dental-ultra.tokens.css`, `dental-ultra.ui.css`, `dental-ultra.ui.js`) — não estão em uso nas páginas reformuladas | `frontend/area-dentistas/css/` e `js/` | ⏳ Pendente |
+| 11 | Configurar backups automáticos do PostgreSQL | Railway → PostgreSQL ou serviço externo | ⏳ Pendente |
+| 12 | Configurar caixa de suporte própria (`suporte@ultrasimples.com.br`) | Provedor de email | ⏳ Pendente |
+
+---
+
 ## Pendências e testes
 
 Ver arquivo: `backend/frontend/area-dentistas/TESTES-PENDENTES.md`
