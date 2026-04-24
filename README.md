@@ -153,6 +153,8 @@ background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
 
 ## Variáveis de ambiente (backend)
 
+> **Regra obrigatória:** **Nunca modificar ou remover** variáveis já existentes. Se uma nova funcionalidade precisar de uma variável nova, apenas adicioná-la. Qualquer alteração de valor é feita exclusivamente no painel do Railway, nunca no código.
+
 Todas as variáveis usadas em `backend/server.js`. **Nenhum valor real** deve aparecer aqui — apenas nomes, finalidade e exemplo placeholder. Segredos ficam no painel do Railway.
 
 ### Obrigatórias
