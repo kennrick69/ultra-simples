@@ -1005,10 +1005,11 @@ app.get('/api/auth/confirmar-email', async (req, res) => {
             [dentista.id]
         );
         
-        res.json({ 
-            success: true, 
+        const primeiroNome = (dentista.nome || '').split(' ')[0];
+        res.json({
+            success: true,
             message: 'Email confirmado com sucesso! Você já pode fazer login.',
-            nome: dentista.name
+            nome: primeiroNome
         });
     } catch (error) {
         console.error('Erro confirmar email:', error);
