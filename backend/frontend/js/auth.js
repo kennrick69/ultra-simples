@@ -18,15 +18,8 @@ var PAGINA_DESTINO = 'casos-proteticos.html';
 // ==============================================================================
 
 function showLogin() {
-    document.getElementById('loginForm').classList.add('active');
-    document.getElementById('registerForm').classList.remove('active');
-    var msgConfirmacao = document.getElementById('msgConfirmacao');
-    if (msgConfirmacao) msgConfirmacao.classList.remove('visible');
-}
-
-function showRegister() {
-    document.getElementById('loginForm').classList.remove('active');
-    document.getElementById('registerForm').classList.add('active');
+    var loginForm = document.getElementById('loginForm');
+    if (loginForm) loginForm.style.display = 'block';
     var msgConfirmacao = document.getElementById('msgConfirmacao');
     if (msgConfirmacao) msgConfirmacao.classList.remove('visible');
 }
@@ -145,87 +138,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     }
 });
 
-// ==============================================================================
-// CADASTRO
-// ==============================================================================
-
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    var name = document.getElementById('regName').value.trim();
-    var cro = document.getElementById('regCRO').value.trim();
-    var specialty = document.getElementById('regSpecialty').value;
-    var clinic = document.getElementById('regClinic').value.trim();
-    var email = document.getElementById('regEmail').value.trim();
-    var password = document.getElementById('regPassword').value;
-    var passwordConfirm = document.getElementById('regPasswordConfirm').value;
-    
-    // Validações
-    if (!name || !cro || !email || !password) {
-        mostrarAlerta('Erro', 'Preencha todos os campos obrigatórios', 'error');
-        return;
-    }
-    
-    if (password.length < 6) {
-        mostrarAlerta('Erro', 'Senha deve ter no mínimo 6 caracteres', 'error');
-        return;
-    }
-    
-    if (password !== passwordConfirm) {
-        mostrarAlerta('Erro', 'As senhas não coincidem', 'error');
-        return;
-    }
-    
-    if (!email.includes('@')) {
-        mostrarAlerta('Erro', 'Digite um email válido', 'error');
-        return;
-    }
-    
-    // Desabilitar botão
-    var btn = this.querySelector('button[type="submit"]');
-    var btnText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Cadastrando...';
-    
-    try {
-        var response = await fetch(getApiUrl() + '/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: name,
-                cro: cro,
-                specialty: specialty,
-                clinic: clinic,
-                email: email,
-                password: password
-            })
-        });
-        
-        var data = await response.json();
-        
-        if (data.success) {
-            if (data.aguardandoConfirmacao) {
-                // Mostrar tela de aguardando confirmação
-                showAguardandoConfirmacao(email);
-            } else {
-                // Cadastro sem confirmação (fallback)
-                mostrarAlerta('Sucesso!', 'Cadastro realizado! Faça login para continuar.', 'success');
-                setTimeout(function() {
-                    document.getElementById('loginEmail').value = email;
-                    showLogin();
-                }, 2000);
-            }
-        } else {
-            mostrarAlerta('Erro no Cadastro', data.erro || 'Erro ao cadastrar', 'error');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        mostrarAlerta('Erro', 'Erro de conexão com o servidor', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = btnText;
-    }
-});
+// Cadastro agora é feito na página /cadastro
 
 // ==============================================================================
 // VERIFICAR SE JÁ ESTÁ LOGADO

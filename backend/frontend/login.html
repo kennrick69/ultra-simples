@@ -22,8 +22,6 @@
 
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .form-container { display: none; }
-        .form-container.active { display: block; }
         #msgConfirmacao { display: none; }
         #msgConfirmacao.visible { display: block; }
     </style>
@@ -48,7 +46,7 @@
         <div class="login-card bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
 
             <!-- LOGIN -->
-            <form id="loginForm" class="form-container active">
+            <form id="loginForm">
                 <h2 class="text-xl font-bold text-[#111827] mb-6">Entrar na sua conta</h2>
 
                 <div class="mb-4">
@@ -74,96 +72,8 @@
 
                 <p class="text-center mt-5 text-sm text-[#6B7280]">
                     Não tem conta?
-                    <a href="javascript:void(0)" onclick="showRegister()"
-                        class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">
+                    <a href="/cadastro" class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">
                         Cadastre-se grátis
-                    </a>
-                </p>
-            </form>
-
-            <!-- CADASTRO -->
-            <form id="registerForm" class="form-container">
-                <h2 class="text-xl font-bold text-[#111827] mb-6">Criar conta grátis</h2>
-
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
-                            Nome Completo <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="regName" required placeholder="Dr(a). João Silva"
-                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
-                            CRO <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="regCRO" required placeholder="12345"
-                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-[#111827] mb-1.5">Especialidade</label>
-                        <select id="regSpecialty"
-                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition bg-white">
-                            <option value="">Selecione...</option>
-                            <option value="Geral">Clínico Geral</option>
-                            <option value="Ortodontia">Ortodontia</option>
-                            <option value="Endodontia">Endodontia</option>
-                            <option value="Periodontia">Periodontia</option>
-                            <option value="Implantodontia">Implantodontia</option>
-                            <option value="Prótese">Prótese</option>
-                            <option value="Cirurgia">Cirurgia</option>
-                            <option value="Estética">Estética</option>
-                            <option value="Pediátrica">Odontopediatria</option>
-                            <option value="Outra">Outra</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-[#111827] mb-1.5">Nome da Clínica</label>
-                    <input type="text" id="regClinic" placeholder="Ex: Clínica Sorriso"
-                        class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-[#111827] mb-1.5">
-                        Email <span class="text-red-500">*</span>
-                    </label>
-                    <input type="email" id="regEmail" required placeholder="seu@email.com"
-                        class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
-                            Senha <span class="text-red-500">*</span>
-                        </label>
-                        <input type="password" id="regPassword" required placeholder="Mín. 6 caracteres"
-                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-[#111827] mb-1.5">
-                            Confirmar <span class="text-red-500">*</span>
-                        </label>
-                        <input type="password" id="regPasswordConfirm" required placeholder="Repita a senha"
-                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition">
-                    </div>
-                </div>
-
-                <button type="submit"
-                    class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg text-sm transition-colors shadow-sm">
-                    Criar conta grátis
-                </button>
-
-                <p class="text-sm text-[#6B7280] text-center mt-3">
-                    Sem cartão de crédito. Cancele quando quiser.
-                </p>
-
-                <p class="text-center mt-4 text-sm text-[#6B7280]">
-                    Já tem conta?
-                    <a href="javascript:void(0)" onclick="showLogin()"
-                        class="text-teal-600 font-semibold hover:text-teal-700 transition-colors">
-                        Fazer login
                     </a>
                 </p>
             </form>
