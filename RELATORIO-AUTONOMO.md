@@ -68,9 +68,9 @@ Ambos deployados em produção via push para `main` → Railway auto-redeploy.
 ## Ações que requerem intervenção humana
 
 ### Urgente
-1. **Configurar variáveis de ambiente no Railway:**
+1. **Configurar variável de ambiente no Railway:**
    - `ALLOWED_ORIGIN=https://ultra-simples-production.up.railway.app` — ativa o CORS restritivo
-   - `EMAIL_SUPORTE=contato@ultrasimples.com.br` (ou e-mail real da clínica)
+   - ~~`EMAIL_SUPORTE`~~ — e-mail de suporte mantido como `suporte@dentalultra.com.br` (Resend já configurado)
 
 ### Verificação recomendada
 2. **Testar financeiro.html em produção** — verificar se `/api/financeiro` retorna o objeto `resumo` com `receitas`, `despesas` e `saldo`; caso contrário, ajustar os campos conforme a resposta real da API
