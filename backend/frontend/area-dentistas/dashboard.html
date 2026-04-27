@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Dental Ultra</title>
+    <title>Dashboard - Ultra Simples</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="icon" type="image/png" href="img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +24,9 @@
         .sidebar .logo-link:hover .logo-header { transform: scale(1.03); }
         .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
         .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; color: #6b7280; text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.2s; }
-        .sidebar nav a:hover { background: #f3f4f6; border-left-color: #1FA2FF; }
-        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: #1FA2FF; color: #1FA2FF; font-weight: 600; }
-        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar nav a:hover { background: #f3f4f6; border-left-color: #0D9488; }
+        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: #0D9488; color: #0D9488; font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; width: 18px; height: 18px; flex-shrink: 0; }
         .sidebar .user-info { padding: 16px; border-top: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; }
         .sidebar .user-details { flex: 1; }
         .sidebar .user-name { font-weight: 600; font-size: 14px; color: #1f2937; display: block; }
@@ -38,7 +39,7 @@
         .main-content { margin-left: 220px; flex: 1; padding: 0; min-height: 100vh; }
 
         /* === HEADER HERO === */
-        .dash-hero { background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 50%, #1FA2FF 100%); padding: 28px 32px 24px; color: white; position: relative; overflow: hidden; }
+        .dash-hero { background: linear-gradient(135deg, #0D9488 0%, #0F766E 50%, #0D9488 100%); padding: 28px 32px 24px; color: white; position: relative; overflow: hidden; }
         .dash-hero::after { content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; background: rgba(255,255,255,0.06); border-radius: 50%; }
         .dash-hero::before { content: ''; position: absolute; right: 80px; bottom: -60px; width: 150px; height: 150px; background: rgba(255,255,255,0.04); border-radius: 50%; }
         .dash-hero h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
@@ -70,12 +71,12 @@
         .section-title { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
         .section-title .badge { background: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
         .section-title .badge.green { background: #22c55e; }
-        .section-title .badge.blue { background: #1FA2FF; }
+        .section-title .badge.teal { background: #0D9488; }
 
         /* === AGENDA DO DIA === */
         .agenda-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; transition: all 0.15s; border: 1px solid transparent; }
         .agenda-item:hover { background: #f9fafb; border-color: #e5e7eb; }
-        .agenda-hora { font-size: 14px; font-weight: 700; color: #1FA2FF; min-width: 50px; }
+        .agenda-hora { font-size: 14px; font-weight: 700; color: #0D9488; min-width: 50px; }
         .agenda-paciente { flex: 1; }
         .agenda-paciente-nome { font-size: 13px; font-weight: 600; color: #1f2937; }
         .agenda-paciente-proc { font-size: 11px; color: #6b7280; }
@@ -99,7 +100,7 @@
         /* === ORÇAMENTOS === */
         .orc-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; transition: all 0.15s; margin-bottom: 4px; }
         .orc-item:hover { background: #f9fafb; }
-        .orc-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #1FA2FF, #12D8FA); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+        .orc-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #0D9488, #0F766E); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px; flex-shrink: 0; }
         .orc-info { flex: 1; }
         .orc-nome { font-size: 13px; font-weight: 600; }
         .orc-detalhe { font-size: 11px; color: #6b7280; }
@@ -112,8 +113,8 @@
         /* === AÇÕES RÁPIDAS === */
         .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .quick-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; background: #f9fafb; border-radius: 12px; text-decoration: none; color: #374151; transition: all 0.2s; border: 1px solid transparent; cursor: pointer; }
-        .quick-card:hover { background: #eff6ff; border-color: #bfdbfe; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(31,162,255,0.1); }
-        .quick-card .q-icon { font-size: 26px; }
+        .quick-card:hover { background: #f0fdfa; border-color: #99f6e4; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(13,148,136,0.1); }
+        .quick-card .q-icon { width: 26px; height: 26px; color: #0D9488; }
         .quick-card .q-label { font-size: 11px; font-weight: 600; text-align: center; line-height: 1.2; }
 
         /* === EMPTY STATE === */
@@ -137,21 +138,21 @@
     <!-- Sidebar padronizada -->
     <aside class="sidebar">
         <a href="agenda.html" class="logo-link" title="Ir para Agenda">
-            <img src="img/logo-header.png" alt="Dental Ultra" class="logo-header">
+            <img src="img/logo-header.png" alt="Ultra Simples" class="logo-header">
         </a>
         <nav>
-            <a href="dashboard.html" class="active"><span class="nav-icon">📊</span> Dashboard</a>
-            <a href="pacientes.html"><span class="nav-icon">👥</span> Pacientes</a>
-            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
-            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
-            <a href="casos-proteticos.html"><span class="nav-icon">🦷</span> Casos Protéticos</a>
-            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
-            <a href="nota-fiscal.html"><span class="nav-icon">📄</span> Notas Fiscais</a>
-            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
-            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
-            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
-            <a href="tabela-precos.html"><span class="nav-icon">💲</span> Tabela de Preços</a>
-            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+            <a href="dashboard.html" class="active"><i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard</a>
+            <a href="pacientes.html"><i data-lucide="users" class="nav-icon"></i> Pacientes</a>
+            <a href="agenda.html"><i data-lucide="calendar" class="nav-icon"></i> Agenda</a>
+            <a href="prontuario.html"><i data-lucide="clipboard" class="nav-icon"></i> Prontuário</a>
+            <a href="casos-proteticos.html"><i data-lucide="activity" class="nav-icon"></i> Casos Protéticos</a>
+            <a href="estoque.html"><i data-lucide="package" class="nav-icon"></i> Estoque</a>
+            <a href="nota-fiscal.html"><i data-lucide="file-text" class="nav-icon"></i> Notas Fiscais</a>
+            <a href="financeiro.html"><i data-lucide="dollar-sign" class="nav-icon"></i> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><i data-lucide="clipboard-list" class="nav-icon"></i> Orçamentos</a>
+            <a href="relatorios.html"><i data-lucide="bar-chart-2" class="nav-icon"></i> Relatórios</a>
+            <a href="tabela-precos.html"><i data-lucide="tag" class="nav-icon"></i> Tabela de Preços</a>
+            <a href="configuracoes.html"><i data-lucide="settings" class="nav-icon"></i> Configurações</a>
         </nav>
         <div class="user-info">
             <div class="user-details">
@@ -194,14 +195,14 @@
             <!-- Agenda do Dia + Retornos -->
             <div class="sections-grid">
                 <div class="section-card">
-                    <div class="section-title">📅 Agenda de Hoje <span class="badge blue" id="agendaCount">0</span></div>
+                    <div class="section-title"><i data-lucide="calendar" style="width:16px;height:16px;color:#0D9488;"></i> Agenda de Hoje <span class="badge teal" id="agendaCount">0</span></div>
                     <div id="agendaHoje">
                         <div class="empty-state"><div class="empty-icon">📭</div><p>Carregando agenda...</p></div>
                     </div>
                 </div>
 
                 <div class="section-card">
-                    <div class="section-title">🔔 Retornos Pendentes <span class="badge" id="retornosCount" style="display:none;">0</span></div>
+                    <div class="section-title"><i data-lucide="bell" style="width:16px;height:16px;color:#0D9488;"></i> Retornos Pendentes <span class="badge" id="retornosCount" style="display:none;">0</span></div>
                     <div id="retornosList">
                         <div class="empty-state"><div class="empty-icon">✅</div><p>Carregando retornos...</p></div>
                     </div>
@@ -211,30 +212,30 @@
             <!-- Orçamentos Recentes + Ações Rápidas -->
             <div class="sections-grid">
                 <div class="section-card">
-                    <div class="section-title">💰 Últimos Orçamentos <span class="badge green" id="orcCount" style="display:none;">0</span></div>
+                    <div class="section-title"><i data-lucide="clipboard-list" style="width:16px;height:16px;color:#0D9488;"></i> Últimos Orçamentos <span class="badge green" id="orcCount" style="display:none;">0</span></div>
                     <div id="orcamentosList">
                         <div class="empty-state"><div class="empty-icon">📋</div><p>Carregando orçamentos...</p></div>
                     </div>
                 </div>
 
                 <div class="section-card">
-                    <div class="section-title">⚡ Ações Rápidas</div>
+                    <div class="section-title"><i data-lucide="zap" style="width:16px;height:16px;color:#0D9488;"></i> Ações Rápidas</div>
                     <div class="quick-grid">
-                        <a href="prontuario.html" class="quick-card"><span class="q-icon">📋</span><span class="q-label">Prontuário</span></a>
-                        <a href="agenda.html" class="quick-card"><span class="q-icon">📅</span><span class="q-label">Agenda</span></a>
-                        <a href="pacientes.html" class="quick-card"><span class="q-icon">👥</span><span class="q-label">Pacientes</span></a>
-                        <a href="financeiro.html" class="quick-card"><span class="q-icon">💰</span><span class="q-label">Financeiro</span></a>
-                        <a href="nota-fiscal.html" class="quick-card"><span class="q-icon">📄</span><span class="q-label">Nota Fiscal</span></a>
-                        <a href="tabela-precos.html" class="quick-card"><span class="q-icon">💲</span><span class="q-label">Tabela Preços</span></a>
-                        <a href="relatorios.html" class="quick-card"><span class="q-icon">📈</span><span class="q-label">Relatórios</span></a>
-                        <a href="configuracoes.html" class="quick-card"><span class="q-icon">⚙️</span><span class="q-label">Configurações</span></a>
+                        <a href="prontuario.html" class="quick-card"><i data-lucide="clipboard" class="q-icon"></i><span class="q-label">Prontuário</span></a>
+                        <a href="agenda.html" class="quick-card"><i data-lucide="calendar" class="q-icon"></i><span class="q-label">Agenda</span></a>
+                        <a href="pacientes.html" class="quick-card"><i data-lucide="users" class="q-icon"></i><span class="q-label">Pacientes</span></a>
+                        <a href="financeiro.html" class="quick-card"><i data-lucide="dollar-sign" class="q-icon"></i><span class="q-label">Financeiro</span></a>
+                        <a href="nota-fiscal.html" class="quick-card"><i data-lucide="file-text" class="q-icon"></i><span class="q-label">Nota Fiscal</span></a>
+                        <a href="tabela-precos.html" class="quick-card"><i data-lucide="tag" class="q-icon"></i><span class="q-label">Tabela Preços</span></a>
+                        <a href="relatorios.html" class="quick-card"><i data-lucide="bar-chart-2" class="q-icon"></i><span class="q-label">Relatórios</span></a>
+                        <a href="configuracoes.html" class="quick-card"><i data-lucide="settings" class="q-icon"></i><span class="q-label">Configurações</span></a>
                     </div>
                 </div>
             </div>
 
             <!-- Atividades Recentes -->
             <div class="section-card full" style="margin-bottom:24px;">
-                <div class="section-title">📊 Atividades Recentes</div>
+                <div class="section-title"><i data-lucide="activity" style="width:16px;height:16px;color:#0D9488;"></i> Atividades Recentes</div>
                 <div id="atividadesRecentes">
                     <div class="empty-state"><div class="empty-icon">📭</div><p>Carregando atividades...</p></div>
                 </div>
@@ -248,7 +249,7 @@
         if (typeof API_URL === 'undefined') {
             var API_URL = window.location.hostname === 'localhost'
                 ? 'http://localhost:3000/api'
-                : 'https://dentist-backend-v2-production.up.railway.app/api';
+                : 'https://ultra-simples-production.up.railway.app/api';
         }
         if (typeof getCurrentDentista === 'undefined') {
             function getCurrentDentista() {
@@ -256,7 +257,11 @@
             }
         }
         function getToken() { return localStorage.getItem('token'); }
-        function logout() { localStorage.removeItem('token'); localStorage.removeItem('dentista'); window.location.href = '../index.html'; }
+        function logout() {
+            localStorage.removeItem('token'); localStorage.removeItem('auth_token');
+            localStorage.removeItem('dentista'); localStorage.removeItem('current_dentista');
+            window.location.href = '/login';
+        }
 
         async function apiCall(endpoint, method = 'GET', body = null) {
             const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -289,6 +294,7 @@
 
         // === INIT ===
         document.addEventListener('DOMContentLoaded', async () => {
+            if (window.lucide) lucide.createIcons();
             const dentista = getCurrentDentista() || {};
             const nome = dentista.nome || 'Dentista';
             document.getElementById('sidebarUserName').textContent = nome;
@@ -453,7 +459,7 @@
                         <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));gap:10px;">
                             ${atividades.map(a => `
                                 <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:10px;">
-                                    <div style="width:8px;height:8px;border-radius:50%;background:#1FA2FF;flex-shrink:0;"></div>
+                                    <div style="width:8px;height:8px;border-radius:50%;background:#0D9488;flex-shrink:0;margin-top:3px;"></div>
                                     <div style="flex:1;">
                                         <div style="font-size:13px;font-weight:600;">${a.pacienteNome || 'Paciente'}</div>
                                         <div style="font-size:11px;color:#6b7280;">${a.procedimento || 'Consulta'} — ${formatarData(a.data)} ${a.horario || ''}</div>
