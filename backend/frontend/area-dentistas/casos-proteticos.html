@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casos Protéticos - Dental Ultra</title>
+    <title>Casos Protéticos - Ultra Simples</title>
     <style>
+        :root {
+            --du-primary: #0D9488; --du-primary-dark: #0F766E; --du-surface: #ffffff;
+            --du-surface-2: #f3f4f6; --du-border: #e5e7eb; --du-text: #111827;
+            --du-text-2: #6b7280; --du-dark: #111827;
+            --du-1: 4px; --du-2: 8px; --du-3: 12px; --du-4: 16px; --du-5: 20px;
+            --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
+            --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
+            --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
         
@@ -473,21 +482,21 @@
 <body>
     <aside class="sidebar">
         <a href="agenda.html" class="logo-link" title="Ir para Agenda">
-            <img src="img/logo-header.png" alt="Dental Ultra" class="logo-header">
+            <img src="img/logo-header.png" alt="Ultra Simples" class="logo-header">
         </a>
         <nav>
-            <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
-            <a href="pacientes.html"><span class="nav-icon">👥</span> Pacientes</a>
-            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
-            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
-            <a href="casos-proteticos.html" class="active"><span class="nav-icon">🦷</span> Casos Protéticos</a>
-            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
-            <a href="nota-fiscal.html"><span class="nav-icon">📄</span> Notas Fiscais</a>
-            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
-            <a href="#" onclick="abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
-            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
-            <a href="tabela-precos.html"><span class="nav-icon">💲</span> Tabela de Preços</a>
-            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+            <a href="dashboard.html"><i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard</a>
+            <a href="pacientes.html"><i data-lucide="users" class="nav-icon"></i> Pacientes</a>
+            <a href="agenda.html"><i data-lucide="calendar" class="nav-icon"></i> Agenda</a>
+            <a href="prontuario.html"><i data-lucide="clipboard" class="nav-icon"></i> Prontuário</a>
+            <a href="casos-proteticos.html" class="active"><i data-lucide="activity" class="nav-icon"></i> Casos Protéticos</a>
+            <a href="estoque.html"><i data-lucide="package" class="nav-icon"></i> Estoque</a>
+            <a href="nota-fiscal.html"><i data-lucide="file-text" class="nav-icon"></i> Notas Fiscais</a>
+            <a href="financeiro.html"><i data-lucide="dollar-sign" class="nav-icon"></i> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos(); return false;"><i data-lucide="clipboard" class="nav-icon"></i> Orçamentos</a>
+            <a href="relatorios.html"><i data-lucide="bar-chart-2" class="nav-icon"></i> Relatórios</a>
+            <a href="tabela-precos.html"><i data-lucide="tag" class="nav-icon"></i> Tabela de Preços</a>
+            <a href="configuracoes.html"><i data-lucide="settings" class="nav-icon"></i> Configurações</a>
         </nav>
         <div class="user-info">
             <div class="user-details">
@@ -2590,7 +2599,8 @@
         html += '</div>';
         
         html += '<p style="text-align:center;color:#666;margin-top:20px;font-size:9px">'+clinica+'</p>';
-        html += '</body></html>';
+        html += '    <script>if (window.lucide) lucide.createIcons();</script>
+</body></html>';
         
         var win = window.open('', '_blank');
         win.document.write(html);
@@ -3430,7 +3440,8 @@
         
         html += '</tbody></table>';
         html += '<div class="total">TOTAL: R$ '+formatarMoeda(dadosFinancas.resumo.total)+'</div>';
-        html += '</body></html>';
+        html += '    <script>if (window.lucide) lucide.createIcons();</script>
+</body></html>';
         
         var win = window.open('','_blank');
         win.document.write(html);
@@ -3716,5 +3727,6 @@
     }
     </script>
     <script src="js/orcamentos-modal.js"></script>
+    <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>

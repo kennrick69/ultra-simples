@@ -3,15 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ficha do Paciente - Dental Ultra</title>
+    <title>Ficha do Paciente - Ultra Simples</title>
         <link rel="icon" type="image/png" href="img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
-    <link rel="stylesheet" href="css/dental-ultra.ui.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --du-primary: #0D9488; --du-primary-dark: #0F766E; --du-surface: #ffffff;
+            --du-surface-2: #f3f4f6; --du-border: #e5e7eb; --du-text: #111827;
+            --du-text-2: #6b7280; --du-dark: #111827;
+            --du-1: 4px; --du-2: 8px; --du-3: 12px; --du-4: 16px; --du-5: 20px;
+            --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
+            --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
+            --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+        }
         /* === SIDEBAR STYLES === */
         .sidebar { width: 220px; background: var(--du-surface); border-right: 1px solid var(--du-border); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
         .sidebar .logo-link { display: block; width: 220px; height: 120px; overflow: hidden; border-bottom: 1px solid var(--du-border); }
@@ -20,8 +28,8 @@
         .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
         .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; color: var(--du-text-2); text-decoration: none; font-size: 14px; border-left: 3px solid transparent; transition: all 0.2s; }
         .sidebar nav a:hover { background: var(--du-surface-2); border-left-color: var(--du-primary); }
-        .sidebar nav a.active { background: rgba(31, 162, 255, 0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
-        .sidebar nav a .nav-icon { margin-right: 12px; font-size: 18px; }
+        .sidebar nav a.active { background: rgba(13,148,136,0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
+        .sidebar nav a .nav-icon { margin-right: 12px; width: 18px; height: 18px; flex-shrink: 0; }
         .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
         
         .sidebar .user-details { flex: 1; }
@@ -32,8 +40,8 @@
         /* Loading styles */
         .loading-state { text-align: center; padding: 60px 20px; color: #666; }
         .loading-more { text-align: center; padding: 20px; color: #666; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-        .spinner-small { width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #1FA2FF; border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #0D9488; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        .spinner-small { width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #0D9488; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .load-more-info { text-align: center; padding: 16px; color: #666; font-size: 13px; background: #f9fafb; border-radius: 8px; margin-top: 16px; }
         /* === END SIDEBAR === */
@@ -97,7 +105,7 @@
         }
         
         .sidebar nav a.active {
-            background: rgba(31, 162, 255, 0.08);
+            background: rgba(13,148,136,0.08);
             border-left-color: var(--du-primary);
             color: var(--du-primary);
             font-weight: 600;
@@ -105,7 +113,7 @@
         
         .sidebar nav a .nav-icon {
             margin-right: 12px;
-            font-size: 18px;
+            width: 18px; height: 18px; flex-shrink: 0;
         }
         
         .main-content {
@@ -276,21 +284,21 @@
 <body>
                 <aside class="sidebar">
         <a href="agenda.html" class="logo-link" title="Ir para Agenda">
-            <img src="img/logo-header.png" alt="Dental Ultra" class="logo-header">
+            <img src="img/logo-header.png" alt="Ultra Simples" class="logo-header">
         </a>
         <nav>
-            <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
-            <a href="pacientes.html" class="active"><span class="nav-icon">👥</span> Pacientes</a>
-            <a href="agenda.html"><span class="nav-icon">📅</span> Agenda</a>
-            <a href="prontuario.html"><span class="nav-icon">📋</span> Prontuário</a>
-            <a href="casos-proteticos.html"><span class="nav-icon">🦷</span> Casos Protéticos</a>
-            <a href="estoque.html"><span class="nav-icon">📦</span> Estoque</a>
-            <a href="nota-fiscal.html"><span class="nav-icon">📄</span> Notas Fiscais</a>
-            <a href="financeiro.html"><span class="nav-icon">💰</span> Financeiro</a>
-            <a href="#" onclick="abrirModalOrcamentos(); return false;"><span class="nav-icon">📋</span> Orçamentos</a>
-            <a href="relatorios.html"><span class="nav-icon">📈</span> Relatórios</a>
-            <a href="tabela-precos.html"><span class="nav-icon">💲</span> Tabela de Preços</a>
-            <a href="configuracoes.html"><span class="nav-icon">⚙️</span> Configurações</a>
+            <a href="dashboard.html"><i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard</a>
+            <a href="pacientes.html" class="active"><i data-lucide="users" class="nav-icon"></i> Pacientes</a>
+            <a href="agenda.html"><i data-lucide="calendar" class="nav-icon"></i> Agenda</a>
+            <a href="prontuario.html"><i data-lucide="clipboard" class="nav-icon"></i> Prontuário</a>
+            <a href="casos-proteticos.html"><i data-lucide="activity" class="nav-icon"></i> Casos Protéticos</a>
+            <a href="estoque.html"><i data-lucide="package" class="nav-icon"></i> Estoque</a>
+            <a href="nota-fiscal.html"><i data-lucide="file-text" class="nav-icon"></i> Notas Fiscais</a>
+            <a href="financeiro.html"><i data-lucide="dollar-sign" class="nav-icon"></i> Financeiro</a>
+            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><i data-lucide="clipboard" class="nav-icon"></i> Orçamentos</a>
+            <a href="relatorios.html"><i data-lucide="bar-chart-2" class="nav-icon"></i> Relatórios</a>
+            <a href="tabela-precos.html"><i data-lucide="tag" class="nav-icon"></i> Tabela de Preços</a>
+            <a href="configuracoes.html"><i data-lucide="settings" class="nav-icon"></i> Configurações</a>
         </nav>
         <div class="user-info">
             <div class="user-details">
@@ -797,5 +805,6 @@
     document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); }));
     </script>
     <script src="js/orcamentos-modal.js"></script>
+    <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>

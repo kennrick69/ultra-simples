@@ -8,6 +8,7 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -25,10 +26,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dental-ultra-secret-key-change-in-
 // ==============================================================================
 
 app.use(cors({
-    origin: '*',
+    origin: process.env.ALLOWED_ORIGIN || 'https://ultra-simples-production.up.railway.app',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, erro: 'Muitas tentativas. Tente novamente em 15 minutos.' }
+});
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -854,7 +863,7 @@ async function enviarEmail(para, assunto, mensagemHtml) {
     }
 }
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
     try {
         const { name, cro, email, password, clinic, specialty, telefone } = req.body;
 
@@ -904,7 +913,7 @@ app.post('/api/auth/register', async (req, res) => {
                         <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
                         <p style="color: #6B7280; font-size: 12px; text-align: center;">
                             Ultra Simples — Sistema de Gestão Odontológica<br>
-                            suporte@dentalultra.com.br
+                            ${process.env.EMAIL_SUPORTE || 'contato@ultrasimples.com.br'}
                         </p>
                     </div>
                 `;
@@ -953,7 +962,7 @@ app.post('/api/auth/register', async (req, res) => {
                 <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
                 <p style="color: #6B7280; font-size: 12px; text-align: center;">
                     Ultra Simples — Sistema de Gestão Odontológica<br>
-                    suporte@dentalultra.com.br
+                    ${process.env.EMAIL_SUPORTE || 'contato@ultrasimples.com.br'}
                 </p>
             </div>
         `;
@@ -1066,7 +1075,7 @@ app.post('/api/auth/reenviar-confirmacao', async (req, res) => {
                 <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
                 <p style="color: #6B7280; font-size: 12px; text-align: center;">
                     Ultra Simples — Sistema de Gestão Odontológica<br>
-                    suporte@dentalultra.com.br
+                    ${process.env.EMAIL_SUPORTE || 'contato@ultrasimples.com.br'}
                 </p>
             </div>
         `;
@@ -1080,7 +1089,7 @@ app.post('/api/auth/reenviar-confirmacao', async (req, res) => {
     }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {

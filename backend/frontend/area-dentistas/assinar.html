@@ -3,10 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Assinar Orçamento - Dental Ultra</title>
+    <title>Assinar Orçamento - Ultra Simples</title>
     <link rel="icon" type="image/png" href="img/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --du-primary: #0D9488; --du-primary-dark: #0F766E; --du-surface: #ffffff;
+            --du-surface-2: #f3f4f6; --du-border: #e5e7eb; --du-text: #111827;
+            --du-text-2: #6b7280; --du-dark: #111827;
+            --du-1: 4px; --du-2: 8px; --du-3: 12px; --du-4: 16px; --du-5: 20px;
+            --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
+            --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
+            --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f0f4f8; min-height: 100vh; }
         .header { background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 100%); padding: 16px 20px; color: white; text-align: center; position: sticky; top: 0; z-index: 10; }
@@ -90,7 +101,7 @@
 <body>
     <div class="header">
         <h1>📋 Orçamento Odontológico</h1>
-        <p>Dental Ultra</p>
+        <p>Ultra Simples</p>
     </div>
 
     <div class="container" id="content">
@@ -98,12 +109,12 @@
     </div>
 
     <div class="footer">
-        Dental Ultra · Sistema de Gestão Odontológica<br>
+        Ultra Simples · Sistema de Gestão Odontológica<br>
         Documento digital com validade jurídica
     </div>
 
     <script>
-        const API_URL = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://dentist-backend-v2-production.up.railway.app';
+        const API_URL = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://ultra-simples-production.up.railway.app';
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
         let canvasDrawn = false;
@@ -319,5 +330,6 @@
 
         init();
     </script>
+    <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>

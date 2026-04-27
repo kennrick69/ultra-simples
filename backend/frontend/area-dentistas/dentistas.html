@@ -8,10 +8,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/dental-ultra.tokens.css">
-    <link rel="stylesheet" href="css/dental-ultra.ui.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --du-primary: #0D9488; --du-primary-dark: #0F766E; --du-surface: #ffffff;
+            --du-surface-2: #f3f4f6; --du-border: #e5e7eb; --du-text: #111827;
+            --du-text-2: #6b7280; --du-dark: #111827;
+            --du-1: 4px; --du-2: 8px; --du-3: 12px; --du-4: 16px; --du-5: 20px;
+            --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
+            --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
+            --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+        }
         /* Landing Page Styles */
         .landing-page {
             min-height: 100vh;
@@ -234,5 +242,6 @@
             </p>
         </div>
     </div>
+    <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>
