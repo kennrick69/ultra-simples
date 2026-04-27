@@ -4887,6 +4887,19 @@ app.put('/api/orcamentos/:id', authMiddleware, async (req, res) => {
     }
 });
 
+app.delete('/api/orcamentos/:id', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'DELETE FROM orcamentos WHERE id = $1 AND dentista_id = $2 RETURNING id',
+            [req.params.id, req.dentistaId]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrado' });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
 // ==============================================================================
 // ORÇAMENTOS PENDENTES (lembrete 90 dias)
 // ==============================================================================

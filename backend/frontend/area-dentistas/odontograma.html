@@ -1035,125 +1035,122 @@
             document.getElementById('btnDeciduos').classList.add('active');
         }
         
-        // Carregar pacientes no seletor
-        function carregarPacientes() {
+        // Carregar pacientes no seletor via API
+        async function carregarPacientes() {
             var select = document.getElementById('seletorPaciente');
-            var pacientes = JSON.parse(localStorage.getItem('pacientes') || '[]');
-            
-            pacientes.forEach(function(p) {
-                var opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = p.nome;
-                select.appendChild(opt);
-            });
-            
+            try {
+                var data = await apiCall('/api/pacientes?limit=5000');
+                var lista = (data && data.pacientes) ? data.pacientes : [];
+                window._pacientesOdonto = lista;
+                lista.forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.nome;
+                    select.appendChild(opt);
+                });
+            } catch(e) {
+                console.error('Erro ao carregar pacientes:', e);
+            }
             select.addEventListener('change', function() {
                 if (this.value) selecionarPaciente(this.value);
             });
         }
-        
+
         function selecionarPaciente(pacienteId) {
-            odontogramaData.pacienteId = pacienteId;
-            
-            var pacientes = JSON.parse(localStorage.getItem('pacientes') || '[]');
-            var paciente = pacientes.find(function(p) { return p.id == pacienteId; });
-            
+            odontogramaData.pacienteId = String(pacienteId);
+            var lista = window._pacientesOdonto || [];
+            var paciente = lista.find(function(p) { return String(p.id) === String(pacienteId); });
             if (paciente) {
                 document.getElementById('pacienteNome').textContent = paciente.nome;
                 document.getElementById('pacienteDetalhe').textContent = 'CPF: ' + (paciente.cpf || 'Não informado');
                 var iniciais = paciente.nome.split(' ').map(function(n) { return n[0]; }).join('').substring(0,2).toUpperCase();
                 document.getElementById('pacienteAvatar').textContent = iniciais;
             }
-            
             carregarOdontograma();
         }
-        
-        function carregarOdontograma() {
+
+        function aplicarDadosDentes(dados) {
+            Object.keys(dados.dentes || {}).forEach(function(numDente) {
+                var denteData = dados.dentes[numDente];
+                var denteEl = document.getElementById('dente' + numDente);
+                if (!denteEl) return;
+                if (denteData.estado && denteData.estado !== 'normal') denteEl.classList.add(denteData.estado);
+                if (denteData.faces) {
+                    Object.keys(denteData.faces).forEach(function(face) {
+                        var faceEl = denteEl.querySelector('[data-face="' + face + '"]');
+                        if (faceEl && denteData.faces[face] !== 'saudavel') faceEl.classList.add(denteData.faces[face]);
+                    });
+                }
+            });
+        }
+
+        async function carregarOdontograma() {
             if (!odontogramaData.pacienteId) return;
-            
-            // Limpar visual atual
             document.querySelectorAll('.dente').forEach(function(d) {
                 d.classList.remove('ausente', 'extracao', 'canal', 'coroa', 'implante', 'pivot');
                 d.querySelectorAll('.face').forEach(function(f) {
                     f.classList.remove('restauracao-amalgama', 'restauracao-resina', 'carie', 'selante', 'fratura');
                 });
             });
-            
-            var chave = 'odontograma_' + odontogramaData.pacienteId;
-            var salvo = localStorage.getItem(chave);
-            
-            if (salvo) {
-                var dados = JSON.parse(salvo);
-                odontogramaData.dentes = dados.dentes || {};
-                odontogramaData.procedimentos = dados.procedimentos || [];
-                
-                // Aplicar visual
-                Object.keys(dados.dentes).forEach(function(numDente) {
-                    var denteData = dados.dentes[numDente];
-                    var denteEl = document.getElementById('dente' + numDente);
-                    if (!denteEl) return;
-                    
-                    if (denteData.estado && denteData.estado !== 'normal') {
-                        denteEl.classList.add(denteData.estado);
-                    }
-                    
-                    if (denteData.faces) {
-                        Object.keys(denteData.faces).forEach(function(face) {
-                            var faceEl = denteEl.querySelector('[data-face="' + face + '"]');
-                            if (faceEl && denteData.faces[face] !== 'saudavel') {
-                                faceEl.classList.add(denteData.faces[face]);
-                            }
-                        });
-                    }
-                });
-                
-                renderizarHistorico();
-                atualizarContador();
-            } else {
+            try {
+                var res = await apiCall('/api/odontograma-geral/' + odontogramaData.pacienteId);
+                if (res && res.success && res.odontograma && res.odontograma.dados) {
+                    var dados = typeof res.odontograma.dados === 'string'
+                        ? JSON.parse(res.odontograma.dados)
+                        : res.odontograma.dados;
+                    odontogramaData.dentes = dados.dentes || {};
+                    odontogramaData.procedimentos = dados.procedimentos || [];
+                    aplicarDadosDentes(dados);
+                } else {
+                    odontogramaData.dentes = {};
+                    odontogramaData.procedimentos = [];
+                }
+            } catch(e) {
+                console.error('Erro ao carregar odontograma:', e);
                 odontogramaData.dentes = {};
                 odontogramaData.procedimentos = [];
-                renderizarHistorico();
-                atualizarContador();
             }
+            renderizarHistorico();
+            atualizarContador();
         }
-        
-        function salvarOdontograma() {
+
+        async function salvarOdontograma() {
             if (!odontogramaData.pacienteId) {
                 alert('Selecione um paciente primeiro!');
                 return;
             }
-            
-            var chave = 'odontograma_' + odontogramaData.pacienteId;
-            localStorage.setItem(chave, JSON.stringify({
-                dentes: odontogramaData.dentes,
-                procedimentos: odontogramaData.procedimentos,
-                ultimaAtualizacao: new Date().toISOString()
-            }));
-            
-            if (typeof mostrarSucesso === 'function') {
-                mostrarSucesso('Odontograma salvo com sucesso!');
-            } else {
-                alert('Odontograma salvo com sucesso!');
+            try {
+                await apiCall('/api/odontograma-geral', 'POST', {
+                    pacienteId: odontogramaData.pacienteId,
+                    dados: { dentes: odontogramaData.dentes, procedimentos: odontogramaData.procedimentos }
+                });
+                if (typeof mostrarSucesso === 'function') {
+                    mostrarSucesso('Odontograma salvo com sucesso!');
+                } else {
+                    alert('Odontograma salvo com sucesso!');
+                }
+            } catch(e) {
+                alert('Erro ao salvar. Tente novamente.');
             }
         }
-        
+
         function limparOdontograma() {
             if (!confirm('Limpar todo o odontograma?')) return;
-            
             document.querySelectorAll('.dente').forEach(function(d) {
                 d.classList.remove('ausente', 'extracao', 'canal', 'coroa', 'implante', 'pivot');
                 d.querySelectorAll('.face').forEach(function(f) {
                     f.classList.remove('restauracao-amalgama', 'restauracao-resina', 'carie', 'selante', 'fratura');
                 });
             });
-            
             odontogramaData.dentes = {};
             odontogramaData.procedimentos = [];
             renderizarHistorico();
             atualizarContador();
-            
             if (odontogramaData.pacienteId) {
-                localStorage.removeItem('odontograma_' + odontogramaData.pacienteId);
+                apiCall('/api/odontograma-geral', 'POST', {
+                    pacienteId: odontogramaData.pacienteId,
+                    dados: { dentes: {}, procedimentos: [] }
+                });
             }
         }
         

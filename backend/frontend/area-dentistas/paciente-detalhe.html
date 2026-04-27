@@ -521,16 +521,24 @@
         var res = await apiCall('/api/pacientes/' + pacienteId);
         if (res && res.success) { paciente = res.paciente; renderizarPaciente(); }
         tratamentos = JSON.parse(localStorage.getItem('trat_' + pacienteId) || '[]');
-        orcamentos = JSON.parse(localStorage.getItem('orc_' + pacienteId) || '[]');
         debitos = JSON.parse(localStorage.getItem('deb_' + pacienteId) || '[]');
         imagens = JSON.parse(localStorage.getItem('img_' + pacienteId) || '[]');
         documentos = JSON.parse(localStorage.getItem('doc_' + pacienteId) || '[]');
-        var anamnese = JSON.parse(localStorage.getItem('ana_' + pacienteId) || '{}');
-        if (anamnese.medicamentos) document.getElementById('anaMedicamentos').value = anamnese.medicamentos;
-        if (anamnese.alergias) document.getElementById('anaAlergias').value = anamnese.alergias;
-        if (anamnese.observacoes) document.getElementById('anaObservacoes').value = anamnese.observacoes;
-        if (anamnese.historicoMedico) anamnese.historicoMedico.forEach(h => { var cb = document.querySelector('#historicoMedico input[value="'+h+'"]'); if(cb) cb.checked = true; });
-        if (anamnese.historicoOdonto) anamnese.historicoOdonto.forEach(h => { var cb = document.querySelector('#historicoOdonto input[value="'+h+'"]'); if(cb) cb.checked = true; });
+
+        // Orçamentos — API
+        var orcRes = await apiCall('/api/orcamentos?pacienteId=' + pacienteId);
+        if (orcRes && orcRes.success) orcamentos = orcRes.orcamentos || [];
+
+        // Anamnese — API
+        var anaRes = await apiCall('/api/anamnese/' + pacienteId);
+        if (anaRes && anaRes.success && anaRes.anamnese) {
+            var anamnese = anaRes.anamnese;
+            if (anamnese.medicamentos) document.getElementById('anaMedicamentos').value = anamnese.medicamentos;
+            if (anamnese.alergias) document.getElementById('anaAlergias').value = anamnese.alergias;
+            if (anamnese.observacoes) document.getElementById('anaObservacoes').value = anamnese.observacoes;
+            if (anamnese.historicoMedico) anamnese.historicoMedico.forEach(h => { var cb = document.querySelector('#historicoMedico input[value="'+h+'"]'); if(cb) cb.checked = true; });
+            if (anamnese.historicoOdonto) anamnese.historicoOdonto.forEach(h => { var cb = document.querySelector('#historicoOdonto input[value="'+h+'"]'); if(cb) cb.checked = true; });
+        }
         renderAll();
     }
 
@@ -629,46 +637,72 @@
     // ========== ORÇAMENTOS ==========
     var orcItens = [];
     function renderOrcamentos() {
-        var pendentes = orcamentos.filter(o => o.status === 'pendente').length;
-        document.getElementById('cntOrc').textContent = pendentes || orcamentos.length;
+        var abertos = orcamentos.filter(o => o.status === 'aberto' || o.status === 'pendente').length;
+        document.getElementById('cntOrc').textContent = abertos || orcamentos.length;
         var c = document.getElementById('listaOrcamentos');
         if (!orcamentos.length) { c.innerHTML = '<div class="empty-state"><h4>Nenhum orçamento</h4></div>'; return; }
         var html = '';
-        orcamentos.forEach((o, i) => {
-            var sBadge = o.status === 'aprovado' ? 'status-aprovado' : (o.status === 'rejeitado' ? 'status-rejeitado' : 'status-pendente');
-            var sText = o.status === 'aprovado' ? 'Aprovado' : (o.status === 'rejeitado' ? 'Rejeitado' : 'Pendente');
-            html += '<div class="card-item '+(o.status||'')+'">';
-            html += '<div class="card-header"><span class="card-title">'+o.descricao+'</span><span class="card-status '+sBadge+'">'+sText+'</span></div>';
-            html += '<div class="card-info"><span>Total: <strong>R$ '+parseFloat(o.total).toFixed(2)+'</strong></span>';
-            if (o.desconto > 0) html += '<span>Desconto: '+o.desconto+'%</span>';
-            if (o.validade) html += '<span>Validade: '+formatarData(o.validade)+'</span>';
+        orcamentos.forEach(function(o) {
+            var st = o.status || 'aberto';
+            var sBadge = (st === 'aprovado_total' || st === 'assinado') ? 'status-aprovado' : (st === 'rejeitado' ? 'status-rejeitado' : 'status-pendente');
+            var sText = (st === 'aprovado_total' || st === 'assinado') ? 'Aprovado' : (st === 'rejeitado' ? 'Rejeitado' : 'Aberto');
+            var titulo = o.observacoes || (o.itens && o.itens[0] ? o.itens[0].nome : 'Orçamento');
+            html += '<div class="card-item '+(st==='aprovado_total'||st==='assinado'?'aprovado':'')+(st==='rejeitado'?' cancelado':'')+'">';
+            html += '<div class="card-header"><span class="card-title">'+titulo+'</span><span class="card-status '+sBadge+'">'+sText+'</span></div>';
+            html += '<div class="card-info"><span>Total: <strong>R$ '+parseFloat(o.total||0).toFixed(2)+'</strong></span>';
+            if (o.validade_dias) html += '<span>Validade: '+o.validade_dias+' dias</span>';
             html += '</div>';
             if (o.itens && o.itens.length) {
                 html += '<div style="font-size:12px;color:#6b7280;margin-top:8px;">';
-                o.itens.forEach(it => { html += '<div>• '+it.nome+' - R$ '+parseFloat(it.valor).toFixed(2)+'</div>'; });
+                o.itens.forEach(function(it) { html += '<div>• '+it.nome+' - R$ '+parseFloat(it.valor||0).toFixed(2)+'</div>'; });
                 html += '</div>';
             }
             html += '<div class="card-actions">';
-            if (o.status === 'pendente') {
-                html += '<button class="btn-success" onclick="aprovarOrcamento('+i+')">✓ Aprovar</button>';
-                html += '<button class="btn-danger" onclick="rejeitarOrcamento('+i+')">✗ Rejeitar</button>';
+            if (st === 'aberto' || st === 'pendente') {
+                html += '<button class="btn-success" onclick="aprovarOrcamento('+o.id+')">✓ Aprovar</button>';
+                html += '<button class="btn-danger" onclick="rejeitarOrcamento('+o.id+')">✗ Rejeitar</button>';
             }
-            if (o.status === 'aprovado') html += '<button class="btn-info" onclick="converterEmDebito('+i+')">💰 Gerar Débito</button>';
-            html += '<button class="btn-edit" onclick="excluirOrcamento('+i+')">Excluir</button>';
+            if (st === 'aprovado_total' || st === 'assinado') html += '<button class="btn-info" onclick="converterEmDebito('+parseFloat(o.total||0)+',\''+titulo+'\')">💰 Gerar Débito</button>';
+            html += '<button class="btn-edit" onclick="excluirOrcamento('+o.id+')">Excluir</button>';
             html += '</div></div>';
         });
         c.innerHTML = html;
     }
 
     function abrirNovoOrcamento() { orcItens = [{ nome: '', valor: 0 }]; renderOrcItens(); document.getElementById('orcId').value = ''; document.getElementById('orcDescricao').value = ''; document.getElementById('orcDesconto').value = '0'; document.getElementById('orcValidade').value = ''; document.getElementById('orcObs').value = ''; calcularOrcamento(); document.getElementById('modalOrcamento').classList.add('open'); }
-    function renderOrcItens() { var html = ''; orcItens.forEach((it, i) => { html += '<div style="display:flex;gap:8px;margin-bottom:8px;"><input type="text" placeholder="Procedimento" value="'+(it.nome||'')+'" onchange="orcItens['+i+'].nome=this.value" style="flex:2;padding:8px;border:2px solid #e5e7eb;border-radius:6px;"><input type="number" placeholder="Valor" value="'+(it.valor||'')+'" onchange="orcItens['+i+'].valor=parseFloat(this.value)||0;calcularOrcamento()" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;"><button type="button" onclick="orcItens.splice('+i+',1);renderOrcItens();calcularOrcamento()" style="padding:8px 12px;background:#fecaca;color:#991b1b;border:none;border-radius:6px;cursor:pointer;">×</button></div>'; }); document.getElementById('orcItensList').innerHTML = html; }
+    function renderOrcItens() { var html = ''; orcItens.forEach(function(it, i) { html += '<div style="display:flex;gap:8px;margin-bottom:8px;"><input type="text" placeholder="Procedimento" value="'+(it.nome||'')+'" onchange="orcItens['+i+'].nome=this.value" style="flex:2;padding:8px;border:2px solid #e5e7eb;border-radius:6px;"><input type="number" placeholder="Valor" value="'+(it.valor||'')+'" onchange="orcItens['+i+'].valor=parseFloat(this.value)||0;calcularOrcamento()" style="flex:1;padding:8px;border:2px solid #e5e7eb;border-radius:6px;"><button type="button" onclick="orcItens.splice('+i+',1);renderOrcItens();calcularOrcamento()" style="padding:8px 12px;background:#fecaca;color:#991b1b;border:none;border-radius:6px;cursor:pointer;">×</button></div>'; }); document.getElementById('orcItensList').innerHTML = html; }
     function addItemOrcamento() { orcItens.push({ nome: '', valor: 0 }); renderOrcItens(); }
-    function calcularOrcamento() { var subtotal = orcItens.reduce((s, it) => s + (parseFloat(it.valor)||0), 0); var desconto = parseFloat(document.getElementById('orcDesconto').value)||0; var total = subtotal * (1 - desconto/100); document.getElementById('orcSubtotal').value = 'R$ ' + subtotal.toFixed(2); document.getElementById('orcTotal').value = 'R$ ' + total.toFixed(2); }
-    function salvarOrcamento() { var desc = document.getElementById('orcDescricao').value.trim(); if (!desc) { alert('Informe a descrição'); return; } var subtotal = orcItens.reduce((s, it) => s + (parseFloat(it.valor)||0), 0); var desconto = parseFloat(document.getElementById('orcDesconto').value)||0; var total = subtotal * (1 - desconto/100); var orc = { descricao: desc, itens: orcItens.filter(it => it.nome), subtotal: subtotal, desconto: desconto, total: total, validade: document.getElementById('orcValidade').value, observacoes: document.getElementById('orcObs').value, status: 'pendente', criadoEm: new Date().toISOString() }; orcamentos.push(orc); localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); fecharModal('modalOrcamento'); renderOrcamentos(); }
-    function aprovarOrcamento(i) { orcamentos[i].status = 'aprovado'; localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); renderOrcamentos(); }
-    function rejeitarOrcamento(i) { if (!confirm('Rejeitar orçamento?')) return; orcamentos[i].status = 'rejeitado'; localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); renderOrcamentos(); }
-    function excluirOrcamento(i) { if (!confirm('Excluir?')) return; orcamentos.splice(i, 1); localStorage.setItem('orc_' + pacienteId, JSON.stringify(orcamentos)); renderOrcamentos(); }
-    function converterEmDebito(i) { var o = orcamentos[i]; document.getElementById('debDescricao').value = o.descricao; document.getElementById('debValor').value = o.total; document.getElementById('debParcelas').value = '1'; document.getElementById('debVencimento').value = formatarDataISO(new Date()); calcularDebito(); document.getElementById('modalDebito').classList.add('open'); }
+    function calcularOrcamento() { var subtotal = orcItens.reduce(function(s,it){ return s+(parseFloat(it.valor)||0); }, 0); var desconto = parseFloat(document.getElementById('orcDesconto').value)||0; var total = subtotal * (1 - desconto/100); document.getElementById('orcSubtotal').value = 'R$ ' + subtotal.toFixed(2); document.getElementById('orcTotal').value = 'R$ ' + total.toFixed(2); }
+    async function salvarOrcamento() {
+        var desc = document.getElementById('orcDescricao').value.trim();
+        if (!desc) { alert('Informe a descrição'); return; }
+        var itens = orcItens.filter(function(it){ return it.nome; });
+        if (!itens.length) { alert('Adicione ao menos um item'); return; }
+        var desconto = parseFloat(document.getElementById('orcDesconto').value)||0;
+        var validadeDias = 30;
+        var payload = { pacienteId: pacienteId, itens: itens, validadeDias: validadeDias, observacoes: desc, status: 'aberto' };
+        var r = await apiCall('/api/orcamentos', 'POST', payload);
+        if (r && r.success) {
+            var orcRes = await apiCall('/api/orcamentos?pacienteId=' + pacienteId);
+            if (orcRes && orcRes.success) orcamentos = orcRes.orcamentos || [];
+            fecharModal('modalOrcamento'); renderOrcamentos();
+        } else { alert('Erro ao salvar orçamento'); }
+    }
+    async function aprovarOrcamento(id) {
+        var r = await apiCall('/api/orcamentos/' + id, 'PUT', { status: 'aprovado_total' });
+        if (r && r.success) { var o = orcamentos.find(function(x){ return x.id == id; }); if(o) o.status = 'aprovado_total'; renderOrcamentos(); }
+    }
+    async function rejeitarOrcamento(id) {
+        if (!confirm('Rejeitar orçamento?')) return;
+        var r = await apiCall('/api/orcamentos/' + id, 'PUT', { status: 'rejeitado' });
+        if (r && r.success) { var o = orcamentos.find(function(x){ return x.id == id; }); if(o) o.status = 'rejeitado'; renderOrcamentos(); }
+    }
+    async function excluirOrcamento(id) {
+        if (!confirm('Excluir?')) return;
+        var r = await apiCall('/api/orcamentos/' + id, 'DELETE');
+        if (r && r.success) { orcamentos = orcamentos.filter(function(x){ return x.id != id; }); renderOrcamentos(); }
+    }
+    function converterEmDebito(total, titulo) { document.getElementById('debDescricao').value = titulo; document.getElementById('debValor').value = total; document.getElementById('debParcelas').value = '1'; document.getElementById('debVencimento').value = formatarDataISO(new Date()); calcularDebito(); document.getElementById('modalDebito').classList.add('open'); }
 
     // ========== DÉBITOS ==========
     function renderDebitos() {
@@ -711,13 +745,15 @@
     function excluirDebito(i) { if (!confirm('Excluir?')) return; debitos.splice(i, 1); localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
 
     // ========== ANAMNESE ==========
-    function salvarAnamnese() {
-        var hm = []; document.querySelectorAll('#historicoMedico input:checked').forEach(cb => hm.push(cb.value));
-        var ho = []; document.querySelectorAll('#historicoOdonto input:checked').forEach(cb => ho.push(cb.value));
-        var anamnese = { historicoMedico: hm, historicoOdonto: ho, medicamentos: document.getElementById('anaMedicamentos').value, alergias: document.getElementById('anaAlergias').value, observacoes: document.getElementById('anaObservacoes').value, atualizadoEm: new Date().toISOString() };
-        localStorage.setItem('ana_' + pacienteId, JSON.stringify(anamnese));
-        document.getElementById('anamneseSaved').style.display = 'block';
-        setTimeout(() => document.getElementById('anamneseSaved').style.display = 'none', 3000);
+    async function salvarAnamnese() {
+        var hm = []; document.querySelectorAll('#historicoMedico input:checked').forEach(function(cb){ hm.push(cb.value); });
+        var ho = []; document.querySelectorAll('#historicoOdonto input:checked').forEach(function(cb){ ho.push(cb.value); });
+        var payload = { pacienteId: pacienteId, historicoMedico: hm, historicoOdonto: ho, medicamentos: document.getElementById('anaMedicamentos').value, alergias: document.getElementById('anaAlergias').value, observacoes: document.getElementById('anaObservacoes').value };
+        var r = await apiCall('/api/anamnese', 'POST', payload);
+        if (r && r.success) {
+            document.getElementById('anamneseSaved').style.display = 'block';
+            setTimeout(function(){ document.getElementById('anamneseSaved').style.display = 'none'; }, 3000);
+        } else { alert('Erro ao salvar anamnese'); }
     }
 
     // ========== IMAGENS ==========

@@ -4,9 +4,8 @@
 // ==============================================================================
 
 var WhatsAppIntegration = {
-    // URL base para links de confirmação
-    // Produção: https://dentalultra.com.br/area-dentistas
-    baseUrl: 'https://dentalultra.com.br/area-dentistas',
+    // URL base para links de confirmação (null = auto-detectar pelo hostname)
+    baseUrl: null,
     
     // Configurações padrão (sem emojis para maior compatibilidade)
     config: {
@@ -27,22 +26,12 @@ var WhatsAppIntegration = {
         mensagemRecados: 'Ola!\n\n*{paciente}* tem uma consulta agendada na *{clinica}* para:\n\n*{data}* as *{hora}*\nDr(a). {dentista}\n\nVoce esta cadastrado(a) como contato para recados. Por favor, lembre-o(a) de confirmar a presenca!\n\n{assinatura}'
     },
     
-    // Obter URL base
+    // Obter URL base (usa o hostname atual para ser agnóstico ao ambiente)
     getBaseUrl: function() {
         if (this.baseUrl) return this.baseUrl;
-        
-        // Tenta pegar do config ou usa o hostname atual
         if (typeof window !== 'undefined') {
             var loc = window.location;
-            var host = loc.host;
-            
-            // Em produção (dentalultra.com.br ou hostinger)
-            if (host.indexOf('dentalultra') !== -1 || host.indexOf('hostinger') !== -1) {
-                this.baseUrl = 'https://dentalultra.com.br/area-dentistas';
-            } else {
-                // Desenvolvimento local
-                this.baseUrl = loc.protocol + '//' + host + '/area-dentistas';
-            }
+            this.baseUrl = loc.protocol + '//' + loc.host + '/area-dentistas';
         }
         return this.baseUrl || '';
     },

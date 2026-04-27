@@ -605,6 +605,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="js/pdf-generator.js"></script>
     <script src="js/plano-tratamento.js"></script>
+    <script>
+        // Sobrescreve carregarPacientesCache para buscar da API em vez do localStorage
+        carregarPacientesCache = async function() {
+            var user = getCurrentUser();
+            if (!user) return;
+            try {
+                var data = await apiCall('/api/pacientes?limit=5000');
+                if (data && data.pacientes) {
+                    pacientesCache = data.pacientes.map(function(p) {
+                        return {
+                            id: String(p.id),
+                            nome: p.nome || '',
+                            cpf: p.cpf || '',
+                            telefone: p.telefone || p.celular || '',
+                            celular: p.celular || p.telefone || '',
+                            email: p.email || '',
+                            cidade: p.cidade || '',
+                            estado: p.estado || ''
+                        };
+                    });
+                    // Popula cache localStorage para compatibilidade
+                    localStorage.setItem('pacientes_' + user.id, JSON.stringify(pacientesCache));
+                }
+            } catch(e) {
+                console.warn('Fallback para cache local:', e);
+            }
+            // Verificar URL param e pré-selecionar paciente
+            var params = new URLSearchParams(window.location.search);
+            var pid = params.get('paciente');
+            if (pid) selecionarPaciente(String(pid));
+        };
+    </script>
     <script src="js/orcamentos-modal.js"></script>
     <script>if (window.lucide) lucide.createIcons();</script>
 </body>
