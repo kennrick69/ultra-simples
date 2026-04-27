@@ -913,7 +913,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
                         <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
                         <p style="color: #6B7280; font-size: 12px; text-align: center;">
                             Ultra Simples — Sistema de Gestão Odontológica<br>
-                            ${process.env.EMAIL_SUPORTE || 'contato@ultrasimples.com.br'}
+                            suporte@dentalultra.com.br
                         </p>
                     </div>
                 `;
@@ -962,7 +962,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
                 <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
                 <p style="color: #6B7280; font-size: 12px; text-align: center;">
                     Ultra Simples — Sistema de Gestão Odontológica<br>
-                    ${process.env.EMAIL_SUPORTE || 'contato@ultrasimples.com.br'}
+                    suporte@dentalultra.com.br
                 </p>
             </div>
         `;
@@ -1075,7 +1075,7 @@ app.post('/api/auth/reenviar-confirmacao', async (req, res) => {
                 <hr style="border: none; border-top: 1px solid #F9FAFB; margin: 30px 0;">
                 <p style="color: #6B7280; font-size: 12px; text-align: center;">
                     Ultra Simples — Sistema de Gestão Odontológica<br>
-                    ${process.env.EMAIL_SUPORTE || 'contato@ultrasimples.com.br'}
+                    suporte@dentalultra.com.br
                 </p>
             </div>
         `;
