@@ -581,7 +581,7 @@ async function logout() {
     
     if (confirmado) {
         localStorage.removeItem('currentUser');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
     }
 }
 

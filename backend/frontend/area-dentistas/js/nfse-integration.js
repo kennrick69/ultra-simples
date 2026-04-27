@@ -11,7 +11,7 @@ async function cancelarNotaAutomatica(numeroNota, motivoCancelamento) {
         const user = getCurrentUser();
         if (!user || !user.id) {
             alert('⚠️ Sessão expirada! Por favor, faça login novamente.');
-            window.location.href = 'login.html';
+            window.location.href = '/login';
             return;
         }
         const credenciais = JSON.parse(localStorage.getItem(`nfse_credenciais_${user.id}`) || '{}');
@@ -167,7 +167,7 @@ async function emitirNotaAutomatica() {
         const user = getCurrentUser();
         if (!user || !user.id) {
             alert('⚠️ Sessão expirada! Por favor, faça login novamente.');
-            window.location.href = 'login.html';
+            window.location.href = '/login';
             return;
         }
         
@@ -389,7 +389,7 @@ function salvarCredenciais() {
     const user = getCurrentUser();
     if (!user || !user.id) {
         alert('⚠️ Sessão expirada! Por favor, faça login novamente.');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
     }
     const credenciais = {
@@ -472,7 +472,7 @@ async function cancelarNotaAutomatica(numeroNota) {
         const user = getCurrentUser();
         if (!user || !user.id) {
             alert('⚠️ Sessão expirada! Por favor, faça login novamente.');
-            window.location.href = 'login.html';
+            window.location.href = '/login';
             return;
         }
         
@@ -1191,7 +1191,7 @@ function salvarPacienteRapido(event) {
     const user = getCurrentUser();
     if (!user || !user.id) {
         alert('⚠️ Sessão expirada! Por favor, faça login novamente.');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
     }
     const key = `pacientes_${user.id}`;

@@ -251,14 +251,14 @@
 
         async function apiCall(endpoint, method = 'GET', body = null) {
             const token = localStorage.getItem('token');
-            if (!token) { window.location.href = 'login.html'; return; }
+            if (!token) { window.location.href = '/login'; return; }
             const opts = {
                 method,
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
             };
             if (body) opts.body = JSON.stringify(body);
             const res = await fetch(`${API_URL}${endpoint}`, opts);
-            if (res.status === 401) { localStorage.clear(); window.location.href = 'login.html'; return; }
+            if (res.status === 401) { localStorage.clear(); window.location.href = '/login'; return; }
             return res.json();
         }
 
@@ -269,7 +269,7 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function logout() { localStorage.clear(); window.location.href = '/login'; }
 
         function formatReal(v) { return `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`; }
 
@@ -470,7 +470,7 @@
         // Init
         async function init() {
             const token = localStorage.getItem('token');
-            if (!token) { window.location.href = 'login.html'; return; }
+            if (!token) { window.location.href = '/login'; return; }
             try {
                 const data = await apiCall('/api/dentistas/me');
                 if (data.success && data.dentist) {

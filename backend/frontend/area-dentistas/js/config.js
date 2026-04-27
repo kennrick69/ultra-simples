@@ -6,7 +6,7 @@
 
 var API_CONFIG = {
     // URL do backend - ALTERE AQUI para sua URL do Railway
-    // Exemplo: 'https://dental-ultra-api-production.up.railway.app'
+    // Exemplo: 'https://ultra-simples-production.up.railway.app'
     baseUrl: 'https://ultra-simples-production.up.railway.app',
     
     // Timeout para requisições (ms)

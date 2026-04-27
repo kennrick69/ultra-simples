@@ -359,7 +359,7 @@ Equipe Clinica Sorriso
             localStorage.removeItem('auth_token');
             localStorage.removeItem('current_dentista');
             localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            window.location.href = '/login';
         }
     }
     
@@ -544,7 +544,7 @@ Equipe Clinica Sorriso
                 // Redirecionar para login após 2 segundos
                 setTimeout(function() {
                     localStorage.removeItem('token');
-                    window.location.href = 'login.html';
+                    window.location.href = '/login';
                 }, 2000);
                 btnSalvar.innerHTML = textoOriginal;
                 btnSalvar.disabled = false;

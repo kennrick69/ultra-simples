@@ -87,7 +87,7 @@ const API = {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('current_dentista');
         localStorage.removeItem('token');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
     },
     
     isAuthenticated() {

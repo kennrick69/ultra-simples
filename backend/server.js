@@ -5004,7 +5004,7 @@ app.delete('/api/storage/files/:id', authMiddleware, async (req, res) => {
 
 app.get('/api', (req, res) => {
     res.json({
-        name: 'Dental Ultra API',
+        name: 'Ultra Simples API',
         version: '7.0.0',
         status: 'online',
         database: 'PostgreSQL',

@@ -11,7 +11,7 @@ function getApiUrl() {
 }
 
 // Página de destino após login
-var PAGINA_DESTINO = 'casos-proteticos.html';
+var PAGINA_DESTINO = 'area-dentistas/dashboard.html';
 
 // ==============================================================================
 // ALTERNAR FORMULÁRIOS

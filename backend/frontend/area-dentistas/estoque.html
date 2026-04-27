@@ -480,6 +480,17 @@
     </div>
 
     <script src="js/auth-check.js"></script>
+    <script>
+        // Shim: estoque.js usa localStorage.getItem('currentUser'),
+        // mas o sistema novo guarda em 'current_dentista'.
+        (function() {
+            var d = null;
+            try { d = JSON.parse(localStorage.getItem('current_dentista') || localStorage.getItem('dentista') || 'null'); } catch(e) {}
+            if (d && d.id) {
+                localStorage.setItem('currentUser', JSON.stringify({ id: d.id, name: d.nome || d.name || '', cro: d.cro || '' }));
+            }
+        })();
+    </script>
     <script src="js/estoque.js"></script>
     <script src="js/onboarding.js"></script>
     <script src="js/orcamentos-modal.js"></script>

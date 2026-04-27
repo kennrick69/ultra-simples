@@ -45,7 +45,7 @@ async function logout() {
         localStorage.removeItem('current_dentista');
         localStorage.removeItem('auth_token');
         localStorage.removeItem('token');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
     }
 }
 

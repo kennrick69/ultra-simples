@@ -10,7 +10,7 @@
     
     if (!token) {
         // Sem token, redireciona para login
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
     }
     
@@ -46,7 +46,7 @@
         // Token inválido, limpa e redireciona
         localStorage.removeItem('auth_token');
         localStorage.removeItem('current_dentista');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
     });
 })();
 
@@ -81,7 +81,7 @@ function logout() {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('current_dentista');
         localStorage.removeItem('dentista');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
     }
 }
 
@@ -137,7 +137,7 @@ async function apiCall(endpoint, method, body) {
         if (res.status === 401 || res.status === 403) {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('current_dentista');
-            window.location.href = 'login.html';
+            window.location.href = '/login';
             return null;
         }
         

@@ -53,12 +53,12 @@
 
     function _apiCall(endpoint, method, body) {
         if (typeof window.apiCall === 'function') return window.apiCall(endpoint, method, body);
-        const token = localStorage.getItem('token');
-        if (!token) { window.location.href = 'login.html'; return Promise.reject(); }
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+        if (!token) { window.location.href = '/login'; return Promise.reject(); }
         const opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } };
         if (body) opts.body = JSON.stringify(body);
         return fetch(API_URL + endpoint, opts).then(r => {
-            if (r.status === 401) { localStorage.clear(); window.location.href = 'login.html'; return; }
+            if (r.status === 401) { localStorage.clear(); window.location.href = '/login'; return; }
             return r.json();
         });
     }

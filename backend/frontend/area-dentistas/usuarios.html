@@ -490,10 +490,15 @@
         </div>
     </div>
 
-    <script src="frontend-auth.js"></script>
+    <script src="js/auth-check.js"></script>
     <script>
-        const API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000/api' 
+        function verificarAuth() {
+            var d = getCurrentDentista();
+            if (!d) { window.location.href = '/login'; return null; }
+            return d;
+        }
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
             : 'https://ultra-simples-production.up.railway.app/api';
 
         let usuarios = [];
@@ -811,7 +816,7 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = '/login';
         }
 
         // Fechar modal com ESC

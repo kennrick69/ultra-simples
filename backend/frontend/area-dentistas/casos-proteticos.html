@@ -1046,7 +1046,7 @@
         render();
     });
 
-    function logout(){localStorage.clear();location.href='login.html';}
+    function logout(){localStorage.clear();location.href='/login';}
     function showToast(t,m){var c=document.getElementById('toastContainer');var d=document.createElement('div');d.className='toast '+t;d.innerHTML='<span class="toast-icon">'+(t==='success'?'✅':'❌')+'</span><span class="toast-title">'+m+'</span>';c.appendChild(d);setTimeout(function(){d.remove();},3000);}
     function abrirModal(id){
         document.getElementById(id).classList.add('show');

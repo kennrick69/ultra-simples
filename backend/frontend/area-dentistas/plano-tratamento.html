@@ -592,6 +592,14 @@
     </style>
 
     <script src="js/auth-check.js"></script>
+    <script>
+        // plano-tratamento.js espera getCurrentUser() e localStorage 'pacientes_{id}'
+        function getCurrentUser() {
+            var d = getCurrentDentista();
+            if (!d) return null;
+            return { id: d.id, name: d.nome || d.name || '', cro: d.cro || '' };
+        }
+    </script>
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>

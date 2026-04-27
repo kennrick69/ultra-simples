@@ -362,7 +362,7 @@
                         <td>${m.descricao || '-'}</td>
                         <td style="font-weight:600;">${formatBRL(m.valor)}</td>
                         <td>${badgeStatus(m.status)}</td>
-                        <td style="color:var(--du-text-2);">${m.forma_pagamento || '-'}</td>
+                        <td style="color:var(--du-text-2);">${m.formaPagamento || '-'}</td>
                         <td>
                             ${m.status === 'pendente' ? `<button class="action-btn btn-pagar" onclick="marcarPago(${m.id})">Pagar</button>` : ''}
                             <button class="action-btn btn-excluir" onclick="excluirMovimentacao(${m.id})" style="margin-left:4px;">Excluir</button>
@@ -398,7 +398,7 @@
         async function marcarPago(id) {
             if (!confirm('Marcar esta movimentação como paga?')) return;
             try {
-                await apiCall(`/api/financeiro/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'pago' }) });
+                await apiCall(`/api/financeiro/${id}`, 'PUT', { status: 'pago' });
                 carregarMovimentacoes();
             } catch (e) {
                 alert('Erro ao atualizar status.');
@@ -408,7 +408,7 @@
         async function excluirMovimentacao(id) {
             if (!confirm('Excluir esta movimentação permanentemente?')) return;
             try {
-                await apiCall(`/api/financeiro/${id}`, { method: 'DELETE' });
+                await apiCall(`/api/financeiro/${id}`, 'DELETE');
                 carregarMovimentacoes();
             } catch (e) {
                 alert('Erro ao excluir movimentação.');
@@ -443,13 +443,13 @@
                 descricao,
                 valor,
                 status: document.getElementById('fStatus').value,
-                forma_pagamento: document.getElementById('fFormaPagamento').value || null,
+                formaPagamento: document.getElementById('fFormaPagamento').value || null,
                 parcelas: parseInt(document.getElementById('fParcelas').value) || 1,
                 observacoes: document.getElementById('fObservacoes').value.trim() || null
             };
 
             try {
-                await apiCall('/api/financeiro', { method: 'POST', body: JSON.stringify(payload) });
+                await apiCall('/api/financeiro', 'POST', payload);
                 fecharModal();
                 carregarMovimentacoes();
             } catch (e) {

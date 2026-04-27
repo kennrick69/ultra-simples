@@ -176,7 +176,7 @@ function logout() {
     if (confirm('Deseja realmente sair?')) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('current_dentista');
-        window.location.href = 'login.html';
+        window.location.href = '/login';
     }
 }
 
