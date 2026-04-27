@@ -703,6 +703,38 @@ async function initDatabase() {
             )
         `);
 
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS tratamentos (
+                id SERIAL PRIMARY KEY,
+                paciente_id INTEGER REFERENCES pacientes(id) ON DELETE CASCADE,
+                dentista_id INTEGER REFERENCES dentistas(id),
+                nome VARCHAR(255) NOT NULL,
+                valor NUMERIC(10,2) DEFAULT 0,
+                sessoes INTEGER DEFAULT 1,
+                sessoes_realizadas INTEGER DEFAULT 0,
+                data_inicio DATE,
+                data_fim DATE,
+                observacoes TEXT,
+                status VARCHAR(50) DEFAULT 'andamento',
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS debitos (
+                id SERIAL PRIMARY KEY,
+                paciente_id INTEGER REFERENCES pacientes(id) ON DELETE CASCADE,
+                dentista_id INTEGER REFERENCES dentistas(id),
+                descricao VARCHAR(255) NOT NULL,
+                valor NUMERIC(10,2) NOT NULL,
+                num_parcelas INTEGER DEFAULT 1,
+                vencimento DATE,
+                pago BOOLEAN DEFAULT false,
+                parcelas JSONB DEFAULT '[]',
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         console.log('Banco de dados inicializado!');
     } catch (error) {
         console.error('Erro ao inicializar banco:', error.message);
@@ -4985,6 +5017,121 @@ app.get('/api/retornos', authMiddleware, async (req, res) => {
             ORDER BY r.data_retorno ASC
         `, [req.dentistaId]);
         res.json({ success: true, retornos: result.rows });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// ==============================================================================
+// TRATAMENTOS DO PACIENTE
+// ==============================================================================
+
+app.get('/api/tratamentos/:pacienteId', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM tratamentos WHERE paciente_id = $1 AND dentista_id = $2 ORDER BY criado_em DESC',
+            [req.params.pacienteId, req.dentistaId]
+        );
+        res.json({ success: true, tratamentos: result.rows });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.post('/api/tratamentos', authMiddleware, async (req, res) => {
+    try {
+        const { pacienteId, nome, valor, sessoes, sessoesRealizadas, dataInicio, dataFim, observacoes, status } = req.body;
+        if (!pacienteId || !nome) return res.status(400).json({ success: false, erro: 'pacienteId e nome obrigatórios' });
+        const result = await pool.query(`
+            INSERT INTO tratamentos (paciente_id, dentista_id, nome, valor, sessoes, sessoes_realizadas, data_inicio, data_fim, observacoes, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
+        `, [pacienteId, req.dentistaId, nome, valor || 0, sessoes || 1, sessoesRealizadas || 0, dataInicio || null, dataFim || null, observacoes || null, status || 'andamento']);
+        res.json({ success: true, tratamento: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.put('/api/tratamentos/:id', authMiddleware, async (req, res) => {
+    try {
+        const { nome, valor, sessoes, sessoesRealizadas, dataInicio, dataFim, observacoes, status } = req.body;
+        const result = await pool.query(`
+            UPDATE tratamentos SET nome = COALESCE($1, nome), valor = COALESCE($2, valor),
+            sessoes = COALESCE($3, sessoes), sessoes_realizadas = COALESCE($4, sessoes_realizadas),
+            data_inicio = COALESCE($5, data_inicio), data_fim = COALESCE($6, data_fim),
+            observacoes = COALESCE($7, observacoes), status = COALESCE($8, status)
+            WHERE id = $9 AND dentista_id = $10 RETURNING *
+        `, [nome, valor, sessoes, sessoesRealizadas, dataInicio, dataFim, observacoes, status, req.params.id, req.dentistaId]);
+        if (result.rows.length === 0) return res.status(404).json({ success: false });
+        res.json({ success: true, tratamento: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.delete('/api/tratamentos/:id', authMiddleware, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM tratamentos WHERE id = $1 AND dentista_id = $2', [req.params.id, req.dentistaId]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// ==============================================================================
+// DÉBITOS DO PACIENTE
+// ==============================================================================
+
+app.get('/api/debitos/:pacienteId', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM debitos WHERE paciente_id = $1 AND dentista_id = $2 ORDER BY criado_em DESC',
+            [req.params.pacienteId, req.dentistaId]
+        );
+        res.json({ success: true, debitos: result.rows });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.post('/api/debitos', authMiddleware, async (req, res) => {
+    try {
+        const { pacienteId, descricao, valor, numParcelas, vencimento, parcelas } = req.body;
+        if (!pacienteId || !descricao || !valor) return res.status(400).json({ success: false, erro: 'Dados obrigatórios' });
+        const result = await pool.query(`
+            INSERT INTO debitos (paciente_id, dentista_id, descricao, valor, num_parcelas, vencimento, parcelas)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+        `, [pacienteId, req.dentistaId, descricao, valor, numParcelas || 1, vencimento || null, JSON.stringify(parcelas || [])]);
+        res.json({ success: true, debito: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.put('/api/debitos/:id', authMiddleware, async (req, res) => {
+    try {
+        const { pago, parcelas } = req.body;
+        const sets = [], params = [];
+        let idx = 1;
+        if (pago !== undefined) { sets.push(`pago = $${idx++}`); params.push(pago); }
+        if (parcelas !== undefined) { sets.push(`parcelas = $${idx++}`); params.push(JSON.stringify(parcelas)); }
+        if (!sets.length) return res.status(400).json({ success: false, erro: 'Nada a atualizar' });
+        params.push(req.params.id, req.dentistaId);
+        const result = await pool.query(
+            `UPDATE debitos SET ${sets.join(', ')} WHERE id = $${idx} AND dentista_id = $${idx+1} RETURNING *`,
+            params
+        );
+        if (result.rows.length === 0) return res.status(404).json({ success: false });
+        res.json({ success: true, debito: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.delete('/api/debitos/:id', authMiddleware, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM debitos WHERE id = $1 AND dentista_id = $2', [req.params.id, req.dentistaId]);
+        res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }

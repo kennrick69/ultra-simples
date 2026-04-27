@@ -520,26 +520,40 @@
     async function carregarTudo() {
         var res = await apiCall('/api/pacientes/' + pacienteId);
         if (res && res.success) { paciente = res.paciente; renderizarPaciente(); }
-        tratamentos = JSON.parse(localStorage.getItem('trat_' + pacienteId) || '[]');
-        debitos = JSON.parse(localStorage.getItem('deb_' + pacienteId) || '[]');
+
         imagens = JSON.parse(localStorage.getItem('img_' + pacienteId) || '[]');
         documentos = JSON.parse(localStorage.getItem('doc_' + pacienteId) || '[]');
 
-        // Orçamentos — API
-        var orcRes = await apiCall('/api/orcamentos?pacienteId=' + pacienteId);
+        var [tratRes, debRes, orcRes, anaRes] = await Promise.all([
+            apiCall('/api/tratamentos/' + pacienteId),
+            apiCall('/api/debitos/' + pacienteId),
+            apiCall('/api/orcamentos?pacienteId=' + pacienteId),
+            apiCall('/api/anamnese/' + pacienteId)
+        ]);
+
+        if (tratRes && tratRes.success) tratamentos = (tratRes.tratamentos || []).map(normalizarTratamento);
+        if (debRes && debRes.success) debitos = (debRes.debitos || []).map(normalizarDebito);
         if (orcRes && orcRes.success) orcamentos = orcRes.orcamentos || [];
 
-        // Anamnese — API
-        var anaRes = await apiCall('/api/anamnese/' + pacienteId);
         if (anaRes && anaRes.success && anaRes.anamnese) {
             var anamnese = anaRes.anamnese;
             if (anamnese.medicamentos) document.getElementById('anaMedicamentos').value = anamnese.medicamentos;
             if (anamnese.alergias) document.getElementById('anaAlergias').value = anamnese.alergias;
             if (anamnese.observacoes) document.getElementById('anaObservacoes').value = anamnese.observacoes;
-            if (anamnese.historicoMedico) anamnese.historicoMedico.forEach(h => { var cb = document.querySelector('#historicoMedico input[value="'+h+'"]'); if(cb) cb.checked = true; });
-            if (anamnese.historicoOdonto) anamnese.historicoOdonto.forEach(h => { var cb = document.querySelector('#historicoOdonto input[value="'+h+'"]'); if(cb) cb.checked = true; });
+            if (anamnese.historicoMedico) anamnese.historicoMedico.forEach(function(h){ var cb = document.querySelector('#historicoMedico input[value="'+h+'"]'); if(cb) cb.checked = true; });
+            if (anamnese.historicoOdonto) anamnese.historicoOdonto.forEach(function(h){ var cb = document.querySelector('#historicoOdonto input[value="'+h+'"]'); if(cb) cb.checked = true; });
         }
         renderAll();
+    }
+
+    // Normaliza resposta DB (snake_case) para o formato interno
+    function normalizarTratamento(t) {
+        return { id: t.id, nome: t.nome, valor: t.valor, sessoes: t.sessoes, sessoesRealizadas: t.sessoes_realizadas, dataInicio: t.data_inicio, dataFim: t.data_fim, observacoes: t.observacoes, status: t.status };
+    }
+    function normalizarDebito(d) {
+        var parcelas = d.parcelas;
+        if (typeof parcelas === 'string') try { parcelas = JSON.parse(parcelas); } catch(e) { parcelas = []; }
+        return { id: d.id, descricao: d.descricao, valor: d.valor, numParcelas: d.num_parcelas, vencimento: d.vencimento, pago: d.pago, parcelas: parcelas || [] };
     }
 
     function renderizarPaciente() {
@@ -611,16 +625,16 @@
         var c = document.getElementById('listaTratamentos');
         if (!tratamentos.length) { c.innerHTML = '<div class="empty-state"><h4>Nenhum tratamento</h4></div>'; return; }
         var html = '';
-        tratamentos.forEach((t, i) => {
+        tratamentos.forEach(function(t) {
             var sClass = t.status === 'finalizado' ? 'finalizado' : (t.status === 'cancelado' ? 'cancelado' : '');
             var sBadge = t.status === 'finalizado' ? 'status-finalizado' : (t.status === 'cancelado' ? 'status-cancelado' : 'status-andamento');
             var sText = t.status === 'finalizado' ? 'Finalizado' : (t.status === 'cancelado' ? 'Cancelado' : 'Em Andamento');
-            var prog = t.status === 'finalizado' ? 100 : Math.round(((t.sessoesRealizadas||0) / t.sessoes) * 100);
+            var prog = t.status === 'finalizado' ? 100 : Math.round(((t.sessoesRealizadas||0) / (t.sessoes||1)) * 100);
             html += '<div class="card-item '+sClass+'"><div class="card-header"><span class="card-title">'+t.nome+'</span><span class="card-status '+sBadge+'">'+sText+'</span></div>';
-            html += '<div class="card-info">'+(t.valor?'<span>R$ '+parseFloat(t.valor).toFixed(2)+'</span>':'')+'<span>Sessões: '+(t.sessoesRealizadas||0)+'/'+t.sessoes+'</span></div>';
+            html += '<div class="card-info">'+(t.valor?'<span>R$ '+parseFloat(t.valor).toFixed(2)+'</span>':'')+'<span>Sessões: '+(t.sessoesRealizadas||0)+'/'+(t.sessoes||1)+'</span></div>';
             html += '<div class="progress-bar"><div class="progress-fill'+(prog===100?' complete':'')+'" style="width:'+prog+'%"></div></div>';
             if (t.status !== 'finalizado' && t.status !== 'cancelado') {
-                html += '<div class="card-actions"><button class="btn-success" onclick="abrirFinalizar('+i+')">✓ Finalizar</button><button class="btn-edit" onclick="editarTratamento('+i+')">Editar</button><button class="btn-danger" onclick="cancelarTratamento('+i+')">Cancelar</button></div>';
+                html += '<div class="card-actions"><button class="btn-success" onclick="abrirFinalizar('+t.id+')">✓ Finalizar</button><button class="btn-edit" onclick="editarTratamento('+t.id+')">Editar</button><button class="btn-danger" onclick="cancelarTratamento('+t.id+')">Cancelar</button></div>';
             }
             html += '</div>';
         });
@@ -628,11 +642,36 @@
     }
 
     function abrirNovoTratamento() { document.getElementById('tratId').value = ''; document.getElementById('tratNome').value = ''; document.getElementById('tratValor').value = ''; document.getElementById('tratSessoes').value = '1'; document.getElementById('tratDataIni').value = formatarDataISO(new Date()); document.getElementById('tratDataFim').value = ''; document.getElementById('tratObs').value = ''; document.getElementById('modalTratTitulo').textContent = 'Novo Tratamento'; document.getElementById('modalTratamento').classList.add('open'); }
-    function editarTratamento(i) { var t = tratamentos[i]; document.getElementById('tratId').value = i; document.getElementById('tratNome').value = t.nome; document.getElementById('tratValor').value = t.valor||''; document.getElementById('tratSessoes').value = t.sessoes; document.getElementById('tratDataIni').value = t.dataInicio||''; document.getElementById('tratDataFim').value = t.dataFim||''; document.getElementById('tratObs').value = t.observacoes||''; document.getElementById('modalTratTitulo').textContent = 'Editar Tratamento'; document.getElementById('modalTratamento').classList.add('open'); }
-    function salvarTratamento() { var nome = document.getElementById('tratNome').value.trim(); if (!nome) { alert('Informe o nome'); return; } var dados = { nome: nome, valor: parseFloat(document.getElementById('tratValor').value)||0, sessoes: parseInt(document.getElementById('tratSessoes').value)||1, sessoesRealizadas: 0, dataInicio: document.getElementById('tratDataIni').value, dataFim: document.getElementById('tratDataFim').value, observacoes: document.getElementById('tratObs').value, status: 'andamento' }; var id = document.getElementById('tratId').value; if (id !== '') { dados.sessoesRealizadas = tratamentos[parseInt(id)].sessoesRealizadas||0; tratamentos[parseInt(id)] = dados; } else { tratamentos.push(dados); } localStorage.setItem('trat_' + pacienteId, JSON.stringify(tratamentos)); fecharModal('modalTratamento'); renderTratamentos(); }
-    function abrirFinalizar(i) { document.getElementById('finId').value = i; document.getElementById('finNome').textContent = tratamentos[i].nome; document.getElementById('finData').value = formatarDataISO(new Date()); document.getElementById('modalFinalizar').classList.add('open'); }
-    function confirmarFinalizar() { var i = parseInt(document.getElementById('finId').value); tratamentos[i].status = 'finalizado'; tratamentos[i].sessoesRealizadas = tratamentos[i].sessoes; localStorage.setItem('trat_' + pacienteId, JSON.stringify(tratamentos)); fecharModal('modalFinalizar'); renderTratamentos(); }
-    function cancelarTratamento(i) { if (!confirm('Cancelar?')) return; tratamentos[i].status = 'cancelado'; localStorage.setItem('trat_' + pacienteId, JSON.stringify(tratamentos)); renderTratamentos(); }
+    function editarTratamento(id) { var t = tratamentos.find(function(x){ return x.id == id; }); if(!t) return; document.getElementById('tratId').value = id; document.getElementById('tratNome').value = t.nome; document.getElementById('tratValor').value = t.valor||''; document.getElementById('tratSessoes').value = t.sessoes||1; document.getElementById('tratDataIni').value = (t.dataInicio||'').split('T')[0]||''; document.getElementById('tratDataFim').value = (t.dataFim||'').split('T')[0]||''; document.getElementById('tratObs').value = t.observacoes||''; document.getElementById('modalTratTitulo').textContent = 'Editar Tratamento'; document.getElementById('modalTratamento').classList.add('open'); }
+    async function salvarTratamento() {
+        var nome = document.getElementById('tratNome').value.trim();
+        if (!nome) { alert('Informe o nome'); return; }
+        var id = document.getElementById('tratId').value;
+        var payload = { pacienteId: pacienteId, nome: nome, valor: parseFloat(document.getElementById('tratValor').value)||0, sessoes: parseInt(document.getElementById('tratSessoes').value)||1, dataInicio: document.getElementById('tratDataIni').value, dataFim: document.getElementById('tratDataFim').value, observacoes: document.getElementById('tratObs').value, status: 'andamento' };
+        var r;
+        if (id) {
+            r = await apiCall('/api/tratamentos/' + id, 'PUT', payload);
+            if (r && r.success) { var idx = tratamentos.findIndex(function(x){ return x.id == id; }); if(idx >= 0) tratamentos[idx] = normalizarTratamento(r.tratamento); }
+        } else {
+            r = await apiCall('/api/tratamentos', 'POST', payload);
+            if (r && r.success) tratamentos.unshift(normalizarTratamento(r.tratamento));
+        }
+        if (!r || !r.success) { alert('Erro ao salvar'); return; }
+        fecharModal('modalTratamento'); renderTratamentos();
+    }
+    function abrirFinalizar(id) { var t = tratamentos.find(function(x){ return x.id == id; }); if(!t) return; document.getElementById('finId').value = id; document.getElementById('finNome').textContent = t.nome; document.getElementById('finData').value = formatarDataISO(new Date()); document.getElementById('modalFinalizar').classList.add('open'); }
+    async function confirmarFinalizar() {
+        var id = document.getElementById('finId').value;
+        var t = tratamentos.find(function(x){ return x.id == id; });
+        if (!t) return;
+        var r = await apiCall('/api/tratamentos/' + id, 'PUT', { status: 'finalizado', sessoesRealizadas: t.sessoes });
+        if (r && r.success) { t.status = 'finalizado'; t.sessoesRealizadas = t.sessoes; fecharModal('modalFinalizar'); renderTratamentos(); }
+    }
+    async function cancelarTratamento(id) {
+        if (!confirm('Cancelar tratamento?')) return;
+        var r = await apiCall('/api/tratamentos/' + id, 'PUT', { status: 'cancelado' });
+        if (r && r.success) { var t = tratamentos.find(function(x){ return x.id == id; }); if(t) t.status = 'cancelado'; renderTratamentos(); }
+    }
 
     // ========== ORÇAMENTOS ==========
     var orcItens = [];
@@ -707,7 +746,7 @@
     // ========== DÉBITOS ==========
     function renderDebitos() {
         var total = 0, pago = 0, pendente = 0;
-        debitos.forEach(d => { total += parseFloat(d.valor)||0; if (d.parcelas && d.parcelas.length) { d.parcelas.forEach(p => { if (p.pago) pago += parseFloat(p.valor); else pendente += parseFloat(p.valor); }); } else { if (d.pago) pago += parseFloat(d.valor); else pendente += parseFloat(d.valor); } });
+        debitos.forEach(function(d) { total += parseFloat(d.valor)||0; if (d.parcelas && d.parcelas.length) { d.parcelas.forEach(function(p){ if (p.pago) pago += parseFloat(p.valor); else pendente += parseFloat(p.valor); }); } else { if (d.pago) pago += parseFloat(d.valor); else pendente += parseFloat(d.valor); } });
         document.getElementById('totalGeral').textContent = 'R$ ' + total.toFixed(0);
         document.getElementById('totalPago').textContent = 'R$ ' + pago.toFixed(0);
         document.getElementById('totalPendente').textContent = 'R$ ' + pendente.toFixed(0);
@@ -715,9 +754,9 @@
         var c = document.getElementById('listaDebitos');
         if (!debitos.length) { c.innerHTML = '<div class="empty-state"><h4>Nenhum débito</h4></div>'; return; }
         var html = '';
-        debitos.forEach((d, i) => {
-            var todoPago = d.parcelas ? d.parcelas.every(p => p.pago) : d.pago;
-            var temVencido = d.parcelas ? d.parcelas.some(p => !p.pago && new Date(p.vencimento) < new Date()) : (!d.pago && new Date(d.vencimento) < new Date());
+        debitos.forEach(function(d) {
+            var todoPago = d.parcelas && d.parcelas.length ? d.parcelas.every(function(p){ return p.pago; }) : d.pago;
+            var temVencido = d.parcelas && d.parcelas.length ? d.parcelas.some(function(p){ return !p.pago && new Date(p.vencimento) < new Date(); }) : (!d.pago && d.vencimento && new Date(d.vencimento) < new Date());
             html += '<div class="card-item'+(todoPago?' pago':'')+(temVencido?' vencido':'')+'">';
             html += '<div class="card-header"><span class="card-title">'+d.descricao+'</span><span style="font-size:16px;font-weight:700;color:'+(temVencido?'#ef4444':'#2d7a5f')+';">R$ '+parseFloat(d.valor).toFixed(2)+'</span></div>';
             html += '<div class="card-info">';
@@ -727,22 +766,46 @@
             html += '</div>';
             if (d.parcelas && d.parcelas.length > 1) {
                 html += '<div class="parcelas-list">';
-                d.parcelas.forEach((p, pi) => { var venc = !p.pago && new Date(p.vencimento) < new Date(); html += '<div class="parcela-item'+(p.pago?' paga':'')+(venc?' atrasada':'')+'"><span>'+(pi+1)+'ª - '+formatarData(p.vencimento)+'</span><span>R$ '+parseFloat(p.valor).toFixed(2)+'</span><input type="checkbox" class="parcela-check" '+(p.pago?'checked':'')+' onchange="marcarParcela('+i+','+pi+',this.checked)"></div>'; });
+                d.parcelas.forEach(function(p, pi){ var venc = !p.pago && p.vencimento && new Date(p.vencimento) < new Date(); html += '<div class="parcela-item'+(p.pago?' paga':'')+(venc?' atrasada':'')+'"><span>'+(pi+1)+'ª - '+formatarData(p.vencimento)+'</span><span>R$ '+parseFloat(p.valor).toFixed(2)+'</span><input type="checkbox" class="parcela-check" '+(p.pago?'checked':'')+' onchange="marcarParcela('+d.id+','+pi+',this.checked)"></div>'; });
                 html += '</div>';
             }
             html += '<div class="card-actions">';
-            if (!todoPago && (!d.parcelas || d.parcelas.length <= 1)) html += '<button class="btn-success" onclick="marcarPago('+i+')">✓ Pago</button>';
-            html += '<button class="btn-danger" onclick="excluirDebito('+i+')">Excluir</button></div></div>';
+            if (!todoPago && (!d.parcelas || d.parcelas.length <= 1)) html += '<button class="btn-success" onclick="marcarPago('+d.id+')">✓ Pago</button>';
+            html += '<button class="btn-danger" onclick="excluirDebito('+d.id+')">Excluir</button></div></div>';
         });
         c.innerHTML = html;
     }
 
     function abrirNovoDebito() { document.getElementById('debDescricao').value = ''; document.getElementById('debValor').value = ''; document.getElementById('debParcelas').value = '1'; document.getElementById('debVencimento').value = formatarDataISO(new Date()); calcularDebito(); document.getElementById('modalDebito').classList.add('open'); }
     function calcularDebito() { var v = parseFloat(document.getElementById('debValor').value)||0; var n = parseInt(document.getElementById('debParcelas').value)||1; document.getElementById('debValorParcela').value = 'R$ ' + (v/n).toFixed(2); }
-    function salvarDebito() { var desc = document.getElementById('debDescricao').value.trim(); var valor = parseFloat(document.getElementById('debValor').value); if (!desc || !valor) { alert('Preencha'); return; } var numP = parseInt(document.getElementById('debParcelas').value)||1; var venc = document.getElementById('debVencimento').value; var deb = { descricao: desc, valor: valor, numParcelas: numP, vencimento: venc, pago: false, parcelas: [] }; if (numP > 1) { var vp = valor/numP; var dv = new Date(venc+'T00:00:00'); for (var i=0; i<numP; i++) { deb.parcelas.push({ numero: i+1, valor: vp, vencimento: formatarDataISO(dv), pago: false }); dv.setMonth(dv.getMonth()+1); } } debitos.push(deb); localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); fecharModal('modalDebito'); renderDebitos(); }
-    function marcarPago(i) { debitos[i].pago = true; localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
-    function marcarParcela(di, pi, pago) { debitos[di].parcelas[pi].pago = pago; localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
-    function excluirDebito(i) { if (!confirm('Excluir?')) return; debitos.splice(i, 1); localStorage.setItem('deb_' + pacienteId, JSON.stringify(debitos)); renderDebitos(); }
+    async function salvarDebito() {
+        var desc = document.getElementById('debDescricao').value.trim();
+        var valor = parseFloat(document.getElementById('debValor').value);
+        if (!desc || !valor) { alert('Preencha'); return; }
+        var numP = parseInt(document.getElementById('debParcelas').value)||1;
+        var venc = document.getElementById('debVencimento').value;
+        var parcelas = [];
+        if (numP > 1) { var vp = valor/numP; var dv = new Date(venc+'T00:00:00'); for (var i=0; i<numP; i++) { parcelas.push({ numero: i+1, valor: vp, vencimento: formatarDataISO(dv), pago: false }); dv.setMonth(dv.getMonth()+1); } }
+        var r = await apiCall('/api/debitos', 'POST', { pacienteId: pacienteId, descricao: desc, valor: valor, numParcelas: numP, vencimento: venc, parcelas: parcelas });
+        if (r && r.success) { debitos.unshift(normalizarDebito(r.debito)); fecharModal('modalDebito'); renderDebitos(); }
+        else alert('Erro ao salvar');
+    }
+    async function marcarPago(id) {
+        var r = await apiCall('/api/debitos/' + id, 'PUT', { pago: true });
+        if (r && r.success) { var d = debitos.find(function(x){ return x.id == id; }); if(d) d.pago = true; renderDebitos(); }
+    }
+    async function marcarParcela(id, pi, pago) {
+        var d = debitos.find(function(x){ return x.id == id; });
+        if (!d) return;
+        d.parcelas[pi].pago = pago;
+        var r = await apiCall('/api/debitos/' + id, 'PUT', { parcelas: d.parcelas });
+        if (!r || !r.success) { d.parcelas[pi].pago = !pago; renderDebitos(); }
+    }
+    async function excluirDebito(id) {
+        if (!confirm('Excluir?')) return;
+        var r = await apiCall('/api/debitos/' + id, 'DELETE');
+        if (r && r.success) { debitos = debitos.filter(function(x){ return x.id != id; }); renderDebitos(); }
+    }
 
     // ========== ANAMNESE ==========
     async function salvarAnamnese() {
