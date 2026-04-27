@@ -22,6 +22,9 @@
             --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
             --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
             --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+            --du-sh-sm: 0 1px 4px rgba(0,0,0,0.06); --du-sh-glow: 0 4px 12px rgba(13,148,136,0.4);
+            --du-r-md: 8px; --du-focus: 0 0 0 3px rgba(13,148,136,0.2);
+            --du-font: 'Inter', sans-serif; --du-primary-hover: #0F766E;
         }
         /* === SIDEBAR STYLES === */
         .sidebar { width: 220px; background: var(--du-surface); border-right: 1px solid var(--du-border); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
@@ -45,7 +48,7 @@
         /* === END SIDEBAR === */
 
         .page-header {
-            background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 50%, #1FA2FF 100%);
+            background: linear-gradient(135deg, #0D9488 0%, #0F766E 50%, #0D9488 100%);
             padding: 24px 32px;
             color: white;
             display: flex;
@@ -173,7 +176,7 @@
         }
         .add-usuario-card:hover {
             border-color: var(--du-primary);
-            background: rgba(31, 162, 255, 0.05);
+            background: rgba(13,148,136, 0.05);
         }
         .add-usuario-card .icon {
             font-size: 48px;
@@ -261,7 +264,7 @@
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: var(--du-primary);
-            box-shadow: 0 0 0 3px rgba(31, 162, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(13,148,136, 0.15);
         }
         .form-row {
             display: grid;
@@ -299,7 +302,7 @@
 
         /* Buttons */
         .btn-primary {
-            background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 100%);
+            background: linear-gradient(135deg, #0D9488 0%, #0F766E 50%, #0D9488 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -309,7 +312,7 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(31, 162, 255, 0.4); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,148,136, 0.4); }
         .btn-secondary {
             background: #f3f4f6;
             color: #374151;
@@ -388,7 +391,7 @@
             <a href="estoque.html"><i data-lucide="package" class="nav-icon"></i> Estoque</a>
             <a href="nota-fiscal.html"><i data-lucide="file-text" class="nav-icon"></i> Notas Fiscais</a>
             <a href="financeiro.html"><i data-lucide="dollar-sign" class="nav-icon"></i> Financeiro</a>
-            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><i data-lucide="clipboard" class="nav-icon"></i> Orçamentos</a>
+            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><i data-lucide="clipboard-list" class="nav-icon"></i> Orçamentos</a>
             <a href="relatorios.html"><i data-lucide="bar-chart-2" class="nav-icon"></i> Relatórios</a>
             <a href="tabela-precos.html"><i data-lucide="tag" class="nav-icon"></i> Tabela de Preços</a>
             <a href="usuarios.html" class="active"><span class="nav-icon">👤</span> Usuários</a>

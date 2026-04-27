@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios - Ultra Simples</title>
-        <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="icon" type="image/png" href="img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,12 +18,15 @@
             --du-primary: #0D9488; --du-primary-dark: #0F766E; --du-surface: #ffffff;
             --du-surface-2: #f3f4f6; --du-border: #e5e7eb; --du-text: #111827;
             --du-text-2: #6b7280; --du-dark: #111827;
-            --du-1: 4px; --du-2: 8px; --du-3: 12px; --du-4: 16px; --du-5: 20px;
-            --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
-            --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
-            --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+            --du-r-md: 8px; --du-focus: 0 0 0 3px rgba(13,148,136,0.2);
+            --du-font: 'Inter', sans-serif; --du-primary-hover: #0F766E;
+            --du-sh-md: 0 2px 8px rgba(0,0,0,0.08); --du-sh-sm: 0 1px 4px rgba(0,0,0,0.06);
+            --du-sh-glow: 0 4px 12px rgba(13,148,136,0.4);
         }
-        /* === SIDEBAR STYLES === */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--du-font); background: #f9fafb; display: flex; }
+
+        /* SIDEBAR */
         .sidebar { width: 220px; background: var(--du-surface); border-right: 1px solid var(--du-border); display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 100; }
         .sidebar .logo-link { display: block; width: 220px; height: 120px; overflow: hidden; border-bottom: 1px solid var(--du-border); }
         .sidebar .logo-header { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
@@ -34,69 +37,76 @@
         .sidebar nav a.active { background: rgba(13,148,136,0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
         .sidebar nav a .nav-icon { margin-right: 12px; width: 18px; height: 18px; flex-shrink: 0; }
         .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
-        
-        .sidebar .user-details { flex: 1; }
-        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; }
+        .sidebar .user-details { flex: 1; min-width: 0; }
+        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
-        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-        /* Loading styles */
-        .loading-state { text-align: center; padding: 60px 20px; color: #666; }
-        .loading-more { text-align: center; padding: 20px; color: #666; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #e5e7eb; border-top-color: #0D9488; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-        .spinner-small { width: 20px; height: 20px; border: 3px solid #e5e7eb; border-top-color: #0D9488; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .load-more-info { text-align: center; padding: 16px; color: #666; font-size: 13px; background: #f9fafb; border-radius: 8px; margin-top: 16px; }
-        /* === END SIDEBAR === */
+        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
 
-        /* === SIDEBAR STYLES === */
-        .sidebar {
-            width: 220px;
-            background: var(--du-surface);
-            border-right: 1px solid var(--du-border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            z-index: 100;
-        }
-        .sidebar .logo {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .sidebar .logo-icon { font-size: 48px; margin-bottom: 8px; }
-        .sidebar .logo span { font-size: 18px; font-weight: 700; color: var(--du-primary-dark); }
-        .sidebar nav { flex: 1; padding: 16px 0; overflow-y: auto; display: flex; flex-direction: column; }
-        .sidebar nav a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: var(--du-text-2);
-            text-decoration: none;
-            font-size: 14px;
-            border-left: 3px solid transparent;
-            transition: all 0.2s;
-        }
-        .sidebar nav a:hover { background: var(--du-surface-2); border-left-color: var(--du-primary); }
-        .sidebar nav a.active { background: rgba(13,148,136,0.08); border-left-color: var(--du-primary); color: var(--du-primary); font-weight: 600; }
-        .sidebar nav a .nav-icon { margin-right: 12px; width: 18px; height: 18px; flex-shrink: 0; }
-        .sidebar .user-info { padding: 16px; border-top: 1px solid var(--du-border); display: flex; align-items: center; gap: 12px; }
-        
-        .sidebar .user-details { flex: 1; }
-        .sidebar .user-name { font-weight: 600; font-size: 14px; color: var(--du-text); display: block; }
-        .sidebar .user-role { font-size: 12px; color: #6b7280; display: block; }
-        .sidebar .btn-logout { padding: 8px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        /* MAIN */
         .main-content { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .page-header { background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%); color: white; padding: 28px 32px; }
+        .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .page-header p { opacity: 0.85; font-size: 14px; }
+        .page-body { padding: 24px 32px; flex: 1; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: var(--du-sh-md); display: flex; align-items: center; gap: 16px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .stat-icon.teal { background: #ccfbf1; color: #0D9488; }
+        .stat-icon.blue { background: #dbeafe; color: #2563eb; }
+        .stat-icon.green { background: #d1fae5; color: #059669; }
+        .stat-icon.purple { background: #ede9fe; color: #7c3aed; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--du-text); }
+        .stat-label { font-size: 13px; color: var(--du-text-2); margin-top: 2px; }
+
+        /* SECTION GRID */
+        .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .card { background: white; border-radius: 12px; box-shadow: var(--du-sh-md); overflow: hidden; }
+        .card-head { padding: 16px 20px; border-bottom: 1px solid var(--du-border); display: flex; align-items: center; justify-content: space-between; }
+        .card-head h2 { font-size: 15px; font-weight: 600; color: var(--du-text); display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 20px; }
+
+        /* UPCOMING TABLE */
+        .upcoming-list { display: flex; flex-direction: column; gap: 10px; }
+        .upcoming-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #f9fafb; border-radius: 8px; }
+        .upcoming-date { background: var(--du-primary); color: white; border-radius: 8px; padding: 6px 10px; text-align: center; flex-shrink: 0; min-width: 50px; }
+        .upcoming-date .day { font-size: 18px; font-weight: 700; line-height: 1; }
+        .upcoming-date .month { font-size: 11px; opacity: 0.85; }
+        .upcoming-info { flex: 1; }
+        .upcoming-name { font-size: 14px; font-weight: 600; color: var(--du-text); }
+        .upcoming-proc { font-size: 12px; color: var(--du-text-2); margin-top: 2px; }
+        .upcoming-time { font-size: 13px; font-weight: 500; color: var(--du-primary); }
+
+        /* FINANCIAL BARS */
+        .fin-row { margin-bottom: 16px; }
+        .fin-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+        .fin-label .name { color: var(--du-text); font-weight: 500; }
+        .fin-label .val { color: var(--du-text-2); }
+        .fin-bar { height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+        .fin-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+        .fill-green { background: #10b981; }
+        .fill-red { background: #ef4444; }
+        .fill-teal { background: #0D9488; }
+
+        /* SPINNER */
+        .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #0D9488; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state { text-align: center; padding: 40px 20px; color: var(--du-text-2); font-size: 14px; }
+        .empty-state { text-align: center; padding: 32px 20px; color: var(--du-text-2); font-size: 14px; }
+
+        /* ANIVERSARIANTES */
+        .aniv-list { display: flex; flex-direction: column; gap: 8px; }
+        .aniv-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; }
+        .aniv-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0D9488, #0F766E); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .aniv-name { font-size: 14px; font-weight: 500; color: var(--du-text); }
+        .aniv-date { font-size: 12px; color: var(--du-text-2); }
+        .badge-hoje { background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: auto; }
+        .badge-mes { background: #dbeafe; color: #2563eb; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: auto; }
     </style>
 </head>
 <body>
-                <aside class="sidebar">
+    <aside class="sidebar">
         <a href="agenda.html" class="logo-link" title="Ir para Agenda">
             <img src="img/logo-header.png" alt="Ultra Simples" class="logo-header">
         </a>
@@ -109,7 +119,7 @@
             <a href="estoque.html"><i data-lucide="package" class="nav-icon"></i> Estoque</a>
             <a href="nota-fiscal.html"><i data-lucide="file-text" class="nav-icon"></i> Notas Fiscais</a>
             <a href="financeiro.html"><i data-lucide="dollar-sign" class="nav-icon"></i> Financeiro</a>
-            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><i data-lucide="clipboard" class="nav-icon"></i> Orçamentos</a>
+            <a href="#" onclick="abrirModalOrcamentos && abrirModalOrcamentos(); return false;"><i data-lucide="clipboard-list" class="nav-icon"></i> Orçamentos</a>
             <a href="relatorios.html" class="active"><i data-lucide="bar-chart-2" class="nav-icon"></i> Relatórios</a>
             <a href="tabela-precos.html"><i data-lucide="tag" class="nav-icon"></i> Tabela de Preços</a>
             <a href="configuracoes.html"><i data-lucide="settings" class="nav-icon"></i> Configurações</a>
@@ -124,32 +134,230 @@
     </aside>
 
     <main class="main-content">
-        <header class="content-header">
-            <div><h1>📈 Relatórios</h1><p>Estatísticas e análises da clínica</p></div>
-        </header>
-
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-details"><div class="stat-value">0</div><div class="stat-label">Total Pacientes</div></div></div>
-            <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-details"><div class="stat-value">0</div><div class="stat-label">Consultas Realizadas</div></div></div>
-            <div class="stat-card"><div class="stat-icon orange">💰</div><div class="stat-details"><div class="stat-value">R$ 0</div><div class="stat-label">Faturamento Total</div></div></div>
+        <div class="page-header">
+            <h1>Relatórios</h1>
+            <p>Visão geral da clínica — pacientes, agenda e financeiro</p>
         </div>
 
-        <div class="section">
-            <h2>Relatórios Disponíveis</h2>
-            <div class="empty-state"><div class="empty-icon">📈</div><p>Sistema de relatórios em desenvolvimento</p></div>
+        <div class="page-body">
+            <!-- KPI Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon teal"><i data-lucide="users" style="width:22px;height:22px;"></i></div>
+                    <div>
+                        <div class="stat-value" id="statPacientes">—</div>
+                        <div class="stat-label">Total de Pacientes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i data-lucide="calendar-check" style="width:22px;height:22px;"></i></div>
+                    <div>
+                        <div class="stat-value" id="statHoje">—</div>
+                        <div class="stat-label">Consultas Hoje</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i data-lucide="calendar" style="width:22px;height:22px;"></i></div>
+                    <div>
+                        <div class="stat-value" id="statMes">—</div>
+                        <div class="stat-label">Consultas no Mês</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i data-lucide="trending-up" style="width:22px;height:22px;"></i></div>
+                    <div>
+                        <div class="stat-value" id="statReceitas">—</div>
+                        <div class="stat-label">Receitas do Mês</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="section-grid">
+                <!-- Próximas consultas -->
+                <div class="card">
+                    <div class="card-head">
+                        <h2><i data-lucide="clock" style="width:16px;height:16px;color:#0D9488;"></i> Próximas Consultas</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="proximasConsultas">
+                            <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aniversariantes -->
+                <div class="card">
+                    <div class="card-head">
+                        <h2><i data-lucide="cake" style="width:16px;height:16px;color:#7c3aed;"></i> Aniversariantes</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="aniversariantes">
+                            <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial summary -->
+            <div class="card" style="margin-bottom:24px;">
+                <div class="card-head">
+                    <h2><i data-lucide="pie-chart" style="width:16px;height:16px;color:#0D9488;"></i> Resumo Financeiro do Mês</h2>
+                    <span id="finPeriodo" style="font-size:12px;color:var(--du-text-2);"></span>
+                </div>
+                <div class="card-body" id="finResumo">
+                    <div class="loading-state"><div class="spinner"></div>Carregando...</div>
+                </div>
+            </div>
         </div>
     </main>
 
     <script src="js/auth-check.js"></script>
+    <script src="js/orcamentos-modal.js"></script>
     <script>
-        function logout() {
-            if (confirm('Deseja sair?')) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
+        const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+        function formatBRL(v) {
+            return parseFloat(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatData(d) {
+            if (!d) return '-';
+            const parts = String(d).split('T')[0].split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        async function carregarDashboard() {
+            try {
+                const data = await apiCall('/api/dashboard');
+                const dash = data.dashboard || {};
+                document.getElementById('statPacientes').textContent = dash.totalPacientes ?? '—';
+                document.getElementById('statHoje').textContent = dash.agendamentosHoje ?? '—';
+                document.getElementById('statMes').textContent = dash.agendamentosMes ?? '—';
+                document.getElementById('statReceitas').textContent = formatBRL(dash.receitasMes);
+
+                const proximos = dash.proximosAgendamentos || [];
+                if (!proximos.length) {
+                    document.getElementById('proximasConsultas').innerHTML = `<div class="empty-state"><i data-lucide="calendar-x" style="width:40px;height:40px;display:block;margin:0 auto 8px;opacity:0.3;"></i>Nenhuma consulta agendada</div>`;
+                } else {
+                    const items = proximos.map(a => {
+                        const dt = a.data ? a.data.split('T')[0].split('-') : ['','',''];
+                        return `<div class="upcoming-item">
+                            <div class="upcoming-date">
+                                <div class="day">${dt[2] || '--'}</div>
+                                <div class="month">${MESES[parseInt(dt[1]) - 1] || ''}</div>
+                            </div>
+                            <div class="upcoming-info">
+                                <div class="upcoming-name">${a.pacienteNome || 'Paciente'}</div>
+                                <div class="upcoming-proc">${a.procedimento || 'Consulta'}</div>
+                            </div>
+                            <div class="upcoming-time">${a.horario || ''}</div>
+                        </div>`;
+                    }).join('');
+                    document.getElementById('proximasConsultas').innerHTML = `<div class="upcoming-list">${items}</div>`;
+                }
+                lucide.createIcons();
+            } catch (e) {
+                document.getElementById('statPacientes').textContent = 'Erro';
+                document.getElementById('proximasConsultas').innerHTML = '<div class="empty-state">Erro ao carregar dados</div>';
             }
         }
+
+        async function carregarAniversariantes() {
+            try {
+                const data = await apiCall('/api/pacientes/aniversariantes');
+                const lista = data.aniversariantes || data || [];
+                if (!lista.length) {
+                    document.getElementById('aniversariantes').innerHTML = `<div class="empty-state"><i data-lucide="smile" style="width:40px;height:40px;display:block;margin:0 auto 8px;opacity:0.3;"></i>Nenhum aniversariante este mês</div>`;
+                    lucide.createIcons();
+                    return;
+                }
+                const hoje = new Date();
+                const hojeStr = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}`;
+
+                const items = lista.map(p => {
+                    const inicial = (p.nome || 'P')[0].toUpperCase();
+                    const dtAniv = p.data_nascimento ? formatData(p.data_nascimento).substring(0,5) : '';
+                    const isHoje = dtAniv === hojeStr;
+                    const badge = isHoje
+                        ? '<span class="badge-hoje">Hoje!</span>'
+                        : '<span class="badge-mes">Este mês</span>';
+                    return `<div class="aniv-item">
+                        <div class="aniv-avatar">${inicial}</div>
+                        <div>
+                            <div class="aniv-name">${p.nome}</div>
+                            <div class="aniv-date">${dtAniv}</div>
+                        </div>
+                        ${badge}
+                    </div>`;
+                }).join('');
+                document.getElementById('aniversariantes').innerHTML = `<div class="aniv-list">${items}</div>`;
+                lucide.createIcons();
+            } catch (e) {
+                document.getElementById('aniversariantes').innerHTML = '<div class="empty-state">Erro ao carregar aniversariantes</div>';
+            }
+        }
+
+        async function carregarFinanceiro() {
+            const hoje = new Date();
+            const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+            const fim = hoje.toISOString().split('T')[0];
+            document.getElementById('finPeriodo').textContent = `${formatData(inicio)} – ${formatData(fim)}`;
+
+            try {
+                const data = await apiCall(`/api/financeiro?inicio=${inicio}&fim=${fim}`);
+                const resumo = data.resumo || {};
+                const receitas = parseFloat(resumo.receitas || 0);
+                const despesas = parseFloat(resumo.despesas || 0);
+                const saldo = parseFloat(resumo.saldo || 0);
+                const max = Math.max(receitas, despesas, 1);
+
+                document.getElementById('finResumo').innerHTML = `
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px;">
+                        <div style="text-align:center;padding:16px;background:#d1fae5;border-radius:10px;">
+                            <div style="font-size:20px;font-weight:700;color:#059669;">${formatBRL(receitas)}</div>
+                            <div style="font-size:12px;color:#065f46;margin-top:4px;">Receitas</div>
+                        </div>
+                        <div style="text-align:center;padding:16px;background:#fee2e2;border-radius:10px;">
+                            <div style="font-size:20px;font-weight:700;color:#dc2626;">${formatBRL(despesas)}</div>
+                            <div style="font-size:12px;color:#7f1d1d;margin-top:4px;">Despesas</div>
+                        </div>
+                        <div style="text-align:center;padding:16px;background:${saldo>=0?'#ccfbf1':'#fee2e2'};border-radius:10px;">
+                            <div style="font-size:20px;font-weight:700;color:${saldo>=0?'#0D9488':'#dc2626'};">${formatBRL(saldo)}</div>
+                            <div style="font-size:12px;color:${saldo>=0?'#134e4a':'#7f1d1d'};margin-top:4px;">Saldo</div>
+                        </div>
+                    </div>
+                    <div class="fin-row">
+                        <div class="fin-label"><span class="name">Receitas</span><span class="val">${formatBRL(receitas)}</span></div>
+                        <div class="fin-bar"><div class="fin-bar-fill fill-green" style="width:${Math.round(receitas/max*100)}%;"></div></div>
+                    </div>
+                    <div class="fin-row">
+                        <div class="fin-label"><span class="name">Despesas</span><span class="val">${formatBRL(despesas)}</span></div>
+                        <div class="fin-bar"><div class="fin-bar-fill fill-red" style="width:${Math.round(despesas/max*100)}%;"></div></div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <a href="financeiro.html" style="color:var(--du-primary);font-size:13px;text-decoration:none;font-weight:500;">Ver todas as movimentações →</a>
+                    </div>`;
+            } catch (e) {
+                document.getElementById('finResumo').innerHTML = '<div class="empty-state">Erro ao carregar dados financeiros</div>';
+            }
+        }
+
+        function logout() {
+            if (confirm('Deseja sair?')) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('current_dentista');
+                window.location.href = '/login';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.preencherDadosUsuarioSidebar) preencherDadosUsuarioSidebar();
+            lucide.createIcons();
+            carregarDashboard();
+            carregarAniversariantes();
+            carregarFinanceiro();
+        });
     </script>
-    <script src="js/orcamentos-modal.js"></script>
-    <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>

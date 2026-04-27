@@ -17,10 +17,13 @@
             --du-6: 24px; --du-7: 28px; --du-r-xl: 12px; --du-r-lg: 8px;
             --du-h3: 20px; --du-h4: 16px; --du-small: 14px;
             --du-sh-lg: 0 4px 20px rgba(0,0,0,0.12); --du-sh-md: 0 2px 8px rgba(0,0,0,0.08);
+            --du-sh-sm: 0 1px 4px rgba(0,0,0,0.06); --du-sh-glow: 0 4px 12px rgba(13,148,136,0.4);
+            --du-r-md: 8px; --du-focus: 0 0 0 3px rgba(13,148,136,0.2);
+            --du-font: 'Inter', sans-serif; --du-primary-hover: #0F766E;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: #f0f4f8; min-height: 100vh; }
-        .header { background: linear-gradient(135deg, #1FA2FF 0%, #12D8FA 100%); padding: 16px 20px; color: white; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .header { background: linear-gradient(135deg, #0D9488 0%, #0F766E 50%, #0D9488 100%); padding: 16px 20px; color: white; text-align: center; position: sticky; top: 0; z-index: 10; }
         .header img { height: 32px; margin-bottom: 4px; }
         .header h1 { font-size: 18px; font-weight: 700; }
         .header p { font-size: 12px; opacity: 0.85; }
@@ -58,10 +61,10 @@
         .termo-check label { font-size:12px;color:#374151;line-height:1.4;cursor:pointer; }
 
         .nome-input { width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; font-family: 'Inter', sans-serif; margin-bottom: 12px; text-align: center; transition: border-color 0.2s; }
-        .nome-input:focus { outline: none; border-color: #1FA2FF; }
+        .nome-input:focus { outline: none; border-color: #0D9488; }
 
         .canvas-wrapper { position: relative; border: 2px dashed #d1d5db; border-radius: 14px; overflow: hidden; background: white; touch-action: none; margin-bottom: 8px; }
-        .canvas-wrapper.active { border-color: #1FA2FF; border-style: solid; }
+        .canvas-wrapper.active { border-color: #0D9488; border-style: solid; }
         #signCanvas { display: block; width: 100%; cursor: crosshair; touch-action: none; }
         .canvas-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #d1d5db; font-size: 16px; font-weight: 600; pointer-events: none; transition: opacity 0.3s; }
         .canvas-wrapper.active .canvas-hint { opacity: 0; }
