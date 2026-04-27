@@ -735,6 +735,36 @@ async function initDatabase() {
             )
         `);
 
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS estoque (
+                id SERIAL PRIMARY KEY,
+                dentista_id INTEGER REFERENCES dentistas(id) UNIQUE,
+                produtos JSONB DEFAULT '[]',
+                historico JSONB DEFAULT '[]',
+                atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS termos_consentimento (
+                id SERIAL PRIMARY KEY,
+                dentista_id INTEGER REFERENCES dentistas(id) ON DELETE CASCADE,
+                titulo VARCHAR(255) NOT NULL,
+                conteudo TEXT NOT NULL,
+                categoria VARCHAR(100),
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Adicionar colunas ao orcamentos se não existirem
+        try {
+            await pool.query(`ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS termo_consentimento TEXT`);
+            await pool.query(`ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS termo_aceito BOOLEAN DEFAULT FALSE`);
+            await pool.query(`ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS assinatura_token TEXT`);
+            await pool.query(`ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS assinatura_imagem TEXT`);
+            await pool.query(`ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS assinatura_nome VARCHAR(255)`);
+        } catch(e) {}
+
         console.log('Banco de dados inicializado!');
     } catch (error) {
         console.error('Erro ao inicializar banco:', error.message);
@@ -5131,6 +5161,255 @@ app.put('/api/debitos/:id', authMiddleware, async (req, res) => {
 app.delete('/api/debitos/:id', authMiddleware, async (req, res) => {
     try {
         await pool.query('DELETE FROM debitos WHERE id = $1 AND dentista_id = $2', [req.params.id, req.dentistaId]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// ==============================================================================
+// RETORNOS — PUT/DELETE (GET já existe acima)
+// ==============================================================================
+
+app.put('/api/retornos/:id', authMiddleware, async (req, res) => {
+    try {
+        const { status, proximoRetorno, observacoes, renovar } = req.body;
+        const id = req.params.id;
+        if (status === 'realizado') {
+            await pool.query(
+                `UPDATE retornos SET status = 'realizado' WHERE id = $1 AND dentista_id = $2`,
+                [id, req.dentistaId]
+            );
+            if (renovar) {
+                const orig = await pool.query('SELECT * FROM retornos WHERE id = $1', [id]);
+                if (orig.rows.length > 0) {
+                    const r = orig.rows[0];
+                    const prox = new Date();
+                    prox.setMonth(prox.getMonth() + 6);
+                    await pool.query(
+                        `INSERT INTO retornos (dentista_id, paciente_id, motivo, data_retorno) VALUES ($1,$2,$3,$4)`,
+                        [req.dentistaId, r.paciente_id, r.motivo, prox.toISOString().split('T')[0]]
+                    );
+                }
+            }
+        } else {
+            if (proximoRetorno) await pool.query('UPDATE retornos SET data_retorno = $1 WHERE id = $2 AND dentista_id = $3', [proximoRetorno, id, req.dentistaId]);
+            if (status) await pool.query('UPDATE retornos SET status = $1 WHERE id = $2 AND dentista_id = $3', [status, id, req.dentistaId]);
+        }
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.delete('/api/retornos/:id', authMiddleware, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM retornos WHERE id = $1 AND dentista_id = $2', [req.params.id, req.dentistaId]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// ==============================================================================
+// ASSINATURA DIGITAL DE ORÇAMENTOS
+// ==============================================================================
+
+app.put('/api/orcamentos/:id/termo', authMiddleware, async (req, res) => {
+    try {
+        const { termoConsentimento } = req.body;
+        await pool.query(
+            'UPDATE orcamentos SET termo_consentimento = $1 WHERE id = $2 AND dentista_id = $3',
+            [termoConsentimento || null, req.params.id, req.dentistaId]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.post('/api/orcamentos/:id/gerar-link', authMiddleware, async (req, res) => {
+    try {
+        const orc = await pool.query(
+            'SELECT * FROM orcamentos WHERE id = $1 AND dentista_id = $2',
+            [req.params.id, req.dentistaId]
+        );
+        if (orc.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrado' });
+        let token = orc.rows[0].assinatura_token;
+        if (!token) {
+            const crypto = require('crypto');
+            token = crypto.randomBytes(32).toString('hex');
+            await pool.query('UPDATE orcamentos SET assinatura_token = $1 WHERE id = $2', [token, req.params.id]);
+        }
+        res.json({ success: true, token, link: `/area-dentistas/assinar.html?token=${token}` });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// Buscar orçamento por token (PÚBLICO — sem auth)
+app.get('/api/orcamentos/assinar/:token', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT o.*, p.nome as paciente_nome,
+                   d.nome as dentista_nome, d.cro as dentista_cro,
+                   c.nome_clinica, c.telefone as clinica_telefone, c.endereco as clinica_endereco
+            FROM orcamentos o
+            LEFT JOIN pacientes p ON o.paciente_id = p.id
+            LEFT JOIN dentistas d ON o.dentista_id = d.id
+            LEFT JOIN config_clinica c ON o.dentista_id = c.dentista_id
+            WHERE o.assinatura_token = $1
+        `, [req.params.token]);
+        if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Link inválido ou expirado' });
+        const o = result.rows[0];
+        const criado = new Date(o.criado_em);
+        const validade = new Date(criado.getTime() + (o.validade_dias || 30) * 86400000);
+        if (new Date() > validade) return res.status(410).json({ success: false, erro: 'Orçamento vencido' });
+        const itens = Array.isArray(o.itens) ? o.itens : (typeof o.itens === 'string' ? JSON.parse(o.itens) : []);
+        res.json({
+            success: true,
+            orcamento: {
+                id: o.id, total: parseFloat(o.total), validadeDias: o.validade_dias,
+                formaPagamento: o.forma_pagamento, observacoes: o.observacoes, criadoEm: o.criado_em,
+                pacienteNome: o.paciente_nome, dentistaNome: o.dentista_nome, dentistaCro: o.dentista_cro,
+                jaAssinado: !!(o.assinatura_imagem || o.assinatura_url), assinaturaData: o.assinatura_em,
+                clinicaNome: o.nome_clinica || '', clinicaTelefone: o.clinica_telefone || '',
+                clinicaEndereco: o.clinica_endereco || '',
+                termoConsentimento: o.termo_consentimento || null
+            },
+            itens: itens.map(function(i) { return { dente: i.dente || null, procedimento: i.nome || i.procedimento || '', valor: parseFloat(i.valor) || 0 }; })
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// Salvar assinatura (PÚBLICO — sem auth)
+app.post('/api/orcamentos/assinar/:token', async (req, res) => {
+    try {
+        const { imagem, nome } = req.body;
+        if (!imagem) return res.status(400).json({ success: false, erro: 'Assinatura obrigatória' });
+        const orc = await pool.query('SELECT * FROM orcamentos WHERE assinatura_token = $1', [req.params.token]);
+        if (orc.rows.length === 0) return res.status(404).json({ success: false, erro: 'Link inválido' });
+        if (orc.rows[0].assinatura_imagem || orc.rows[0].assinatura_url) {
+            return res.status(409).json({ success: false, erro: 'Orçamento já foi assinado' });
+        }
+        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
+        await pool.query(
+            `UPDATE orcamentos SET assinatura_imagem = $1, assinatura_url = $1, assinatura_em = NOW(),
+             assinatura_ip = $2, assinatura_nome = $3, status = 'assinado', termo_aceito = TRUE
+             WHERE assinatura_token = $4`,
+            [imagem, ip, nome || '', req.params.token]
+        );
+        res.json({ success: true, message: 'Orçamento assinado com sucesso!' });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// ==============================================================================
+// TERMOS DE CONSENTIMENTO
+// ==============================================================================
+
+app.get('/api/termos', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM termos_consentimento WHERE dentista_id = $1 ORDER BY categoria, titulo',
+            [req.dentistaId]
+        );
+        res.json({ success: true, termos: result.rows.map(t => ({ id: t.id, titulo: t.titulo, conteudo: t.conteudo, categoria: t.categoria, criadoEm: t.criado_em })) });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.post('/api/termos', authMiddleware, async (req, res) => {
+    try {
+        const { titulo, conteudo, categoria } = req.body;
+        if (!titulo || !conteudo) return res.status(400).json({ success: false, erro: 'Título e conteúdo são obrigatórios' });
+        const result = await pool.query(
+            'INSERT INTO termos_consentimento (dentista_id, titulo, conteudo, categoria) VALUES ($1, $2, $3, $4) RETURNING id',
+            [req.dentistaId, titulo, conteudo, categoria || 'Geral']
+        );
+        res.status(201).json({ success: true, termoId: result.rows[0].id });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.put('/api/termos/:id', authMiddleware, async (req, res) => {
+    try {
+        const { titulo, conteudo, categoria } = req.body;
+        await pool.query(
+            'UPDATE termos_consentimento SET titulo=$1, conteudo=$2, categoria=$3 WHERE id=$4 AND dentista_id=$5',
+            [titulo, conteudo, categoria, req.params.id, req.dentistaId]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.delete('/api/termos/:id', authMiddleware, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM termos_consentimento WHERE id=$1 AND dentista_id=$2', [req.params.id, req.dentistaId]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.post('/api/termos/popular-padrao', authMiddleware, async (req, res) => {
+    try {
+        const existing = await pool.query('SELECT COUNT(*) as total FROM termos_consentimento WHERE dentista_id = $1', [req.dentistaId]);
+        if (parseInt(existing.rows[0].total) > 0) return res.json({ success: true, message: 'Termos já existem' });
+        const padrao = [
+            { titulo: 'Tratamento Endodôntico', categoria: 'Endodontia', conteudo: 'TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO — TRATAMENTO ENDODÔNTICO\n\nEu, paciente abaixo identificado(a), declaro que fui informado(a) pelo(a) cirurgião(ã)-dentista sobre:\n\n1. DIAGNÓSTICO: A necessidade de tratamento endodôntico (tratamento de canal) no(s) dente(s) indicado(s) no orçamento.\n\n2. PROCEDIMENTO: O tratamento consiste na remoção da polpa dentária (nervo), limpeza, modelagem e obturação dos canais radiculares.\n\n3. BENEFÍCIOS ESPERADOS: Eliminação da infecção/inflamação, alívio da dor e preservação do dente.\n\n4. RISCOS E COMPLICAÇÕES POSSÍVEIS:\n- Dor ou desconforto pós-operatório (temporário)\n- Possibilidade de fratura de instrumento dentro do canal\n- Necessidade de retratamento futuro\n- Em casos raros, necessidade de cirurgia ou extração\n\nDeclaro que tive oportunidade de esclarecer todas as minhas dúvidas e que autorizo a realização do tratamento proposto.' },
+            { titulo: 'Procedimentos Gerais', categoria: 'Geral', conteudo: 'TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO — PROCEDIMENTO ODONTOLÓGICO\n\nEu, paciente abaixo identificado(a), declaro que:\n\n1. Fui informado(a) sobre o diagnóstico, tratamento proposto, alternativas, riscos e benefícios dos procedimentos descritos no orçamento em anexo.\n\n2. Estou ciente de que todo procedimento odontológico possui riscos inerentes, incluindo mas não limitados a: dor, inchaço, sangramento, infecção e reações alérgicas.\n\n3. Informei ao(à) dentista sobre meu histórico médico completo, medicamentos em uso, alergias e condições de saúde.\n\n4. Comprometo-me a seguir as orientações pós-operatórias e comparecer aos retornos agendados.\n\nDeclaro que autorizo livremente a realização do(s) tratamento(s) proposto(s).' },
+            { titulo: 'Cirurgia / Exodontia', categoria: 'Cirurgia', conteudo: 'TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO — PROCEDIMENTO CIRÚRGICO\n\nEu, paciente abaixo identificado(a), declaro que fui informado(a) sobre:\n\n1. PROCEDIMENTO: A necessidade de procedimento cirúrgico odontológico conforme descrito no orçamento.\n\n2. RISCOS E COMPLICAÇÕES POSSÍVEIS:\n- Dor, edema e hematoma pós-operatório\n- Sangramento prolongado\n- Infecção pós-operatória\n- Parestesia temporária ou permanente\n- Necessidade de procedimentos complementares\n\n3. Comprometo-me a seguir as orientações pós-operatórias.\n\nAutorizo a realização do procedimento cirúrgico proposto.' },
+            { titulo: 'Implante Dentário', categoria: 'Implantodontia', conteudo: 'TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO — IMPLANTE DENTÁRIO\n\nEu, paciente abaixo identificado(a), declaro que fui informado(a) sobre:\n\n1. ETAPAS: Fase cirúrgica (instalação do implante), osseointegração (3-6 meses) e fase protética.\n\n2. RISCOS: Não osseointegração, infecção peri-implantar, lesão de nervos, perfuração do seio maxilar.\n\n3. Comprometo-me com higiene rigorosa e retornos periódicos.\n\nAutorizo a realização do procedimento de implante dentário.' },
+            { titulo: 'Prótese Dentária', categoria: 'Prótese', conteudo: 'TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO — PRÓTESE DENTÁRIA\n\nEu, paciente abaixo identificado(a), declaro que fui informado(a) sobre:\n\n1. EXPECTATIVAS: A prótese visa restabelecer função e estética, porém possui limitações e período de adaptação.\n\n2. POSSÍVEIS INTERCORRÊNCIAS: Período de adaptação com possível desconforto, necessidade de ajustes, desgaste natural.\n\n3. Comprometo-me a seguir orientações de higiene e manutenção.\n\nAutorizo a realização do tratamento protético proposto.' }
+        ];
+        for (const t of padrao) {
+            await pool.query(
+                'INSERT INTO termos_consentimento (dentista_id, titulo, conteudo, categoria) VALUES ($1, $2, $3, $4)',
+                [req.dentistaId, t.titulo, t.conteudo, t.categoria]
+            );
+        }
+        res.json({ success: true, message: '5 termos padrão criados!' });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+// ==============================================================================
+// ESTOQUE
+// ==============================================================================
+
+app.get('/api/estoque', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT produtos, historico FROM estoque WHERE dentista_id = $1',
+            [req.dentistaId]
+        );
+        if (result.rows.length > 0) {
+            res.json({ success: true, produtos: result.rows[0].produtos, historico: result.rows[0].historico });
+        } else {
+            res.json({ success: true, produtos: [], historico: [] });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
+app.post('/api/estoque', authMiddleware, async (req, res) => {
+    try {
+        const { produtos, historico } = req.body;
+        await pool.query(`
+            INSERT INTO estoque (dentista_id, produtos, historico, atualizado_em)
+            VALUES ($1, $2, $3, NOW())
+            ON CONFLICT (dentista_id) DO UPDATE SET produtos = $2, historico = $3, atualizado_em = NOW()
+        `, [req.dentistaId, JSON.stringify(produtos || []), JSON.stringify(historico || [])]);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });

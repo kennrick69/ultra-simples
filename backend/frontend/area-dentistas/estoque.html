@@ -492,6 +492,48 @@
         })();
     </script>
     <script src="js/estoque.js"></script>
+    <script>
+    // API sync: override carregarDados e salvarDados para persistir no servidor
+    (function() {
+        var _carregarOriginal = EstoqueSystem.carregarDados.bind(EstoqueSystem);
+        var _salvarOriginal = EstoqueSystem.salvarDados.bind(EstoqueSystem);
+        var _syncTimer = null;
+
+        EstoqueSystem.carregarDados = function() {
+            // Carrega localStorage imediatamente (sem tela em branco)
+            _carregarOriginal();
+            // Então sobrescreve com dados do servidor
+            apiCall('/api/estoque').then(function(data) {
+                if (!data || !data.success) return;
+                var user = EstoqueSystem.getCurrentUser();
+                if (!user) return;
+                if (data.produtos && data.produtos.length > 0) {
+                    EstoqueSystem.produtos = data.produtos;
+                    localStorage.setItem('estoque_produtos_' + user.id, JSON.stringify(data.produtos));
+                }
+                if (data.historico && data.historico.length > 0) {
+                    EstoqueSystem.historico = data.historico;
+                    localStorage.setItem('estoque_historico_' + user.id, JSON.stringify(data.historico));
+                }
+                EstoqueSystem.renderizarProdutos();
+                EstoqueSystem.renderizarHistorico();
+                EstoqueSystem.atualizarEstatisticas();
+            }).catch(function() {});
+        };
+
+        EstoqueSystem.salvarDados = function() {
+            _salvarOriginal();
+            // Debounce: espera 1s antes de sincronizar (evita flood em operações rápidas)
+            clearTimeout(_syncTimer);
+            _syncTimer = setTimeout(function() {
+                apiCall('/api/estoque', 'POST', {
+                    produtos: EstoqueSystem.produtos,
+                    historico: EstoqueSystem.historico
+                }).catch(function() {});
+            }, 1000);
+        };
+    })();
+    </script>
     <script src="js/onboarding.js"></script>
     <script src="js/orcamentos-modal.js"></script>
     <script>if (window.lucide) lucide.createIcons();</script>
