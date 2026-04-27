@@ -2251,6 +2251,11 @@ app.get('/api/pacientes/:id', authMiddleware, async (req, res) => {
                 responsavelEmail: p.responsavel_email,
                 responsavelParentesco: p.responsavel_parentesco,
                 responsavelEndereco: p.responsavel_endereco,
+                estrangeiro: p.estrangeiro || false,
+                passaporte: p.passaporte,
+                pais: p.pais,
+                nacionalidade: p.nacionalidade,
+                tipo_documento: p.tipo_documento || 'cpf',
                 criadoEm: p.criado_em
             }
         });
@@ -3885,12 +3890,12 @@ app.get('/api/pacientes/:pacienteId/casos-proteticos', authMiddleware, async (re
 app.put('/api/casos-proteticos/:id', authMiddleware, async (req, res) => {
     try {
         const { id } = req.params;
-        const { laboratorioId, tipoTrabalho, tipoTrabalhoDetalhe, tipoPeca, dentes, material, materialDetalhe, tecnica, corShade, escalaCor, urgencia, dataEnvio, dataPrometida, dataRetornoReal, observacoesClinics, observacoesTecnicas, urlArquivos, valorCombinado, valorPago } = req.body;
+        const { laboratorioId, tipoTrabalho, tipoTrabalhoDetalhe, tipoPeca, dentes, material, materialDetalhe, tecnica, corShade, escalaCor, urgencia, dataEnvio, dataPrometida, dataRetornoReal, observacoesClinics, observacoesTecnicas, urlArquivos, valorCombinado, valorPago, status } = req.body;
 
         const result = await pool.query(`
-            UPDATE casos_proteticos SET laboratorio_id = $1, tipo_trabalho = COALESCE($2, tipo_trabalho), tipo_trabalho_detalhe = $3, tipo_peca = COALESCE($4, tipo_peca), dentes = $5, material = $6, material_detalhe = $7, tecnica = $8, cor_shade = $9, escala_cor = $10, urgencia = $11, data_envio = $12, data_prometida = $13, data_retorno_real = $14, observacoes_clinicas = $15, observacoes_tecnicas = $16, url_arquivos = $17, valor_combinado = $18, valor_pago = $19, atualizado_em = CURRENT_TIMESTAMP
+            UPDATE casos_proteticos SET laboratorio_id = $1, tipo_trabalho = COALESCE($2, tipo_trabalho), tipo_trabalho_detalhe = $3, tipo_peca = COALESCE($4, tipo_peca), dentes = $5, material = $6, material_detalhe = $7, tecnica = $8, cor_shade = $9, escala_cor = $10, urgencia = $11, data_envio = $12, data_prometida = $13, data_retorno_real = $14, observacoes_clinicas = $15, observacoes_tecnicas = $16, url_arquivos = $17, valor_combinado = $18, valor_pago = $19, status = COALESCE($22, status), atualizado_em = CURRENT_TIMESTAMP
             WHERE id = $20 AND dentista_id = $21 RETURNING *
-        `, [laboratorioId ? parseInt(laboratorioId) : null, tipoTrabalho, tipoTrabalhoDetalhe || null, tipoPeca || null, dentes || [], material || null, materialDetalhe || null, tecnica || 'convencional', corShade || null, escalaCor || null, urgencia || 'normal', dataEnvio || null, dataPrometida || null, dataRetornoReal || null, observacoesClinics || null, observacoesTecnicas || null, urlArquivos || null, valorCombinado || null, valorPago || null, parseInt(id), parseInt(req.user.id)]);
+        `, [laboratorioId ? parseInt(laboratorioId) : null, tipoTrabalho, tipoTrabalhoDetalhe || null, tipoPeca || null, dentes || [], material || null, materialDetalhe || null, tecnica || 'convencional', corShade || null, escalaCor || null, urgencia || 'normal', dataEnvio || null, dataPrometida || null, dataRetornoReal || null, observacoesClinics || null, observacoesTecnicas || null, urlArquivos || null, valorCombinado || null, valorPago || null, parseInt(id), parseInt(req.user.id), status || null]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, erro: 'Caso não encontrado' });
