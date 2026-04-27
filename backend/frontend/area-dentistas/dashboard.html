@@ -383,7 +383,7 @@
                             const dataRet = new Date(r.data_retorno + 'T12:00:00');
                             const dias = diasAtras(r.data_retorno);
                             const vencido = dataRet < hoje;
-                            const telefone = r.paciente_celular || '';
+                            const telefone = r.paciente_celular || r.paciente_telefone || '';
                             return `
                             <div class="retorno-item ${vencido ? 'vencido' : ''}">
                                 <div class="retorno-info">
@@ -428,12 +428,12 @@
                         const statusText = o.status === 'assinado' ? '✅ Assinado' : o.status === 'aprovado' ? '✅ Aprovado' : '⏳ Pendente';
                         return `
                         <div class="orc-item">
-                            <div class="orc-avatar">${getIniciais(o.paciente_nome)}</div>
+                            <div class="orc-avatar">${getIniciais(o.pacienteNome || o.paciente_nome)}</div>
                             <div class="orc-info">
-                                <div class="orc-nome">${o.paciente_nome || 'Paciente'}</div>
-                                <div class="orc-detalhe">${formatarData(o.created_at?.split('T')[0] || o.data)} — ${o.itens?.length || '?'} itens</div>
+                                <div class="orc-nome">${o.pacienteNome || o.paciente_nome || 'Paciente'}</div>
+                                <div class="orc-detalhe">${formatarData((o.criadoEm || o.created_at || '').split('T')[0])} — ${Array.isArray(o.itens) ? o.itens.length : '?'} itens</div>
                             </div>
-                            <div class="orc-valor">${formatarMoeda(o.valor_total)}</div>
+                            <div class="orc-valor">${formatarMoeda(o.total || o.valor_total)}</div>
                             <span class="orc-status ${statusClass}">${statusText}</span>
                         </div>`;
                     }).join('');

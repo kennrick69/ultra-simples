@@ -345,11 +345,12 @@ var WhatsAppIntegration = {
     getClinicaData: function() {
         var configClinica = JSON.parse(localStorage.getItem('configClinica') || '{}');
         var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        
+        var dentista = JSON.parse(localStorage.getItem('dentista') || localStorage.getItem('current_dentista') || '{}');
+
         return {
-            nome: configClinica.nome || user.clinic || 'Clínica Odontológica',
-            dentista: configClinica.dentista || user.name || '',
-            telefone: configClinica.telefone || user.phone || '',
+            nome: configClinica.nome || user.clinic || dentista.clinica || dentista.nomeClinica || 'Clínica Odontológica',
+            dentista: configClinica.dentista || user.name || dentista.nome || '',
+            telefone: configClinica.telefone || user.phone || dentista.telefone || dentista.celular || '',
             endereco: configClinica.endereco || '',
             assinatura: configClinica.assinatura || ''
         };

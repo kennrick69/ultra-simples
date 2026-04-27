@@ -869,6 +869,13 @@ https://ws-CIDADE.atende.net:7443/?pg=rest&service=WNERestServiceNFSe
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="js/pdf-generator.js"></script>
+    <script>
+        function getCurrentUser() {
+            var d = getCurrentDentista();
+            if (!d) return null;
+            return { id: d.id, name: d.nome || d.name || '', nome: d.nome || d.name || '', cro: d.cro || '', clinic: d.clinica || d.clinic || d.nomeClinica || '', clinica: d.clinica || d.clinic || d.nomeClinica || '' };
+        }
+    </script>
     <!-- Integração NFSe -->
     <script src="js/nfse-integration.js"></script>
     <script>
@@ -2324,6 +2331,31 @@ https://ws-CIDADE.atende.net:7443/?pg=rest&service=WNERestServiceNFSe
         window.addEventListener('DOMContentLoaded', carregarNotas);
     </script>
     <script src="js/orcamentos-modal.js"></script>
+    <script>
+        // Override: também persiste notas na API
+        (function() {
+            var _salvarNotaOriginal = salvarNota;
+            salvarNota = function() {
+                _salvarNotaOriginal();
+                var isEquiparacao = document.getElementById('equiparacaoHospitalar') && document.getElementById('equiparacaoHospitalar').checked;
+                var dados = {
+                    descricao: (document.getElementById('descricao') || {}).value || '',
+                    valor: typeof getValorNumerico === 'function' ? getValorNumerico() : 0,
+                    data: (document.getElementById('dataServico') || {}).value || '',
+                    procedimentos: Array.from(document.querySelectorAll('input[name="procedimento"]:checked')).map(function(cb) { return cb.value; }),
+                    serie: typeof getSerieEmissao === 'function' ? getSerieEmissao() : '',
+                    equiparacao_hospitalar: !!isEquiparacao,
+                    rps: typeof getProximoRps === 'function' ? getProximoRps() : null
+                };
+                apiCall('/api/notas', 'POST', {
+                    valor: dados.valor || 0,
+                    descricaoServico: dados.descricao,
+                    dataEmissao: dados.data || null,
+                    dados: dados
+                }).catch(function() {});
+            };
+        })();
+    </script>
     <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>

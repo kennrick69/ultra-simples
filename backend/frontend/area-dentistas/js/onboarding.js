@@ -369,7 +369,7 @@ var OnboardingSystem = {
     // Mostrar modal de boas-vindas
     showWelcomeModal: function() {
         var user = this.getCurrentUser();
-        var nome = user ? user.name.split(' ')[0] : 'Doutor(a)';
+        var nome = user ? ((user.name || user.nome || 'Doutor(a)').split(' ')[0]) : 'Doutor(a)';
 
         var html = `
             <div class="onboarding-overlay show" id="onboardingOverlay">
@@ -708,7 +708,9 @@ function detectarTarefasConcluidas() {
     } catch(e) {}
     
     // Verificar dados da clínica (se nome está preenchido)
-    if (user.clinic && user.clinic.length > 3) {
+    var dentista = typeof getCurrentDentista === 'function' ? getCurrentDentista() : null;
+    var nomeClinica = user.clinic || user.clinica || (dentista && (dentista.clinica || dentista.nomeClinica)) || '';
+    if (nomeClinica && nomeClinica.length > 3) {
         OnboardingSystem.completeTask('clinica');
     }
 }

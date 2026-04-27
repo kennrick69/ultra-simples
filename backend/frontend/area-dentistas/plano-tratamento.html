@@ -597,7 +597,7 @@
         function getCurrentUser() {
             var d = getCurrentDentista();
             if (!d) return null;
-            return { id: d.id, name: d.nome || d.name || '', cro: d.cro || '' };
+            return { id: d.id, name: d.nome || d.name || '', cro: d.cro || '', clinic: d.clinica || d.clinic || d.nomeClinica || '' };
         }
     </script>
     <!-- jsPDF -->
@@ -638,6 +638,64 @@
         };
     </script>
     <script src="js/orcamentos-modal.js"></script>
+    <script>
+        // Override: também persiste na API ao vincular plano ao paciente
+        var _vincularOriginal = vincularPlanoAoPaciente;
+        vincularPlanoAoPaciente = function(pacienteId, plano) {
+            _vincularOriginal(pacienteId, plano);
+            var itens = (plano.etapas || []).map(function(e, i) {
+                return { dente: e.elemento || null, procedimento: e.procedimento, posicao: i, origem: 'form' };
+            });
+            apiCall('/api/plano-tratamento', 'POST', {
+                pacienteId: parseInt(pacienteId) || pacienteId,
+                itens: itens,
+                dados: {
+                    diagnostico: plano.diagnostico,
+                    objetivo: plano.objetivo,
+                    etapas: plano.etapas,
+                    valorTotal: plano.valorTotal,
+                    formaPagamento: plano.formaPagamento,
+                    numParcelas: plano.numParcelas,
+                    observacoes: plano.observacoes,
+                    status: plano.status
+                }
+            }).catch(function() {});
+        };
+
+        // Override: salvarNovoPaciente também cria o paciente na API
+        var _salvarNovoPacienteOriginal = salvarNovoPaciente;
+        salvarNovoPaciente = async function() {
+            var nome = document.getElementById('novoPacNome').value.trim();
+            var cpf = document.getElementById('novoPacCPF').value.trim();
+            var telefone = document.getElementById('novoPacTelefone').value.trim();
+            var email = document.getElementById('novoPacEmail').value.trim();
+            var nascimento = document.getElementById('novoPacNascimento').value;
+            if (!nome || !cpf || !telefone) { _salvarNovoPacienteOriginal(); return; }
+            try {
+                var data = await apiCall('/api/pacientes', 'POST', {
+                    nome: nome, cpf: cpf, telefone: telefone, email: email,
+                    dataNascimento: nascimento || null
+                });
+                if (data && data.success && data.paciente) {
+                    var p = data.paciente;
+                    var novoPac = {
+                        id: String(p.id), nome: p.nome || nome,
+                        cpf: p.cpf || cpf, telefone: p.telefone || telefone,
+                        celular: p.celular || '', email: p.email || email,
+                        cidade: p.cidade || '', estado: p.estado || ''
+                    };
+                    pacientesCache.push(novoPac);
+                    var user = getCurrentUser();
+                    if (user) localStorage.setItem('pacientes_' + user.id, JSON.stringify(pacientesCache));
+                    selecionarPaciente(novoPac.id);
+                    fecharModalPaciente();
+                    mostrarSucesso('Paciente cadastrado com sucesso!');
+                    return;
+                }
+            } catch(e) {}
+            _salvarNovoPacienteOriginal();
+        };
+    </script>
     <script>if (window.lucide) lucide.createIcons();</script>
 </body>
 </html>

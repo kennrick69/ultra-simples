@@ -4,6 +4,11 @@
 
 // ==================== GERAR PDF DO PLANO DE TRATAMENTO ====================
 function gerarPDFPlanoTratamento(plano, user) {
+    // Normaliza: aceita nome/name e clinica/clinic
+    user = Object.assign({}, user, {
+        name: user.name || user.nome || '',
+        clinic: user.clinic || user.clinica || ''
+    });
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -195,6 +200,11 @@ function gerarPDFPlanoTratamento(plano, user) {
 
 // ==================== GERAR PDF DE NOTA FISCAL ====================
 function gerarPDFNotaFiscal(nota, user) {
+    // Normaliza: aceita nome/name e clinica/clinic
+    user = Object.assign({}, user, {
+        name: user.name || user.nome || '',
+        clinic: user.clinic || user.clinica || ''
+    });
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     

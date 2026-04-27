@@ -1829,7 +1829,8 @@
             document.getElementById('bar-avatar').textContent = getIniciais(p.nome);
             document.getElementById('bar-nome').textContent = p.nome;
             const det = [];
-            if (p.data_nascimento) det.push(calcularIdade(p.data_nascimento) + ' anos');
+            var nascimento = p.dataNascimento || p.data_nascimento;
+            if (nascimento) det.push(calcularIdade(nascimento) + ' anos');
             if (p.celular) det.push('📞 ' + formatarTelefone(p.celular));
             document.getElementById('bar-detalhe').textContent = det.join('  •  ');
         }
@@ -2557,7 +2558,7 @@
                                     <div class="timeline-card-header">
                                         <div class="data-hora">
                                             <span class="data">${formatarData(ev.data)}</span>
-                                            <span class="hora">${ev.criado_em ? new Date(ev.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                                            <span class="hora">${(ev.criadoEm || ev.criado_em) ? new Date(ev.criadoEm || ev.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                                         </div>
                                         <div class="profissional">
                                             <div class="profissional-nome">Dr(a). ${dentista.nome || 'Dentista'}</div>

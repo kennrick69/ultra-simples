@@ -196,6 +196,17 @@ async function initDatabase() {
                 criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        await pool.query(`ALTER TABLE notas_fiscais ADD COLUMN IF NOT EXISTS dados JSONB`);
+        await pool.query(`ALTER TABLE receitas ADD COLUMN IF NOT EXISTS medicamentos JSONB`);
+        await pool.query(`ALTER TABLE receitas ADD COLUMN IF NOT EXISTS tipo VARCHAR(50)`);
+        await pool.query(`ALTER TABLE receitas ADD COLUMN IF NOT EXISTS data DATE`);
+        await pool.query(`ALTER TABLE atestados ADD COLUMN IF NOT EXISTS conteudo TEXT`);
+        await pool.query(`ALTER TABLE atestados ADD COLUMN IF NOT EXISTS dias_afastamento INTEGER`);
+        await pool.query(`ALTER TABLE atestados ADD COLUMN IF NOT EXISTS data DATE`);
+        await pool.query(`ALTER TABLE retornos ADD COLUMN IF NOT EXISTS dente VARCHAR(20)`);
+        await pool.query(`ALTER TABLE retornos ADD COLUMN IF NOT EXISTS periodicidade_meses INTEGER DEFAULT 6`);
+        await pool.query(`ALTER TABLE retornos ADD COLUMN IF NOT EXISTS procedimento_origem TEXT`);
+        await pool.query(`ALTER TABLE retornos ADD COLUMN IF NOT EXISTS observacoes TEXT`);
 
         // Tabela de profissionais da clínica (dentistas que aparecem na agenda)
         await pool.query(`
@@ -607,6 +618,7 @@ async function initDatabase() {
                 atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        await pool.query(`ALTER TABLE plano_tratamento ADD COLUMN IF NOT EXISTS dados JSONB`);
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS plano_tratamento_itens (
@@ -1358,7 +1370,7 @@ app.get('/api/dentistas/me', authMiddleware, async (req, res) => {
         const result = await pool.query('SELECT * FROM dentistas WHERE id = $1', [req.dentistaId]);
         if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrado' });
         const d = result.rows[0];
-        res.json({ success: true, dentista: { id: d.id, nome: d.nome, email: d.email, clinica: d.clinica_nome, cro: d.cro, telefone: d.telefone } });
+        res.json({ success: true, dentista: { id: d.id, nome: d.nome, email: d.email, clinica: d.clinica || d.clinica_nome, cro: d.cro, telefone: d.telefone } });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }
@@ -2182,7 +2194,7 @@ app.get('/api/pacientes/aniversariantes', authMiddleware, async (req, res) => {
             [parseInt(req.user.id), dia, mes]
         );
         
-        res.json({ success: true, pacientes: result.rows });
+        res.json({ success: true, aniversariantes: result.rows, pacientes: result.rows });
     } catch (error) {
         console.error('Erro buscar aniversariantes:', error);
         res.status(500).json({ success: false, erro: 'Erro ao buscar aniversariantes' });
@@ -2478,10 +2490,9 @@ app.get('/api/agendamentos/buscar-codigo/:codigo', async (req, res) => {
             return res.status(400).json({ success: false, erro: 'Codigo invalido' });
         }
         
-        // Query usando colunas do banco de produção (name, clinic)
         const result = await pool.query(
-            `SELECT a.*, d.name as dentista_nome, d.clinic as clinica_nome
-             FROM agendamentos a 
+            `SELECT a.*, d.nome as dentista_nome, d.clinica as clinica_nome
+             FROM agendamentos a
              JOIN dentistas d ON a.dentista_id = d.id
              WHERE a.codigo_confirmacao = $1`,
             [codigo.toUpperCase()]
@@ -2524,10 +2535,9 @@ app.post('/api/agendamentos/confirmar', async (req, res) => {
             return res.status(400).json({ success: false, erro: 'Acao invalida' });
         }
         
-        // Buscar agendamento - usando colunas do banco de produção
         const busca = await pool.query(
-            `SELECT a.*, d.name as dentista_nome, d.clinic as clinica_nome
-             FROM agendamentos a 
+            `SELECT a.*, d.nome as dentista_nome, d.clinica as clinica_nome
+             FROM agendamentos a
              JOIN dentistas d ON a.dentista_id = d.id
              WHERE a.codigo_confirmacao = $1`,
             [codigo.toUpperCase()]
@@ -2624,9 +2634,11 @@ app.get('/api/agendamentos', authMiddleware, async (req, res) => {
             id: a.id.toString(),
             pacienteId: a.paciente_id ? a.paciente_id.toString() : null,
             paciente_nome: a.paciente_nome,
+            pacienteNome: a.paciente_nome,
             paciente_telefone: a.paciente_telefone || null,
             data: a.data,
             hora: a.horario,
+            horario: a.horario,
             duracao: a.duracao,
             procedimento: a.procedimento,
             valor: a.valor,
@@ -2839,10 +2851,10 @@ app.put('/api/agendamentos/:id', authMiddleware, async (req, res) => {
             return res.status(400).json({ success: false, erro: 'ID inválido' });
         }
         
-        const { pacienteId, pacienteNome, data, horario, duracao, procedimento, valor, status, encaixe, observacoes } = req.body;
+        const { pacienteId, paciente_id, pacienteNome, paciente_nome, data, horario, duracao, procedimento, valor, status, encaixe, observacoes } = req.body;
 
-        let nomePaciente = pacienteNome;
-        const pacId = validarId(pacienteId);
+        let nomePaciente = pacienteNome || paciente_nome;
+        const pacId = validarId(pacienteId || paciente_id);
         if (pacId && !nomePaciente) {
             const pacResult = await pool.query('SELECT nome FROM pacientes WHERE id = $1', [pacId]);
             if (pacResult.rows.length > 0) nomePaciente = pacResult.rows[0].nome;
@@ -3071,27 +3083,26 @@ app.get('/api/notas', authMiddleware, async (req, res) => {
 
 app.post('/api/notas', authMiddleware, async (req, res) => {
     try {
-        const { pacienteId, valor, descricaoServico } = req.body;
+        const { pacienteId, valor, descricaoServico, dados, dataEmissao, numero: numeroParam } = req.body;
 
-        if (!valor) {
-            return res.status(400).json({ success: false, erro: 'Valor é obrigatório' });
-        }
+        const valorFinal = parseFloat(valor || (dados && dados.valor) || 0);
+        const descricaoFinal = descricaoServico || (dados && dados.descricao) || '';
 
-        // ========== VERIFICAR SE PACIENTE TEM CADASTRO COMPLETO ==========
+        // Verificar cadastro completo do paciente apenas se fornecido
         if (pacienteId) {
             const pacienteResult = await pool.query(
                 'SELECT nome, cadastro_completo FROM pacientes WHERE id = $1 AND dentista_id = $2',
                 [parseInt(pacienteId), parseInt(req.user.id)]
             );
-            
+
             if (pacienteResult.rows.length === 0) {
                 return res.status(404).json({ success: false, erro: 'Paciente não encontrado' });
             }
-            
+
             const paciente = pacienteResult.rows[0];
             if (!paciente.cadastro_completo) {
-                return res.status(400).json({ 
-                    success: false, 
+                return res.status(400).json({
+                    success: false,
                     erro: `Para emitir NFS-e para "${paciente.nome}", é necessário completar o cadastro (CPF e endereço)`,
                     cadastroIncompleto: true,
                     pacienteId: pacienteId
@@ -3099,14 +3110,19 @@ app.post('/api/notas', authMiddleware, async (req, res) => {
             }
         }
 
-        // Gerar número da nota (simplificado)
-        const countResult = await pool.query('SELECT COUNT(*) FROM notas_fiscais WHERE dentista_id = $1', [parseInt(req.user.id)]);
-        const numero = 'NF' + String(parseInt(countResult.rows[0].count) + 1).padStart(6, '0');
+        // Gerar número da nota se não fornecido
+        let numero = numeroParam;
+        if (!numero) {
+            const countResult = await pool.query('SELECT COUNT(*) FROM notas_fiscais WHERE dentista_id = $1', [parseInt(req.user.id)]);
+            numero = 'NF' + String(parseInt(countResult.rows[0].count) + 1).padStart(6, '0');
+        }
+
+        const dataFinal = dataEmissao || (dados && dados.data) || null;
 
         const result = await pool.query(
-            `INSERT INTO notas_fiscais (dentista_id, paciente_id, numero, valor, data_emissao, descricao_servico)
-             VALUES ($1,$2,$3,$4,CURRENT_DATE,$5) RETURNING *`,
-            [parseInt(req.user.id), pacienteId ? parseInt(pacienteId) : null, numero, parseFloat(valor), descricaoServico]
+            `INSERT INTO notas_fiscais (dentista_id, paciente_id, numero, valor, data_emissao, descricao_servico, dados)
+             VALUES ($1,$2,$3,$4,COALESCE($5::date, CURRENT_DATE),$6,$7) RETURNING *`,
+            [parseInt(req.user.id), pacienteId ? parseInt(pacienteId) : null, numero, valorFinal, dataFinal, descricaoFinal, dados ? JSON.stringify(dados) : null]
         );
 
         res.status(201).json({
@@ -3824,6 +3840,7 @@ app.get('/api/pacientes/:pacienteId/casos-proteticos', authMiddleware, async (re
         const casos = result.rows.map(c => ({
             id: c.id.toString(),
             codigo: c.codigo,
+            // camelCase
             profissionalNome: c.profissional_nome,
             laboratorioNome: c.laboratorio_nome,
             tipoTrabalho: c.tipo_trabalho,
@@ -3840,7 +3857,14 @@ app.get('/api/pacientes/:pacienteId/casos-proteticos', authMiddleware, async (re
             valorCombinado: c.valor_combinado,
             valorPago: c.valor_pago,
             criadoEm: c.criado_em,
-            atualizadoEm: c.atualizado_em
+            atualizadoEm: c.atualizado_em,
+            // snake_case aliases for legacy frontend compatibility
+            laboratorio_nome: c.laboratorio_nome,
+            tipo_trabalho: c.tipo_trabalho,
+            criado_em: c.criado_em,
+            data_previsao: c.data_prometida,
+            valor: c.valor_combinado,
+            observacoes: c.observacoes_clinicas
         }));
         
         // Estatísticas
@@ -4608,12 +4632,12 @@ app.get('/api/plano-tratamento/:pacienteId', authMiddleware, async (req, res) =>
 // POST - Criar plano
 app.post('/api/plano-tratamento', authMiddleware, async (req, res) => {
     try {
-        const { pacienteId, itens } = req.body;
+        const { pacienteId, itens, dados } = req.body;
         if (!pacienteId) return res.status(400).json({ success: false, erro: 'pacienteId obrigatório' });
 
         const plano = await pool.query(`
-            INSERT INTO plano_tratamento (paciente_id, dentista_id) VALUES ($1, $2) RETURNING *
-        `, [pacienteId, req.dentistaId]);
+            INSERT INTO plano_tratamento (paciente_id, dentista_id, dados) VALUES ($1, $2, $3) RETURNING *
+        `, [pacienteId, req.dentistaId, dados ? JSON.stringify(dados) : null]);
 
         const planoId = plano.rows[0].id;
 
@@ -4687,23 +4711,36 @@ app.put('/api/plano-tratamento/itens/:itemId/realizar', authMiddleware, async (r
 // RECEITAS
 // ==============================================================================
 
+app.get('/api/receitas/detalhe/:id', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM receitas WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrada' });
+        const r = result.rows[0];
+        const receita = {
+            ...r,
+            medicamentos: r.medicamentos || [{ nome: r.medicamento || '', posologia: r.posologia || '' }],
+            tipo: r.tipo || 'simples',
+            data: r.data || (r.criado_em ? r.criado_em.toISOString().split('T')[0] : null)
+        };
+        res.json({ success: true, receita });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
 app.get('/api/receitas/:pacienteId', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT * FROM receitas WHERE paciente_id = $1 ORDER BY criado_em DESC',
             [req.params.pacienteId]
         );
-        res.json({ success: true, receitas: result.rows });
-    } catch (error) {
-        res.status(500).json({ success: false, erro: error.message });
-    }
-});
-
-app.get('/api/receitas/detalhe/:id', authMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM receitas WHERE id = $1', [req.params.id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrada' });
-        res.json({ success: true, receita: result.rows[0] });
+        const receitas = result.rows.map(r => ({
+            ...r,
+            medicamentos: r.medicamentos || [{ nome: r.medicamento || '', posologia: r.posologia || '' }],
+            tipo: r.tipo || 'simples',
+            data: r.data || (r.criado_em ? r.criado_em.toISOString().split('T')[0] : null)
+        }));
+        res.json({ success: true, receitas });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }
@@ -4711,13 +4748,16 @@ app.get('/api/receitas/detalhe/:id', authMiddleware, async (req, res) => {
 
 app.post('/api/receitas', authMiddleware, async (req, res) => {
     try {
-        const { pacienteId, medicamento, posologia, observacoes } = req.body;
-        if (!pacienteId || !medicamento) return res.status(400).json({ success: false, erro: 'Campos obrigatórios' });
+        const { pacienteId, medicamento, medicamentos, posologia, observacoes, tipo, data } = req.body;
+        const medArray = medicamentos || (medicamento ? [{ nome: medicamento, posologia: posologia || '' }] : null);
+        if (!pacienteId || !medArray) return res.status(400).json({ success: false, erro: 'Campos obrigatórios' });
+        const medSimples = Array.isArray(medArray) ? medArray.map(m => m.nome || m).join(', ') : String(medArray);
+        const dataFinal = data || new Date().toISOString().split('T')[0];
 
         const result = await pool.query(`
-            INSERT INTO receitas (paciente_id, dentista_id, medicamento, posologia, observacoes)
-            VALUES ($1, $2, $3, $4, $5) RETURNING *
-        `, [pacienteId, req.dentistaId, medicamento, posologia || null, observacoes || null]);
+            INSERT INTO receitas (paciente_id, dentista_id, medicamento, posologia, observacoes, medicamentos, tipo, data)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
+        `, [pacienteId, req.dentistaId, medSimples, posologia || null, observacoes || null, JSON.stringify(medArray), tipo || 'simples', dataFinal]);
 
         res.json({ success: true, receita: result.rows[0] });
     } catch (error) {
@@ -4730,23 +4770,26 @@ app.post('/api/receitas', authMiddleware, async (req, res) => {
 // ATESTADOS
 // ==============================================================================
 
+app.get('/api/atestados/detalhe/:id', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM atestados WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrado' });
+        const a = result.rows[0];
+        const atestado = { ...a, conteudo: a.conteudo || a.motivo || '', dias_afastamento: a.dias_afastamento || a.dias || 1, data: a.data || (a.criado_em ? a.criado_em.toISOString().split('T')[0] : null) };
+        res.json({ success: true, atestado });
+    } catch (error) {
+        res.status(500).json({ success: false, erro: error.message });
+    }
+});
+
 app.get('/api/atestados/:pacienteId', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT * FROM atestados WHERE paciente_id = $1 ORDER BY criado_em DESC',
             [req.params.pacienteId]
         );
-        res.json({ success: true, atestados: result.rows });
-    } catch (error) {
-        res.status(500).json({ success: false, erro: error.message });
-    }
-});
-
-app.get('/api/atestados/detalhe/:id', authMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM atestados WHERE id = $1', [req.params.id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrado' });
-        res.json({ success: true, atestado: result.rows[0] });
+        const atestados = result.rows.map(a => ({ ...a, conteudo: a.conteudo || a.motivo || '', dias_afastamento: a.dias_afastamento || a.dias || 1, data: a.data || (a.criado_em ? a.criado_em.toISOString().split('T')[0] : null) }));
+        res.json({ success: true, atestados });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }
@@ -4754,13 +4797,16 @@ app.get('/api/atestados/detalhe/:id', authMiddleware, async (req, res) => {
 
 app.post('/api/atestados', authMiddleware, async (req, res) => {
     try {
-        const { pacienteId, tipo, dias, cid, motivo, observacoes } = req.body;
+        const { pacienteId, tipo, dias, diasAfastamento, cid, motivo, conteudo, observacoes, data } = req.body;
         if (!pacienteId) return res.status(400).json({ success: false, erro: 'pacienteId obrigatório' });
+        const diasFinal = diasAfastamento || dias || 1;
+        const conteudoFinal = conteudo || motivo || null;
+        const dataFinal = data || new Date().toISOString().split('T')[0];
 
         const result = await pool.query(`
-            INSERT INTO atestados (paciente_id, dentista_id, tipo, dias, cid, motivo, observacoes)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
-        `, [pacienteId, req.dentistaId, tipo || 'atestado', dias || 1, cid || null, motivo || null, observacoes || null]);
+            INSERT INTO atestados (paciente_id, dentista_id, tipo, dias, cid, motivo, observacoes, conteudo, dias_afastamento, data)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
+        `, [pacienteId, req.dentistaId, tipo || 'atestado', diasFinal, cid || null, conteudoFinal, observacoes || null, conteudoFinal, diasFinal, dataFinal]);
 
         res.json({ success: true, atestado: result.rows[0] });
     } catch (error) {
@@ -5016,7 +5062,7 @@ app.post('/api/orcamentos-pendentes', authMiddleware, async (req, res) => {
 app.get('/api/orcamentos-pendentes/lembretes', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT op.*, p.nome as paciente_nome, p.celular, p.whatsapp
+            SELECT op.*, p.nome as paciente_nome, p.celular, p.telefone as paciente_telefone
             FROM orcamentos_pendentes op
             JOIN pacientes p ON op.paciente_id = p.id
             WHERE op.dentista_id = $1
@@ -5051,13 +5097,14 @@ app.put('/api/orcamentos-pendentes/:id', authMiddleware, async (req, res) => {
 
 app.post('/api/retornos', authMiddleware, async (req, res) => {
     try {
-        const { pacienteId, dataRetorno, motivo } = req.body;
-        if (!pacienteId || !dataRetorno) return res.status(400).json({ success: false, erro: 'Dados obrigatórios' });
+        const { pacienteId, dataRetorno, proximoRetorno, motivo, dente, periodicidadeMeses, procedimentoOrigem, observacoes } = req.body;
+        const dataFinal = dataRetorno || proximoRetorno;
+        if (!pacienteId || !dataFinal) return res.status(400).json({ success: false, erro: 'Dados obrigatórios' });
 
         const result = await pool.query(`
-            INSERT INTO retornos (paciente_id, dentista_id, data_retorno, motivo)
-            VALUES ($1, $2, $3, $4) RETURNING *
-        `, [pacienteId, req.dentistaId, dataRetorno, motivo || null]);
+            INSERT INTO retornos (paciente_id, dentista_id, data_retorno, motivo, dente, periodicidade_meses, procedimento_origem, observacoes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
+        `, [pacienteId, req.dentistaId, dataFinal, motivo || null, dente || null, periodicidadeMeses || 6, procedimentoOrigem || null, observacoes || null]);
 
         res.json({ success: true, retorno: result.rows[0] });
     } catch (error) {
@@ -5069,13 +5116,21 @@ app.post('/api/retornos', authMiddleware, async (req, res) => {
 app.get('/api/retornos', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT r.*, p.nome as paciente_nome
+            SELECT r.*, p.nome as paciente_nome, p.celular as paciente_celular, p.telefone as paciente_telefone
             FROM retornos r
             JOIN pacientes p ON r.paciente_id = p.id
             WHERE r.dentista_id = $1 AND r.status = 'pendente'
             ORDER BY r.data_retorno ASC
         `, [req.dentistaId]);
-        res.json({ success: true, retornos: result.rows });
+        const retornos = result.rows.map(r => ({
+            ...r,
+            pacienteNome: r.paciente_nome,
+            pacienteCelular: r.paciente_celular || r.paciente_telefone,
+            proximoRetorno: r.data_retorno,
+            procedimentoOrigem: r.procedimento_origem,
+            periodicidadeMeses: r.periodicidade_meses
+        }));
+        res.json({ success: true, retornos });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }
@@ -5450,15 +5505,22 @@ app.post('/api/estoque', authMiddleware, async (req, res) => {
 // ==============================================================================
 
 app.get('/api/storage/status', authMiddleware, async (req, res) => {
-    res.json({ success: true, connected: true, provider: 'local' });
+    res.json({ success: true, connected: false, provider: null });
 });
 
 app.post('/api/storage/disconnect', authMiddleware, async (req, res) => {
     res.json({ success: true });
 });
 
+app.post('/api/storage/upload', authMiddleware, async (req, res) => {
+    res.status(501).json({ success: false, erro: 'Armazenamento em nuvem não configurado neste servidor' });
+});
+
+app.get('/api/storage/download/:id', authMiddleware, async (req, res) => {
+    res.status(501).json({ success: false, erro: 'Armazenamento em nuvem não configurado neste servidor' });
+});
+
 app.get('/api/storage/files/:pacienteId', authMiddleware, async (req, res) => {
-    // Placeholder - retorna lista vazia por enquanto
     res.json({ success: true, files: [] });
 });
 

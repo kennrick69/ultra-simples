@@ -473,9 +473,10 @@
             if (!token) { window.location.href = '/login'; return; }
             try {
                 const data = await apiCall('/api/dentistas/me');
-                if (data.success && data.dentist) {
-                    document.getElementById('user-name').textContent = data.dentist.name || 'Dentista';
-                    document.getElementById('user-role').textContent = data.dentist.cro ? `CRO: ${data.dentist.cro}` : '';
+                var den = data.dentista || data.dentist;
+                if (data.success && den) {
+                    document.getElementById('user-name').textContent = den.nome || den.name || 'Dentista';
+                    document.getElementById('user-role').textContent = den.cro ? `CRO: ${den.cro}` : '';
                 }
             } catch(e) {}
             await carregarPrecos();
