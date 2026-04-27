@@ -4869,9 +4869,10 @@ app.get('/api/orcamentos', authMiddleware, async (req, res) => {
     try {
         const { pacienteId } = req.query;
         let query = `
-            SELECT o.*, p.nome as paciente_nome
+            SELECT o.*, p.nome as paciente_nome, d.nome as dentista_nome
             FROM orcamentos o
             LEFT JOIN pacientes p ON o.paciente_id = p.id
+            LEFT JOIN dentistas d ON o.dentista_id = d.id
             WHERE o.dentista_id = $1
         `;
         const params = [req.dentistaId];
@@ -4881,7 +4882,16 @@ app.get('/api/orcamentos', authMiddleware, async (req, res) => {
         }
         query += ' ORDER BY o.criado_em DESC';
         const result = await pool.query(query, params);
-        res.json({ success: true, orcamentos: result.rows });
+        const orcamentos = result.rows.map(function(row) {
+            return {
+                id: row.id, pacienteId: row.paciente_id, dentistaId: row.dentista_id,
+                pacienteNome: row.paciente_nome, dentistaNome: row.dentista_nome,
+                total: parseFloat(row.total), status: row.status, validadeDias: row.validade_dias,
+                formaPagamento: row.forma_pagamento, observacoes: row.observacoes,
+                itens: row.itens, criadoEm: row.criado_em
+            };
+        });
+        res.json({ success: true, orcamentos });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }
@@ -4890,13 +4900,32 @@ app.get('/api/orcamentos', authMiddleware, async (req, res) => {
 app.get('/api/orcamentos/:id', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT o.*, p.nome as paciente_nome, p.cpf as paciente_cpf
+            SELECT o.*, p.nome as paciente_nome, p.cpf as paciente_cpf,
+                   d.nome as dentista_nome, d.cro as dentista_cro
             FROM orcamentos o
             LEFT JOIN pacientes p ON o.paciente_id = p.id
+            LEFT JOIN dentistas d ON o.dentista_id = d.id
             WHERE o.id = $1
         `, [req.params.id]);
         if (result.rows.length === 0) return res.status(404).json({ success: false, erro: 'Não encontrado' });
-        res.json({ success: true, orcamento: result.rows[0] });
+        const row = result.rows[0];
+        const rawItens = Array.isArray(row.itens) ? row.itens : (typeof row.itens === 'string' ? JSON.parse(row.itens) : []);
+        // Normalize item shape: {nome,valor} → {dente,procedimento,valor,aprovado}
+        const itens = rawItens.map(function(i, idx) {
+            return { id: idx, dente: i.dente || null, procedimento: i.procedimento || i.nome || '', valor: parseFloat(i.valor) || 0, aprovado: i.aprovado || false };
+        });
+        const orcamento = {
+            id: row.id, pacienteId: row.paciente_id, dentistaId: row.dentista_id,
+            pacienteNome: row.paciente_nome, dentistaNome: row.dentista_nome, dentistaCro: row.dentista_cro,
+            total: parseFloat(row.total), status: row.status, validadeDias: row.validade_dias,
+            formaPagamento: row.forma_pagamento, observacoes: row.observacoes,
+            assinaturaUrl: row.assinatura_url, assinaturaIp: row.assinatura_ip,
+            assinaturaData: row.assinatura_em, assinaturaNome: row.assinatura_nome,
+            assinaturaImagem: row.assinatura_imagem,
+            termoConsentimento: row.termo_consentimento, termoAceito: row.termo_aceito,
+            criadoEm: row.criado_em, itens: itens
+        };
+        res.json({ success: true, orcamento, itens });
     } catch (error) {
         res.status(500).json({ success: false, erro: error.message });
     }
