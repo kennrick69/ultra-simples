@@ -1,7 +1,7 @@
 // ==================== INTEGRAÇÃO NFSE - BACKEND ====================
 
 // URL do backend (JÁ CONFIGURADO!)
-const BACKEND_URL = 'https://dentist-backend-v2-production.up.railway.app'; // Produção
+const BACKEND_URL = 'https://ultra-simples-production.up.railway.app'; // Produção
 
 // ===== CANCELAR NOTA AUTOMATICAMENTE =====
 async function cancelarNotaAutomatica(numeroNota, motivoCancelamento) {

@@ -48,7 +48,7 @@
     `;
     document.head.appendChild(style);
 
-    const API_URL = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://dentist-backend-v2-production.up.railway.app';
+    const API_URL = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://ultra-simples-production.up.railway.app';
     let _orcamentoAtual = null;
 
     function _apiCall(endpoint, method, body) {

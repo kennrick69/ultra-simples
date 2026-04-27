@@ -432,7 +432,7 @@ window.trackEvent = trackEvent;
 function getApiUrl() {
     var customUrl = localStorage.getItem('api_url');
     if (customUrl) return customUrl;
-    return 'https://dentist-backend-v2-production.up.railway.app';
+    return 'https://ultra-simples-production.up.railway.app';
 }
 
 async function loginDentista(event) {

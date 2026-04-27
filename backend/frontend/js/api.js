@@ -4,7 +4,7 @@
 
 const API = {
     // URL do backend
-    baseUrl: 'https://dentist-backend-v2-production.up.railway.app',
+    baseUrl: 'https://ultra-simples-production.up.railway.app',
     
     // ==================== HELPERS ====================
     

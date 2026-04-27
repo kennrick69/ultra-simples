@@ -5,7 +5,7 @@
 // =====================================================
 
 // ==================== CONFIGURAÇÃO ====================
-const API_BASE = typeof API_URL !== 'undefined' ? API_URL : 'https://dentist-backend-v2-production.up.railway.app';
+const API_BASE = typeof API_URL !== 'undefined' ? API_URL : 'https://ultra-simples-production.up.railway.app';
 
 // ==================== VARIÁVEIS GLOBAIS ====================
 let dataSelecionada = new Date();

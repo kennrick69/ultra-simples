@@ -18,7 +18,7 @@
     function getApiUrl() {
         var customUrl = localStorage.getItem('api_url');
         if (customUrl) return customUrl;
-        return 'https://dentist-backend-v2-production.up.railway.app';
+        return 'https://ultra-simples-production.up.railway.app';
     }
     
     // Verifica se o token é válido
@@ -73,7 +73,7 @@ function getCurrentDentista() {
 function getApiUrl() {
     var customUrl = localStorage.getItem('api_url');
     if (customUrl) return customUrl;
-    return 'https://dentist-backend-v2-production.up.railway.app';
+    return 'https://ultra-simples-production.up.railway.app';
 }
 
 function logout() {
